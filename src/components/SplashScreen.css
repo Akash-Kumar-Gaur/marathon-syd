@@ -1,0 +1,226 @@
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: #081f2d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100%;
+  max-width: 400px;
+  padding: 40px;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 60px;
+}
+
+.tcs-logo {
+  text-align: center;
+  animation: fadeInUp 1s ease-out;
+}
+
+.logo-image {
+  max-width: 200px;
+  width: 100%;
+  height: auto;
+  filter: brightness(1.1);
+}
+
+.tcs-text {
+  font-size: 4.5rem;
+  font-weight: 100;
+  letter-spacing: -3px;
+  line-height: 0.9;
+  margin-bottom: 12px;
+  font-family: "Helvetica Neue", "Arial", sans-serif;
+}
+
+.location-container {
+  margin-bottom: 24px;
+}
+
+.sydney-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  font-family: "Helvetica Neue", "Arial", sans-serif;
+}
+
+.marathon-text {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-family: "Helvetica Neue", "Arial", sans-serif;
+}
+
+.asics-container {
+  margin-top: 20px;
+}
+
+.powered-text {
+  font-size: 0.75rem;
+  font-weight: 300;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  opacity: 0.9;
+  font-family: "Helvetica Neue", "Arial", sans-serif;
+}
+
+.asics-text {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  font-family: "Helvetica Neue", "Arial", sans-serif;
+}
+
+.progress-section {
+  width: 280px;
+  animation: slideInUp 0.8s ease-out 0.5s both;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: white;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.bottom-indicator {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: fadeIn 1s ease-out 1s both;
+}
+
+.indicator-dot {
+  width: 32px;
+  height: 4px;
+  background-color: white;
+  border-radius: 2px;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .splash-content {
+    padding: 30px;
+  }
+
+  .logo-section {
+    margin-bottom: 50px;
+  }
+
+  .logo-image {
+    max-width: 180px;
+  }
+
+  .tcs-text {
+    font-size: 3.8rem;
+  }
+
+  .sydney-text {
+    font-size: 1rem;
+    letter-spacing: 3px;
+  }
+
+  .marathon-text {
+    font-size: 1.4rem;
+    letter-spacing: 2.5px;
+  }
+
+  .asics-text {
+    font-size: 1.1rem;
+    letter-spacing: 3px;
+  }
+
+  .progress-section {
+    width: 260px;
+  }
+
+  .bottom-indicator {
+    bottom: 50px;
+  }
+}
+
+@media (max-width: 360px) {
+  .logo-image {
+    max-width: 160px;
+  }
+
+  .tcs-text {
+    font-size: 3.2rem;
+  }
+
+  .sydney-text {
+    font-size: 0.9rem;
+    letter-spacing: 2.5px;
+  }
+
+  .marathon-text {
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+  }
+
+  .progress-section {
+    width: 240px;
+  }
+}
