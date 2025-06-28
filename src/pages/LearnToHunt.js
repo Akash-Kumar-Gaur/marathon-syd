@@ -66,32 +66,39 @@ const LearnToHunt = () => {
         </div>
 
         <div className="slide-navigation">
-          {currentSlide > 0 && (
-            <button className="nav-button prev" onClick={handlePrev}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M15 18L9 12L15 6"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          )}
-          {currentSlide < slides.length - 1 && (
-            <button className="nav-button next" onClick={handleNext}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M9 6L15 12L9 18"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          )}
+          <button
+            className="nav-button prev"
+            onClick={handlePrev}
+            style={{ visibility: currentSlide > 0 ? "visible" : "hidden" }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M15 18L9 12L15 6"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          <button
+            className="nav-button next"
+            onClick={handleNext}
+            style={{
+              visibility:
+                currentSlide < slides.length - 1 ? "visible" : "hidden",
+            }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M9 6L15 12L9 18"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
         </div>
 
         <div className="slide-indicators">

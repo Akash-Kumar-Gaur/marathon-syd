@@ -1,0 +1,74 @@
+.map-mode-toggle {
+  position: absolute;
+  top: 140px;
+  right: 20px;
+  z-index: 1000;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  background: none;
+}
+
+.toggle-switch {
+  width: 100px;
+  height: 36px;
+  background-color: #b62326;
+  border-radius: 100px;
+  position: relative;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  overflow: visible;
+}
+
+.toggle-circle {
+  width: 32px;
+  height: 32px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s ease;
+  z-index: 1;
+}
+
+.mode-label {
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  position: absolute;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.mode-label.static {
+  right: 12px;
+  opacity: 1;
+}
+
+.mode-label.live {
+  left: 12px;
+  opacity: 0;
+}
+
+.map-mode-toggle.live .mode-label.static {
+  opacity: 0;
+}
+
+.map-mode-toggle.live .mode-label.live {
+  opacity: 1;
+}
+
+.map-mode-toggle.live .toggle-circle {
+  transform: translateX(64px);
+}
+
+.map-mode-toggle.live .toggle-switch {
+  background-color: #4caf50;
+}
