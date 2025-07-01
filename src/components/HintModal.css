@@ -1,0 +1,55 @@
+.hint-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.hint-modal {
+  background: url("../assets/images/hintBG.png") no-repeat center center;
+  background-size: contain;
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+  padding: 16px;
+  aspect-ratio: 340/220;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.hint-title {
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.hint-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 8px;
+}
+
+.hint-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.hint-message {
+  color: white;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+  text-align: center;
+  width: 80%;
+}

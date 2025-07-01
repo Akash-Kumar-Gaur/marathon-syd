@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./LearnToHunt.css";
 import startBg from "../assets/images/startBg.png";
 import slide1 from "../assets/images/slide1.png";
@@ -30,7 +30,15 @@ const slides = [
 
 const LearnToHunt = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Log navigation state changes
+  useEffect(() => {
+    console.log("LearnToHunt - Current location:", location.pathname);
+    console.log("LearnToHunt - History length:", window.history.length);
+    console.log("LearnToHunt - Location state:", location.state);
+  }, [location]);
 
   const handleNext = () => {
     if (currentSlide < slides.length - 1) {
@@ -45,7 +53,18 @@ const LearnToHunt = () => {
   };
 
   const handleStartHunt = () => {
+    console.log("LearnToHunt - About to navigate to /home");
+    console.log(
+      "LearnToHunt - History length before navigate:",
+      window.history.length
+    );
     navigate("/home");
+    setTimeout(() => {
+      console.log(
+        "LearnToHunt - History length after navigate:",
+        window.history.length
+      );
+    }, 100);
   };
 
   return (

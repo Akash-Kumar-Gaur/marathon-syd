@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
@@ -7,7 +7,16 @@ import "./Home.css";
 import Header from "../components/Header";
 import MapModeToggle from "../components/MapModeToggle";
 import RouteControl from "../components/RouteControl";
-import markerIcon from "../assets/images/marker.png";
+import { Toaster, toast } from "react-hot-toast";
+import HintModal from "../components/HintModal";
+import RewardPopup from "../components/RewardPopup";
+import BoostScorePopup from "../components/BoostScorePopup";
+import GamePopup from "../components/GamePopup";
+import JigsawTrayPuzzle from "../components/JigsawTrayPuzzle";
+import FlipCardsGame from "../components/FlipCardsGame";
+import MarathonQuizGame from "../components/MarathonQuizGame";
+import coinsIcon from "../assets/images/coins.svg";
+import treasureImage from "../assets/images/treasure1.png";
 
 // Fix for default marker icons in react-leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -23,8 +32,8 @@ const treasureMarker = new L.DivIcon({
   html: `
     <div class="treasure-icon"></div>
   `,
-  iconSize: [32, 32],
-  iconAnchor: [16, 16],
+  iconSize: [44, 44],
+  iconAnchor: [22, 22],
 });
 
 const activeTreasureMarker = new L.DivIcon({
@@ -33,8 +42,8 @@ const activeTreasureMarker = new L.DivIcon({
     <div class="treasure-icon"></div>
     <div class="treasure-highlight"></div>
   `,
-  iconSize: [40, 40],
-  iconAnchor: [20, 20],
+  iconSize: [56, 56],
+  iconAnchor: [28, 28],
 });
 
 // Custom current location marker icon
@@ -59,6 +68,93 @@ const Home = () => {
   const [isLiveMap, setIsLiveMap] = useState(false);
   const [activeView, setActiveView] = useState("map");
   const [selectedTreasure, setSelectedTreasure] = useState(null);
+  const [isHintModalOpen, setIsHintModalOpen] = useState(false);
+  const [isRewardPopupOpen, setIsRewardPopupOpen] = useState(false);
+  const [rewardData, setRewardData] = useState(null);
+  const [showBoostPopup, setShowBoostPopup] = useState(false);
+  const [selectedGame, setSelectedGame] = useState(null); // 'jigsaw', 'flip', 'quiz'
+
+  // Simulation trigger - remove this in production
+  useEffect(() => {
+    const simulationTimer = setTimeout(() => {
+      const demoRewardData = {
+        headerText: "Open Run Pro 2",
+        pointsIcon: coinsIcon,
+        points: "+20 Points",
+        productImage: treasureImage,
+        title: "OPEN RUN PRO 2",
+        subtitle: "NEW FLAGSHIP MODEL\nRedefining The Sound Of Sports",
+        gameType: "quiz", // Change to 'flip' or 'quiz' to test other games
+      };
+
+      setRewardData(demoRewardData);
+      setIsRewardPopupOpen(true);
+    }, 1000);
+
+    return () => clearTimeout(simulationTimer);
+  }, []); // Only run once on mount
+
+  // Original postMessage handler
+  useEffect(() => {
+    const handleMessage = (event) => {
+      // Only accept messages from our trusted domain
+      if (event.origin !== "https://akashgaur.8thwall.app") return;
+
+      // Check if the message is about image target detection
+      if (event.data && event.data.type === "imageTargetDetected") {
+        const { targetName } = event.data;
+        console.log("🎯 Image Target Detected:", targetName);
+
+        // Example reward data - this should be dynamic based on targetName
+        const demoRewardData = {
+          headerText: "Open Run Pro 2",
+          pointsIcon: coinsIcon,
+          points: "+20 Points",
+          productImage: treasureImage,
+          title: "OPEN RUN PRO 2",
+          subtitle: "NEW FLAGSHIP MODEL\nRedefining The Sound Of Sports",
+          gameType: "flip", // Change to 'flip' or 'quiz' to test other games
+        };
+
+        setRewardData(demoRewardData);
+
+        // Show toast notification
+        toast(`Found target: ${targetName}`, {
+          duration: 3000,
+          position: "bottom-center",
+          style: {
+            background: "#081F2D",
+            color: "#fff",
+            borderRadius: "16px",
+            padding: "16px",
+            maxWidth: "90%",
+            textAlign: "center",
+            marginBottom: "120px",
+          },
+        });
+
+        // Show reward popup after 3 seconds
+        setTimeout(() => {
+          setIsRewardPopupOpen(true);
+        }, 3000);
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, []);
+
+  // Handler for BoostScorePopup play
+  const handleBoostPlay = () => {
+    if (!rewardData) return;
+    if (rewardData.gameType === "jigsaw") setSelectedGame("jigsaw");
+    else if (rewardData.gameType === "flip") setSelectedGame("flip");
+    else if (rewardData.gameType === "quiz") setSelectedGame("quiz");
+    setShowBoostPopup(false);
+  };
 
   const handleTreasureClick = (treasure) => {
     // Toggle selection if clicking the same treasure
@@ -76,24 +172,95 @@ const Home = () => {
   const toggleView = (view) => {
     if (view !== activeView) {
       setActiveView(view);
+      if (view === "camera") {
+        toast(
+          "Spot the poster, scan it, and watch the treasure come to life!",
+          {
+            duration: 3000,
+            position: "bottom-center",
+            style: {
+              background: "#081F2D",
+              color: "#fff",
+              borderRadius: "16px",
+              padding: "16px",
+              maxWidth: "90%",
+              textAlign: "center",
+              marginBottom: "120px", // Add margin to avoid overlap with bottom buttons
+            },
+          }
+        );
+      }
     }
+  };
+
+  const handleHintClick = () => {
+    setIsHintModalOpen(true);
   };
 
   return (
     <div className="home-screen">
+      <Toaster />
+      <HintModal
+        isOpen={isHintModalOpen}
+        onClose={() => setIsHintModalOpen(false)}
+      />
+      <RewardPopup
+        isOpen={isRewardPopupOpen}
+        onClose={() => setIsRewardPopupOpen(false)}
+        onCollect={() => {
+          setIsRewardPopupOpen(false);
+          setShowBoostPopup(true);
+        }}
+        rewardData={rewardData}
+      />
+      <BoostScorePopup
+        isOpen={showBoostPopup}
+        onPlay={handleBoostPlay}
+        onSkip={() => setShowBoostPopup(false)}
+      />
+      <GamePopup
+        isOpen={selectedGame === "jigsaw"}
+        onClose={() => setSelectedGame(null)}
+      >
+        <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 16 }}>
+          Complete the puzzle!
+          <p style={{ fontSize: 12, fontWeight: "normal", color: "#081F2D" }}>
+            Drag and drop to complete the puzzle
+          </p>
+        </div>
+        <JigsawTrayPuzzle />
+      </GamePopup>
+      <GamePopup
+        isOpen={selectedGame === "flip"}
+        onClose={() => setSelectedGame(null)}
+      >
+        <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 16 }}>
+          Match in the given time!
+          <p style={{ fontSize: 12, fontWeight: "normal", color: "#081F2D" }}>
+            Tap on the individual squares to flip the cards, once a match they
+            will stay visible.
+          </p>
+          <p style={{ fontSize: 12, fontWeight: "normal", color: "#081F2D" }}>
+            TIME - 00:18
+          </p>
+        </div>
+        <FlipCardsGame />
+      </GamePopup>
+      <GamePopup
+        isOpen={selectedGame === "quiz"}
+        onClose={() => setSelectedGame(null)}
+      >
+        <MarathonQuizGame />
+      </GamePopup>
       <Header />
 
       {/* Stats Bar */}
       <div className="stats-bar">
-        <div className="stat-item">
-          <i className="fas fa-chest"></i>
-          <span>0/10</span>
+        <div className="stat-item pill">
+          <i className="fas fa-gift"></i>
+          <span>4</span>
         </div>
-        <div className="stat-item">
-          <i className="fas fa-map-marker"></i>
-          <span>500m</span>
-        </div>
-        <div className="stat-item">
+        <div className="stat-item pill">
           <i className="fas fa-coins"></i>
           <span>150 Pt</span>
         </div>
@@ -138,7 +305,7 @@ const Home = () => {
                   click: () => handleTreasureClick(treasure),
                 }}
               >
-                <Popup>
+                {/* <Popup>
                   <div className="treasure-popup">
                     <h3>Treasure {treasure.id}</h3>
                     <p>{treasure.found ? "Found" : "Not Found"}</p>
@@ -151,7 +318,7 @@ const Home = () => {
                         : "Show Route"}
                     </button>
                   </div>
-                </Popup>
+                </Popup> */}
               </Marker>
             ))}
 
@@ -172,7 +339,8 @@ const Home = () => {
           }`}
         >
           <iframe
-            src="https://8th.io/t/dh47764d"
+            // src="https://8thwall.8thwall.app/image-targets/"
+            src="https://akashgaur.8thwall.app/markers/"
             title="Camera View"
             className="camera-webview"
             allow="camera"
@@ -226,7 +394,7 @@ const Home = () => {
             </svg>
           </button>
         </div>
-        <button className="action-button idea-button">
+        <button className="action-button idea-button" onClick={handleHintClick}>
           <svg
             width="24"
             height="24"

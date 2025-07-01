@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Select, MenuItem, FormControl } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import "./Welcome.css";
 import startBg from "../assets/images/startBg.png";
 import formBg from "../assets/images/formBg.png";
 import Header from "../components/Header";
+
+// Import avatar images
+import avatar1 from "../assets/avatar/avatar1.png";
+import avatar2 from "../assets/avatar/avatar2.png";
+import avatar3 from "../assets/avatar/avatar3.png";
+import avatar4 from "../assets/avatar/avatar4.png";
+import avatar5 from "../assets/avatar/avatar5.png";
+import avatar6 from "../assets/avatar/avatar6.png";
+import avatar7 from "../assets/avatar/avatar7.png";
+import avatar from "../assets/avatar/avatar.png";
 
 // Styled Material UI components
 const StyledSelect = styled(Select)({
@@ -36,8 +46,11 @@ const StyledMenuItem = styled(MenuItem)({
 
 const Welcome = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [showAvatarSelection, setShowAvatarSelection] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     country: "",
@@ -48,6 +61,25 @@ const Welcome = () => {
   });
   const [otp, setOtp] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
+
+  // Avatar options - using actual avatar images
+  const avatarOptions = [
+    { id: 1, image: avatar1 },
+    { id: 2, image: avatar2 },
+    { id: 3, image: avatar3 },
+    { id: 4, image: avatar4 },
+    { id: 5, image: avatar5 },
+    { id: 6, image: avatar6 },
+    { id: 7, image: avatar7 },
+    { id: 8, image: avatar },
+  ];
+
+  // Log navigation state changes
+  useEffect(() => {
+    console.log("Welcome - Current location:", location.pathname);
+    console.log("Welcome - History length:", window.history.length);
+    console.log("Welcome - Location state:", location.state);
+  }, [location]);
 
   useEffect(() => {
     let interval;
@@ -60,7 +92,19 @@ const Welcome = () => {
   }, [resendTimer]);
 
   const handleStart = () => {
-    setShowForm(true);
+    console.log("Welcome - handleStart called");
+    setShowAvatarSelection(true);
+  };
+
+  const handleAvatarSelect = (avatar) => {
+    setSelectedAvatar(avatar);
+  };
+
+  const handleAvatarNext = () => {
+    if (selectedAvatar) {
+      setShowAvatarSelection(false);
+      setShowForm(true);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -89,8 +133,19 @@ const Welcome = () => {
   };
 
   const handleVerifyOtp = () => {
+    console.log("Welcome - About to navigate to /hunt");
+    console.log(
+      "Welcome - History length before navigate:",
+      window.history.length
+    );
     // Add your OTP verification logic here
     navigate("/hunt");
+    setTimeout(() => {
+      console.log(
+        "Welcome - History length after navigate:",
+        window.history.length
+      );
+    }, 100);
   };
 
   const renderOTPVerification = () => {
@@ -137,6 +192,57 @@ const Welcome = () => {
       </div>
     );
   };
+
+  const renderAvatarSelection = () => {
+    return (
+      <div className="avatar-selection">
+        <div className="avatar-header">
+          <h1>Let's set your look!</h1>
+          <p>Choose how you'll appear on the leaderboard</p>
+        </div>
+        <div className="avatar-grid">
+          {avatarOptions.map((avatar) => (
+            <div
+              key={avatar.id}
+              className={`avatar-option ${
+                selectedAvatar?.id === avatar.id ? "selected" : ""
+              }`}
+              onClick={() => handleAvatarSelect(avatar)}
+            >
+              <img
+                src={avatar.image}
+                alt={`Avatar ${avatar.id}`}
+                className="avatar-image"
+              />
+            </div>
+          ))}
+        </div>
+        <button
+          className="avatar-next-button"
+          onClick={handleAvatarNext}
+          disabled={!selectedAvatar}
+        >
+          NEXT
+        </button>
+      </div>
+    );
+  };
+
+  if (showAvatarSelection) {
+    return (
+      <div className="welcome-screen">
+        <Header />
+        <div className="form-background">
+          <div className="form-image-container">
+            <img src={formBg} alt="Background" />
+          </div>
+          <div className="center-card">
+            <div className="form-content">{renderAvatarSelection()}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (showForm) {
     return (

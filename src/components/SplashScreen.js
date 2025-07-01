@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./SplashScreen.css";
 import sydTcsLogo from "../assets/images/syd-tcs-logo.png";
 
@@ -7,6 +7,12 @@ const SplashScreen = () => {
   const [progress, setProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    console.log("SplashScreen mounted, location:", location.pathname);
+    console.log("SplashScreen - History length:", window.history.length);
+  }, [location.pathname]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -15,7 +21,18 @@ const SplashScreen = () => {
           clearInterval(interval);
           setTimeout(() => {
             setIsLoading(false);
-            navigate("/welcome");
+            console.log("SplashScreen - About to navigate to /welcome");
+            console.log(
+              "SplashScreen - History length before navigate:",
+              window.history.length
+            );
+            navigate("/welcome", { replace: true });
+            setTimeout(() => {
+              console.log(
+                "SplashScreen - History length after navigate:",
+                window.history.length
+              );
+            }, 100);
           }, 500);
           return 100;
         }

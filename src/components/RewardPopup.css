@@ -1,0 +1,147 @@
+.reward-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.reward-popup {
+  /* background: white; */
+  border-radius: 24px;
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+  padding: 24px;
+  animation: slideUp 0.3s ease-out;
+}
+
+.reward-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  justify-content: center;
+}
+
+.reward-header-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.reward-header-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
+}
+
+.reward-points {
+  background: url("../assets/images/pointsBg.png") no-repeat center center;
+  background-size: contain;
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  min-width: 200px;
+  aspect-ratio: 232/89;
+}
+
+.points-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.points-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
+  margin-left: 85px;
+}
+
+.reward-content-container {
+  background-color: #fff;
+  border-radius: 12px;
+  /* overflow: hidden; */
+  margin-bottom: 24px;
+}
+
+.reward-content {
+  background-color: #fff;
+  /* padding: 16px; */
+  background-color: #151515;
+  padding-bottom: 16px;
+  border-radius: 12px 12px 0 0;
+}
+
+.reward-image {
+  width: 100%;
+  height: auto;
+  margin-bottom: 16px;
+  max-height: 150px;
+  object-fit: scale-down;
+  /* border-radius: 12px; */
+}
+
+.reward-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.reward-subtitle-container {
+  padding: 16px;
+}
+.reward-subtitle {
+  font-size: 12px;
+  color: #000000;
+  margin: 0;
+  line-height: 1.4;
+  &:first-child {
+    font-weight: bold;
+    font-size: 16px;
+  }
+}
+
+.collect-button {
+  width: 100%;
+  padding: 16px;
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.collect-button:hover {
+  background: #1976d2;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
