@@ -10,6 +10,10 @@ import avatar4 from "../assets/avatar/avatar4.png";
 import avatar5 from "../assets/avatar/avatar5.png";
 import avatar6 from "../assets/avatar/avatar6.png";
 import avatar7 from "../assets/avatar/avatar7.png";
+import puzzleTile from "../assets/images/puzzleTile.png";
+import matchTile from "../assets/images/matchTile.png";
+import trivia from "../assets/images/trivia.png";
+import mascot from "../assets/images/mascot.png";
 
 const avatarMap = {
   1: avatar1,
@@ -21,6 +25,45 @@ const avatarMap = {
   7: avatar7,
   8: avatarDefault,
 };
+
+const CHALLENGES = [
+  {
+    name: "PUZZLE",
+    img: puzzleTile,
+    points: 60,
+    totalPoints: 120,
+    progress: 2,
+    totalProgress: 4,
+    alt: "Puzzle",
+  },
+  {
+    name: "MATCH TILE",
+    img: matchTile,
+    points: 40,
+    totalPoints: 80,
+    progress: 1,
+    totalProgress: 2,
+    alt: "Match Tile",
+  },
+  {
+    name: "TRIVIA",
+    img: trivia,
+    points: 60,
+    totalPoints: 120,
+    progress: 2,
+    totalProgress: 4,
+    alt: "Trivia",
+  },
+  {
+    name: "MASCOT",
+    img: mascot,
+    points: 40,
+    totalPoints: 80,
+    progress: 1,
+    totalProgress: 2,
+    alt: "Mascot",
+  },
+];
 
 const Header = () => {
   const location = useLocation();
@@ -120,7 +163,14 @@ const Header = () => {
   };
 
   const handleCollapse = (section) => {
-    setCollapse({ ...collapse, [section]: !collapse[section] });
+    setCollapse((prev) => {
+      const newState = { ...prev, [section]: !prev[section] };
+      if (section === "challenges" && newState.challenges)
+        newState.treasure = false;
+      if (section === "treasure" && newState.treasure)
+        newState.challenges = false;
+      return newState;
+    });
   };
 
   const handleSignOut = () => {
@@ -133,6 +183,20 @@ const Header = () => {
     userData.selectedAvatar && avatarMap[userData.selectedAvatar.id]
       ? avatarMap[userData.selectedAvatar.id]
       : avatar5;
+
+  // Example: unlocked treasures indices from user data
+  const unlockedTreasures = [0, 2, 5]; // Replace with actual user data
+
+  // Prepare treasure data with unlocked status
+  const treasures = [...Array(16)].map((_, i) => ({
+    index: i,
+    unlocked: unlockedTreasures.includes(i),
+  }));
+  // Sort unlocked treasures to the start
+  const sortedTreasures = [
+    ...treasures.filter((t) => t.unlocked),
+    ...treasures.filter((t) => !t.unlocked),
+  ];
 
   return (
     <>
@@ -278,12 +342,109 @@ const Header = () => {
                   ></i>
                 </span>
               </div>
-              {collapse.challenges && (
-                <div className="drawer-expand-content">No challenges yet.</div>
-              )}
               <hr
-                style={{ border: 0, borderTop: "2px solid #b3d6e6", margin: 0 }}
+                style={{
+                  border: 0,
+                  borderTop: "2px solid #081F2D",
+                  margin: "0 !important",
+                }}
               />
+              {collapse.challenges && (
+                <div
+                  className="drawer-expand-content"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, 1fr)",
+                    gap: 20,
+                    padding: "16px 0 8px 0",
+                    background: "#eaf7fc",
+                    borderRadius: 18,
+                    maxHeight: 420,
+                    overflowY: "auto",
+                  }}
+                >
+                  {CHALLENGES.map((challenge) => {
+                    const earnedPoints = Math.round(
+                      (challenge.progress / challenge.totalProgress) *
+                        challenge.totalPoints
+                    );
+                    return (
+                      <div
+                        key={challenge.name}
+                        style={{
+                          background: "#fff",
+                          borderRadius: 20,
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                          padding: 18,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          width: "100%",
+                          alignSelf: "stretch",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            fontSize: 14,
+                            color: "#081F2D",
+                            marginBottom: 8,
+                          }}
+                        >
+                          {challenge.name}
+                        </div>
+                        <img
+                          src={challenge.img}
+                          alt={challenge.alt}
+                          style={{
+                            width: 54,
+                            height: 54,
+                            objectFit: "contain",
+                            marginBottom: 8,
+                          }}
+                        />
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            width: "100%",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontWeight: 600,
+                              fontSize: 14,
+                              color: "#1693f6",
+                            }}
+                          >
+                            {earnedPoints}
+                            <span
+                              style={{ color: "#22313F", fontWeight: "bold" }}
+                            >
+                              /{challenge.totalPoints}pt
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              fontWeight: 600,
+                              fontSize: 14,
+                              color: "#1693f6",
+                            }}
+                          >
+                            {challenge.progress}
+                            <span
+                              style={{ color: "#22313F", fontWeight: "bold" }}
+                            >
+                              / {challenge.totalProgress}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
               {/* Treasure */}
               <div
                 className="drawer-list-item"
@@ -300,7 +461,7 @@ const Header = () => {
                 }}
               >
                 <i className="fas fa-gift"></i>
-                <span>TREASURE</span>
+                <span>TREASURES</span>
                 <span
                   style={{ marginLeft: "auto", transition: "transform 0.2s" }}
                 >
@@ -311,12 +472,123 @@ const Header = () => {
                   ></i>
                 </span>
               </div>
-              {collapse.treasure && (
-                <div className="drawer-expand-content">No treasures yet.</div>
-              )}
               <hr
-                style={{ border: 0, borderTop: "2px solid #b3d6e6", margin: 0 }}
+                style={{
+                  border: 0,
+                  borderTop: "2px solid #081F2D",
+                  margin: "0 !important",
+                }}
               />
+              {collapse.treasure && (
+                <div
+                  className="drawer-expand-content"
+                  style={{
+                    maxHeight: 420,
+                    overflowY: "auto",
+                    background: "#eaf7fc",
+                    padding: "0px 0 8px 0",
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, 1fr)",
+                    gap: 20,
+                    marginTop: 16,
+                  }}
+                >
+                  {sortedTreasures.map(({ index, unlocked }) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        width: "100%",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontWeight: 700,
+                          fontSize: 14,
+                          color: unlocked ? "#081F2D" : "#fff",
+                          background: unlocked ? "#fff" : "#081F2DCC",
+                          borderRadius: 12,
+                          padding: 16,
+                          width: "100%",
+                          boxSizing: "border-box",
+                          textAlign: "center",
+                          boxShadow: "0px 3.11px 3.11px 0px #00000040",
+                        }}
+                      >
+                        TREASURE {index + 1}
+                      </div>
+                      <div
+                        style={{
+                          background: "#fff",
+                          borderRadius: 12,
+                          padding: 16,
+                          width: "100%",
+                          aspectRatio: 1 / 0.8,
+                          position: "relative",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxSizing: "border-box",
+                          minHeight: 0,
+                          boxShadow: "0px 3.11px 3.11px 0px #00000040",
+                        }}
+                      >
+                        {unlocked ? (
+                          <div
+                            style={{
+                              fontWeight: 600,
+                              fontSize: 14,
+                              color: "#1693f6",
+                            }}
+                          >
+                            Reward
+                          </div>
+                        ) : (
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              width: "100%",
+                              height: "100%",
+                              background: "#081F2DCC",
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              borderRadius: 12,
+                              zIndex: 2,
+                              margin: 0,
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 28,
+                                color: "#fff",
+                                marginBottom: 6,
+                              }}
+                            >
+                              🔒
+                            </div>
+                            <div
+                              style={{
+                                fontWeight: 700,
+                                fontSize: 16,
+                                color: "#fff",
+                                letterSpacing: 1,
+                              }}
+                            >
+                              Locked
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div style={{ flex: 1 }}></div>
             <button

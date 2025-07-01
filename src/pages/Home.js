@@ -74,25 +74,25 @@ const Home = () => {
   const [showBoostPopup, setShowBoostPopup] = useState(false);
   const [selectedGame, setSelectedGame] = useState(null); // 'jigsaw', 'flip', 'quiz'
 
-  // Simulation trigger - remove this in production
-  useEffect(() => {
-    const simulationTimer = setTimeout(() => {
-      const demoRewardData = {
-        headerText: "Open Run Pro 2",
-        pointsIcon: coinsIcon,
-        points: "+20 Points",
-        productImage: treasureImage,
-        title: "OPEN RUN PRO 2",
-        subtitle: "NEW FLAGSHIP MODEL\nRedefining The Sound Of Sports",
-        gameType: "quiz", // Change to 'flip' or 'quiz' to test other games
-      };
+  // // Simulation trigger - remove this in production
+  // useEffect(() => {
+  //   const simulationTimer = setTimeout(() => {
+  //     const demoRewardData = {
+  //       headerText: "Open Run Pro 2",
+  //       pointsIcon: coinsIcon,
+  //       points: "+20 Points",
+  //       productImage: treasureImage,
+  //       title: "OPEN RUN PRO 2",
+  //       subtitle: "NEW FLAGSHIP MODEL\nRedefining The Sound Of Sports",
+  //       gameType: "quiz", // Change to 'flip' or 'quiz' to test other games
+  //     };
 
-      setRewardData(demoRewardData);
-      setIsRewardPopupOpen(true);
-    }, 1000);
+  //     setRewardData(demoRewardData);
+  //     setIsRewardPopupOpen(true);
+  //   }, 1000);
 
-    return () => clearTimeout(simulationTimer);
-  }, []); // Only run once on mount
+  //   return () => clearTimeout(simulationTimer);
+  // }, []); // Only run once on mount
 
   // Original postMessage handler
   useEffect(() => {
