@@ -12,6 +12,7 @@ import SplashScreen from "./components/SplashScreen";
 import Welcome from "./pages/Welcome";
 import LearnToHunt from "./pages/LearnToHunt";
 import Home from "./pages/Home";
+import PhotoBooth from "./pages/PhotoBooth";
 
 // Navigation logger component
 const NavigationLogger = () => {
@@ -39,6 +40,7 @@ function App() {
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/hunt" element={<LearnToHunt />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/photobooth" element={<PhotoBooth />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

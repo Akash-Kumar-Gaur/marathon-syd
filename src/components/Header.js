@@ -14,6 +14,8 @@ import puzzleTile from "../assets/images/puzzleTile.png";
 import matchTile from "../assets/images/matchTile.png";
 import trivia from "../assets/images/trivia.png";
 import mascot from "../assets/images/mascot.png";
+import headphones from "../assets/images/headphones.svg";
+import shokzLogo from "../assets/images/shokz.png";
 
 const avatarMap = {
   1: avatar1,
@@ -54,16 +56,263 @@ const CHALLENGES = [
     totalProgress: 4,
     alt: "Trivia",
   },
-  {
-    name: "MASCOT",
-    img: mascot,
-    points: 40,
-    totalPoints: 80,
-    progress: 1,
-    totalProgress: 2,
-    alt: "Mascot",
-  },
 ];
+
+function TreasureDetailCard({ onBack }) {
+  const coupon = "NSOCBWINIOW100";
+  const handleCopy = () => {
+    navigator.clipboard.writeText(coupon);
+  };
+  return (
+    <div
+      style={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        minHeight: 0,
+        height: "100%",
+        padding: "16px",
+        marginBottom: 32,
+      }}
+    >
+      <button
+        onClick={onBack}
+        style={{
+          background: "none",
+          border: "none",
+          color: "#081F2D",
+          fontWeight: 600,
+          fontSize: 15,
+          marginBottom: 10,
+          alignSelf: "flex-start",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        <span style={{ fontSize: 18, marginRight: 6 }}>&larr;</span> Go Back
+      </button>
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 700,
+            fontSize: 18,
+            color: "#081F2D",
+            marginBottom: 4,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <span style={{ fontSize: 22 }}>&#127873;</span> TREASURE
+        </div>
+      </div>
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          marginTop: 8,
+        }}
+      >
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: 18,
+            boxShadow: "0px 3.11px 12px 0px #00000030",
+            padding: "16px",
+            width: "100%",
+            maxWidth: 340,
+            margin: "0 4px",
+            textAlign: "center",
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <img
+            src={shokzLogo}
+            alt="Shokz"
+            style={{ height: 20, marginBottom: 6 }}
+          />
+          <div
+            style={{
+              fontWeight: 800,
+              fontSize: 16,
+              color: "#081F2D",
+              marginBottom: 1,
+              letterSpacing: 1,
+            }}
+          >
+            OPEN PRO 2
+          </div>
+          <div
+            style={{
+              color: "#22313F",
+              fontWeight: 600,
+              fontSize: 11,
+              marginBottom: 8,
+            }}
+          >
+            VALID TILL: JULY 31 2025
+          </div>
+          <img
+            src={headphones}
+            alt="Headphones"
+            style={{
+              width: "80%",
+              maxWidth: 120,
+              margin: "8px auto 10px auto",
+              display: "block",
+            }}
+          />
+          <div
+            style={{
+              textAlign: "left",
+              fontWeight: 700,
+              fontSize: 11,
+              color: "#081F2D",
+              marginBottom: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              width: "100%",
+            }}
+          >
+            CODE
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginBottom: 8,
+              width: "100%",
+            }}
+          >
+            <div
+              style={{
+                flex: 1,
+                border: "1.5px dashed #1693f6",
+                borderRadius: 8,
+                padding: "7px 6px",
+                fontWeight: 600,
+                fontSize: 12,
+                color: "#081F2D",
+                background: "#f7fbfd",
+                letterSpacing: 1,
+              }}
+            >
+              {coupon}
+            </div>
+            <button
+              onClick={handleCopy}
+              style={{
+                marginLeft: 6,
+                background: "#1693f6",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                fontWeight: 700,
+                fontSize: 12,
+                padding: "7px 12px",
+                cursor: "pointer",
+              }}
+            >
+              COPY
+            </button>
+          </div>
+          <div style={{ textAlign: "left", marginBottom: 7 }}>
+            <div
+              style={{
+                fontWeight: 700,
+                fontSize: 12,
+                color: "#081F2D",
+                marginBottom: 2,
+                marginTop: 24,
+              }}
+            >
+              How to Avail :
+            </div>
+            <ul
+              style={{
+                color: "#22313F",
+                fontSize: 11,
+                margin: 0,
+                paddingLeft: 16,
+                marginBottom: 0,
+                listStyle: "disc",
+                // marginLeft: 12,
+              }}
+            >
+              <li>Sign up on our website using a valid email address.</li>
+              <li>Complete your profile and verify your account.</li>
+              <li>Input the coupon code to complete the process.</li>
+              <li>Once verified, you'll receive the product at no cost.</li>
+            </ul>
+          </div>
+          <div style={{ textAlign: "left", marginBottom: 10 }}>
+            <div
+              style={{
+                fontWeight: 700,
+                fontSize: 12,
+                color: "#081F2D",
+                marginBottom: 2,
+                marginTop: 24,
+              }}
+            >
+              Terms and Conditions:
+            </div>
+            <ol
+              style={{
+                color: "#22313F",
+                fontSize: 11,
+                margin: 0,
+                paddingLeft: 16,
+                listStyle: "decimal",
+                // marginLeft: 12,
+              }}
+            >
+              <li>Offer valid for first-time users only.</li>
+              <li>One free product per verified account.</li>
+              <li>
+                Company reserves the right to modify or cancel the offer
+                anytime.
+              </li>
+            </ol>
+          </div>
+          <button
+            style={{
+              width: "100%",
+              padding: "10px 0",
+              background: "#0096db",
+              color: "#fff",
+              border: "none",
+              borderRadius: 10,
+              fontWeight: 700,
+              fontSize: 13,
+              letterSpacing: 1,
+              marginTop: 4,
+              cursor: "pointer",
+              boxShadow: "0px 3.11px 3.11px 0px #00000040",
+            }}
+          >
+            REDEEM NOW
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const Header = () => {
   const location = useLocation();
@@ -80,6 +329,7 @@ const Header = () => {
     email: "akash@test.com",
     phone: "+61 412345678",
   });
+  const [selectedTreasure, setSelectedTreasure] = useState(null);
 
   useEffect(() => {
     if (drawerOpen) {
@@ -311,10 +561,7 @@ const Header = () => {
                 </div>
               </div>
             </div>
-            <div
-              className="drawer-section"
-              style={{ margin: "32px 0 0 0", padding: "0 24px" }}
-            >
+            <div className="drawer-section" style={{ padding: "0 24px" }}>
               {/* Challenges */}
               <div
                 className="drawer-list-item"
@@ -323,7 +570,7 @@ const Header = () => {
                   display: "flex",
                   alignItems: "center",
                   fontWeight: 700,
-                  fontSize: 20,
+                  fontSize: 16,
                   color: "#0a2a3a",
                   cursor: "pointer",
                   gap: 16,
@@ -354,8 +601,8 @@ const Header = () => {
                   className="drawer-expand-content"
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(2, 1fr)",
-                    gap: 20,
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gap: 10,
                     padding: "16px 0 8px 0",
                     background: "#eaf7fc",
                     borderRadius: 18,
@@ -372,72 +619,86 @@ const Header = () => {
                       <div
                         key={challenge.name}
                         style={{
-                          background: "#fff",
-                          borderRadius: 20,
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                          padding: 18,
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
                           width: "100%",
-                          alignSelf: "stretch",
                         }}
                       >
                         <div
                           style={{
+                            background: "#fff",
                             fontWeight: 700,
-                            fontSize: 14,
+                            fontSize: 10,
                             color: "#081F2D",
-                            marginBottom: 8,
+                            textAlign: "center",
+                            height: "-webkit-fill-available",
+                            fontWeight: "bold",
+                            width: "100%",
+                            borderRadius: 10,
+                            padding: "10px 6px",
+                            // boxShadow: "0px 3.11px 3.11px 0px #00000040",
                           }}
                         >
                           {challenge.name}
                         </div>
-                        <img
-                          src={challenge.img}
-                          alt={challenge.alt}
-                          style={{
-                            width: 54,
-                            height: 54,
-                            objectFit: "contain",
-                            marginBottom: 8,
-                          }}
-                        />
                         <div
                           style={{
+                            background: "#fff",
+                            width: "100%",
                             display: "flex",
                             alignItems: "center",
-                            justifyContent: "space-between",
-                            width: "100%",
+                            justifyContent: "center",
+                            flexDirection: "column",
+                            borderRadius: 10,
+                            padding: " 0 6px 10px 6px",
+                            boxShadow: "0px 3.11px 3.11px 0px #00000040",
                           }}
                         >
+                          <img
+                            src={challenge.img}
+                            alt={challenge.alt}
+                            style={{
+                              width: 36,
+                              height: 36,
+                              objectFit: "contain",
+                              marginBottom: 8,
+                            }}
+                          />
                           <div
                             style={{
-                              fontWeight: 600,
-                              fontSize: 14,
-                              color: "#1693f6",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              width: "100%",
+                              flexDirection: "column",
                             }}
                           >
-                            {earnedPoints}
-                            <span
-                              style={{ color: "#22313F", fontWeight: "bold" }}
+                            <div
+                              style={{
+                                fontWeight: 600,
+                                fontSize: 10,
+                                color: "#1693f6",
+                              }}
                             >
-                              /{challenge.totalPoints}pt
-                            </span>
-                          </div>
-                          <div
-                            style={{
-                              fontWeight: 600,
-                              fontSize: 14,
-                              color: "#1693f6",
-                            }}
-                          >
-                            {challenge.progress}
-                            <span
-                              style={{ color: "#22313F", fontWeight: "bold" }}
+                              {earnedPoints}
+                              <span
+                                style={{ color: "#22313F", fontWeight: "bold" }}
+                              >
+                                /{challenge.totalPoints}pt
+                              </span>
+                            </div>
+                            <div
+                              style={{
+                                fontWeight: 600,
+                                fontSize: 10,
+                                color: "#1693f6",
+                              }}
                             >
-                              / {challenge.totalProgress}
-                            </span>
+                              {challenge.progress}
+                              <span
+                                style={{ color: "#22313F", fontWeight: "bold" }}
+                              >
+                                / {challenge.totalProgress}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -453,7 +714,7 @@ const Header = () => {
                   display: "flex",
                   alignItems: "center",
                   fontWeight: 700,
-                  fontSize: 20,
+                  fontSize: 16,
                   color: "#0a2a3a",
                   cursor: "pointer",
                   gap: 16,
@@ -479,121 +740,154 @@ const Header = () => {
                   margin: "0 !important",
                 }}
               />
-              {collapse.treasure && (
-                <div
-                  className="drawer-expand-content"
-                  style={{
-                    maxHeight: 420,
-                    overflowY: "auto",
-                    background: "#eaf7fc",
-                    padding: "0px 0 8px 0",
-                    display: "grid",
-                    gridTemplateColumns: "repeat(2, 1fr)",
-                    gap: 20,
-                    marginTop: 16,
-                  }}
-                >
-                  {sortedTreasures.map(({ index, unlocked }) => (
-                    <div
-                      key={index}
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
+              {collapse.treasure &&
+                (selectedTreasure === null ? (
+                  <div
+                    className="drawer-expand-content"
+                    style={{
+                      maxHeight: "32vh",
+                      overflowY: "auto",
+                      background: "#eaf7fc",
+                      padding: "0px 0 8px 0",
+                      display: "grid",
+                      gridTemplateColumns: "repeat(2, 1fr)",
+                      gap: 20,
+                      marginTop: 16,
+                    }}
+                  >
+                    {sortedTreasures.map(({ index, unlocked }) => {
+                      const cardStyle = {
+                        background: "#fff",
+                        borderRadius: 12,
+                        padding: 6,
                         width: "100%",
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontWeight: 700,
-                          fontSize: 14,
-                          color: unlocked ? "#081F2D" : "#fff",
-                          background: unlocked ? "#fff" : "#081F2DCC",
-                          borderRadius: 12,
-                          padding: 16,
-                          width: "100%",
-                          boxSizing: "border-box",
-                          textAlign: "center",
-                          boxShadow: "0px 3.11px 3.11px 0px #00000040",
-                        }}
-                      >
-                        TREASURE {index + 1}
-                      </div>
-                      <div
-                        style={{
-                          background: "#fff",
-                          borderRadius: 12,
-                          padding: 16,
-                          width: "100%",
-                          aspectRatio: 1 / 0.8,
-                          position: "relative",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          boxSizing: "border-box",
-                          minHeight: 0,
-                          boxShadow: "0px 3.11px 3.11px 0px #00000040",
-                        }}
-                      >
-                        {unlocked ? (
+                        aspectRatio: 1 / 0.7,
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxSizing: "border-box",
+                        minHeight: 0,
+                        boxShadow: "0px 3.11px 3.11px 0px #00000040",
+                        ...(unlocked ? { cursor: "pointer" } : {}),
+                      };
+                      return (
+                        <div
+                          key={index}
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            width: "100%",
+                          }}
+                        >
                           <div
                             style={{
-                              fontWeight: 600,
-                              fontSize: 14,
-                              color: "#1693f6",
-                            }}
-                          >
-                            Reward
-                          </div>
-                        ) : (
-                          <div
-                            style={{
-                              position: "absolute",
-                              top: 0,
-                              left: 0,
-                              width: "100%",
-                              height: "100%",
-                              background: "#081F2DCC",
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "center",
-                              justifyContent: "center",
+                              fontWeight: 700,
+                              fontSize: 12,
+                              color: unlocked ? "#081F2D" : "#fff",
+                              background: unlocked ? "#fff" : "#081F2DCC",
                               borderRadius: 12,
-                              zIndex: 2,
-                              margin: 0,
+                              padding: "10px 6px",
+                              width: "100%",
+                              boxSizing: "border-box",
+                              textAlign: "center",
+                              // boxShadow: "0px 3.11px 3.11px 0px #00000040",
                             }}
                           >
-                            <div
-                              style={{
-                                fontSize: 28,
-                                color: "#fff",
-                                marginBottom: 6,
-                              }}
-                            >
-                              🔒
-                            </div>
-                            <div
-                              style={{
-                                fontWeight: 700,
-                                fontSize: 16,
-                                color: "#fff",
-                                letterSpacing: 1,
-                              }}
-                            >
-                              Locked
-                            </div>
+                            TREASURE {index + 1}
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                          <div
+                            style={cardStyle}
+                            onClick={() =>
+                              unlocked && setSelectedTreasure(index)
+                            }
+                          >
+                            {unlocked ? (
+                              <div
+                                style={{
+                                  fontWeight: 600,
+                                  fontSize: 14,
+                                  color: "#1693f6",
+                                }}
+                              >
+                                Reward
+                              </div>
+                            ) : (
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  top: 0,
+                                  left: 0,
+                                  width: "100%",
+                                  height: "100%",
+                                  background: "#081F2DCC",
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  borderRadius: 12,
+                                  zIndex: 2,
+                                  margin: 0,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontSize: 28,
+                                    color: "#fff",
+                                    marginBottom: 6,
+                                  }}
+                                >
+                                  🔒
+                                </div>
+                                <div
+                                  style={{
+                                    fontWeight: 700,
+                                    fontSize: 16,
+                                    color: "#fff",
+                                    letterSpacing: 1,
+                                  }}
+                                >
+                                  Locked
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      background: "#eaf7fc",
+                      zIndex: 100,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflowY: "auto",
+                      padding: 0,
+                    }}
+                  >
+                    <TreasureDetailCard
+                      onBack={() => setSelectedTreasure(null)}
+                    />
+                  </div>
+                ))}
             </div>
             <div style={{ flex: 1 }}></div>
             <button
-              className="drawer-signout"
-              onClick={handleSignOut}
+              className="drawer-photo-booth"
+              onClick={() => {
+                handleDrawerClose();
+                navigate("/photobooth");
+              }}
               style={{
                 margin: 24,
                 marginTop: "auto",
@@ -604,6 +898,26 @@ const Header = () => {
                 border: "none",
                 borderRadius: 14,
                 width: "calc(100% - 48px)",
+                height: 54,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                letterSpacing: 1,
+              }}
+            >
+              TRY PHOTOBOOTH
+            </button>
+            <button
+              className="drawer-signout"
+              onClick={handleSignOut}
+              style={{
+                margin: "24px auto",
+                marginTop: 0,
+                background: "transparent",
+                color: "#081F2D",
+                fontWeight: 700,
+                fontSize: 18,
+                border: "1px solid #000000",
+                borderRadius: 14,
+                width: "calc(100% - 150px)",
                 height: 54,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                 letterSpacing: 1,
