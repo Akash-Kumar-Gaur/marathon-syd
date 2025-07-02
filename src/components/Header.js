@@ -16,6 +16,7 @@ import trivia from "../assets/images/trivia.png";
 import mascot from "../assets/images/mascot.png";
 import headphones from "../assets/images/headphones.svg";
 import shokzLogo from "../assets/images/shokz.png";
+import { useDrawer } from "../context/DrawerContext";
 
 const avatarMap = {
   1: avatar1,
@@ -318,7 +319,7 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isHomePage = location.pathname === "/home";
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const { isDrawerOpen, setIsDrawerOpen } = useDrawer();
   const [drawerClosing, setDrawerClosing] = useState(false);
   const [collapse, setCollapse] = useState({
     challenges: false,
@@ -332,7 +333,7 @@ const Header = () => {
   const [selectedTreasure, setSelectedTreasure] = useState(null);
 
   useEffect(() => {
-    if (drawerOpen) {
+    if (isDrawerOpen) {
       try {
         const stored = localStorage.getItem("userData");
         if (stored) {
@@ -344,7 +345,7 @@ const Header = () => {
         setUserData({ name: "", email: "", phone: "" });
       }
     }
-  }, [drawerOpen]);
+  }, [isDrawerOpen]);
 
   // Log navigation state changes
   useEffect(() => {
@@ -367,14 +368,14 @@ const Header = () => {
   };
 
   const handleMenu = () => {
-    setDrawerOpen(true);
+    setIsDrawerOpen(true);
     setDrawerClosing(false);
   };
 
   const handleDrawerClose = () => {
     setDrawerClosing(true);
     setTimeout(() => {
-      setDrawerOpen(false);
+      setIsDrawerOpen(false);
       setDrawerClosing(false);
     }, 300); // match the CSS animation duration
   };
@@ -426,6 +427,8 @@ const Header = () => {
   const handleSignOut = () => {
     // Implement sign out functionality
     console.log("Signing out");
+    localStorage.removeItem("userData");
+    navigate("/");
   };
 
   // Avatar logic
@@ -492,7 +495,7 @@ const Header = () => {
           )}
         </div>
       </header>
-      {drawerOpen && (
+      {isDrawerOpen && (
         <div className="drawer-overlay" onClick={handleDrawerClose}>
           <div
             className={`drawer${drawerClosing ? " drawer-closing" : ""}`}

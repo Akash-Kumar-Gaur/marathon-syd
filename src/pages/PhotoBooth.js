@@ -1,8 +1,32 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import "./PhotoBooth.css";
 import prizePng from "../assets/images/prize.png";
+
+const QUOTES = [
+  { text: "Striding forward for a better future!", author: "Unknown" },
+  { text: "Every step is a step toward greatness.", author: "Unknown" },
+  { text: "Moving with purpose, chasing new horizons.", author: "Unknown" },
+  { text: "Active today, stronger tomorrow.", author: "Unknown" },
+  { text: "Pushing boundaries, embracing the journey.", author: "Unknown" },
+  { text: "On the move, making every moment count.", author: "Unknown" },
+  { text: "Energy in motion, dreams in progress.", author: "Unknown" },
+  { text: "With every stride, we shape our story.", author: "Unknown" },
+  { text: "Progress is made one step at a time.", author: "Unknown" },
+  { text: "Fueling life with movement and passion.", author: "Unknown" },
+  { text: "Chasing goals, embracing growth.", author: "Unknown" },
+  {
+    text: "Every journey begins with a single stride.",
+    author: "Maya Angelou (attributed)",
+  },
+  { text: "Active hearts, inspired minds.", author: "Unknown" },
+  { text: "Forward is the only way.", author: "Unknown" },
+  {
+    text: "Building a brighter tomorrow, one step at a time.",
+    author: "Unknown",
+  },
+];
 
 const PhotoBooth = () => {
   const navigate = useNavigate();
@@ -20,6 +44,12 @@ const PhotoBooth = () => {
   const [timer, setTimer] = useState(0);
   const [pendingCapture, setPendingCapture] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+
+  const randomQuote = useMemo(() => {
+    if (!confirmed) return null;
+    const idx = Math.floor(Math.random() * QUOTES.length);
+    return QUOTES[idx];
+  }, [confirmed]);
 
   useEffect(() => {
     startCamera();
@@ -347,15 +377,18 @@ const PhotoBooth = () => {
             <div
               style={{
                 backgroundColor: !confirmed ? "transparent" : "white",
-                border: confirmed ? "1px solid #222" : "none",
+                border: confirmed ? "1px solid #081F2D" : "none",
                 borderRadius: 20,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: confirmed ? "16px 0 0 0" : "0",
-                marginBottom: confirmed ? 0 : 32,
-                width: confirmed ? "90%" : "100%",
+                padding: confirmed ? "16px" : "0",
+                marginBottom: confirmed ? 16 : 32,
+                width: confirmed ? "min-content" : "100%",
+                boxShadow: confirmed
+                  ? "3.93px 5.25px 11.41px 0px #00000040"
+                  : "none",
               }}
             >
               <div className="preview-image-container">
@@ -368,23 +401,25 @@ const PhotoBooth = () => {
               {confirmed && (
                 <>
                   <div
-                    className="final-quote"
+                    className="final-quote responsive-quote"
                     style={{
-                      padding: "0 18px",
                       textAlign: "left",
                       fontWeight: 600,
                       marginBottom: 0,
                       fontSize: 18,
+                      padding: "0 5px",
                     }}
                   >
-                    Striding forward for a better future!
+                    {randomQuote ? randomQuote.text : ""}
                   </div>
-                  <div
-                    className="final-author"
-                    style={{ padding: "0 18px", fontSize: 14 }}
-                  >
-                    -Adam Chris
-                  </div>
+                  {randomQuote.author !== "Unknown" && (
+                    <div
+                      className="final-author responsive-quote"
+                      style={{ fontSize: 14, padding: "0 5px" }}
+                    >
+                      {randomQuote ? `-${randomQuote.author}` : ""}
+                    </div>
+                  )}
                 </>
               )}
             </div>

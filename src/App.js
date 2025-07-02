@@ -13,6 +13,7 @@ import Welcome from "./pages/Welcome";
 import LearnToHunt from "./pages/LearnToHunt";
 import Home from "./pages/Home";
 import PhotoBooth from "./pages/PhotoBooth";
+import { DrawerProvider } from "./context/DrawerContext";
 
 // Navigation logger component
 const NavigationLogger = () => {
@@ -32,19 +33,21 @@ const NavigationLogger = () => {
 
 function App() {
   return (
-    <div className="App">
-      <Router>
-        <NavigationLogger />
-        <Routes>
-          <Route path="/" element={<SplashScreen />} />
-          <Route path="/welcome" element={<Welcome />} />
-          <Route path="/hunt" element={<LearnToHunt />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/photobooth" element={<PhotoBooth />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Router>
-    </div>
+    <DrawerProvider>
+      <div className="App">
+        <Router>
+          <NavigationLogger />
+          <Routes>
+            <Route path="/" element={<SplashScreen />} />
+            <Route path="/welcome" element={<Welcome />} />
+            <Route path="/hunt" element={<LearnToHunt />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/photobooth" element={<PhotoBooth />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Router>
+      </div>
+    </DrawerProvider>
   );
 }
 

@@ -172,11 +172,16 @@
 
 .preview-image-container {
   position: relative;
-  width: 90%;
-  max-width: 400px;
+  width: auto;
+  height: 45vh;
   aspect-ratio: 3/4;
+  max-width: 350px;
   margin-bottom: 10px;
   animation: fadeUp 0.6s ease-out 0.1s both;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .captured-image {
@@ -184,6 +189,9 @@
   height: 100%;
   object-fit: cover;
   border-radius: 20px;
+  display: block;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .preview-controls {
@@ -370,7 +378,7 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 399px) {
   .camera-controls {
     bottom: 30px;
     gap: 40px;
@@ -409,9 +417,23 @@
     padding: 30px;
     margin: 0 15px;
   }
+
+  .preview-image-container {
+    height: 40vh;
+    max-width: 90vw;
+  }
+
+  .photo-preview {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .captured-image {
+    border-radius: 16px;
+  }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 399px) {
   .camera-controls {
     gap: 30px;
   }
@@ -424,6 +446,29 @@
     padding: 8px 16px;
     font-size: 13px;
     min-width: 70px;
+  }
+
+  .preview-image-container {
+    height: 38vh;
+    max-width: 98vw;
+  }
+
+  .photo-preview {
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .captured-image {
+    border-radius: 12px;
+  }
+
+  .preview-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .preview-button {
+    font-size: 12px;
+    padding: 8px 10px;
   }
 }
 
@@ -504,14 +549,26 @@
 }
 
 .final-card-image {
-  width: 100%;
-  height: auto;
-  max-height: 350px;
-  object-fit: contain;
+  width: auto;
+  height: 45vh;
+  aspect-ratio: 3/4;
+  max-width: 350px;
+  object-fit: cover;
   border-radius: 16px;
   margin-bottom: 24px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
   background: #f8f8f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.final-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
+  display: block;
 }
 
 .final-quote {
@@ -570,4 +627,31 @@
   background: #f0f6fa;
   color: #0096db;
   border-color: #0096db;
+}
+
+@media (max-width: 399px) {
+  .final-card-image {
+    height: 40vh;
+    max-width: 90vw;
+    border-radius: 14px;
+  }
+  .final-card-image img {
+    border-radius: 14px;
+  }
+}
+@media (max-width: 399px) {
+  .final-card-image {
+    height: 38vh;
+    max-width: 98vw;
+    border-radius: 10px;
+  }
+  .final-card-image img {
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 399px) {
+  .responsive-quote {
+    font-size: 10px !important;
+  }
 }

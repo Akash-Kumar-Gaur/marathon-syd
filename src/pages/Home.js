@@ -17,6 +17,8 @@ import FlipCardsGame from "../components/FlipCardsGame";
 import MarathonQuizGame from "../components/MarathonQuizGame";
 import coinsIcon from "../assets/images/coins.svg";
 import treasureImage from "../assets/images/treasure1.png";
+import staticMap from "../assets/images/staticMap.png";
+import { useDrawer } from "../context/DrawerContext";
 
 // Fix for default marker icons in react-leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -65,7 +67,7 @@ const Home = () => {
     { id: 3, position: [-33.871, 151.208], found: false },
   ]);
   const [userPosition] = useState([-33.8688, 151.2093]);
-  const [isLiveMap, setIsLiveMap] = useState(false);
+  const [isLiveMap, setIsLiveMap] = useState(true);
   const [activeView, setActiveView] = useState("map");
   const [selectedTreasure, setSelectedTreasure] = useState(null);
   const [isHintModalOpen, setIsHintModalOpen] = useState(false);
@@ -73,6 +75,9 @@ const Home = () => {
   const [rewardData, setRewardData] = useState(null);
   const [showBoostPopup, setShowBoostPopup] = useState(false);
   const [selectedGame, setSelectedGame] = useState(null); // 'jigsaw', 'flip', 'quiz'
+  const { isDrawerOpen } = useDrawer();
+
+  console.warn("isDrawerOpen", isDrawerOpen);
 
   // // Simulation trigger - remove this in production
   // useEffect(() => {
@@ -266,70 +271,82 @@ const Home = () => {
         </div>
       </div>
 
-      <MapModeToggle isLive={isLiveMap} onToggle={toggleMapMode} />
+      {activeView === "map" && (
+        <MapModeToggle isLive={isLiveMap} onToggle={toggleMapMode} />
+      )}
 
       <div className="views-container">
         <div
           className={`map-container ${activeView === "map" ? "active" : ""}`}
         >
-          <MapContainer
-            center={center}
-            zoom={15}
-            style={{ height: "100%", width: "100%" }}
-            zoomControl={false}
-            attributionControl={false}
-          >
-            <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              maxZoom={19}
-              minZoom={13}
-            />
-
-            {/* User Position with new marker */}
-            <Marker position={userPosition} icon={currentLocationMarker}>
-              <Popup>You are here</Popup>
-            </Marker>
-
-            {/* Treasure Markers with active state */}
-            {treasures.map((treasure) => (
-              <Marker
-                key={treasure.id}
-                position={treasure.position}
-                icon={
-                  selectedTreasure?.id === treasure.id
-                    ? activeTreasureMarker
-                    : treasureMarker
-                }
-                eventHandlers={{
-                  click: () => handleTreasureClick(treasure),
-                }}
-              >
-                {/* <Popup>
-                  <div className="treasure-popup">
-                    <h3>Treasure {treasure.id}</h3>
-                    <p>{treasure.found ? "Found" : "Not Found"}</p>
-                    <button
-                      className="treasure-action-btn"
-                      onClick={() => handleTreasureClick(treasure)}
-                    >
-                      {selectedTreasure?.id === treasure.id
-                        ? "Hide Route"
-                        : "Show Route"}
-                    </button>
-                  </div>
-                </Popup> */}
-              </Marker>
-            ))}
-
-            {/* Route Control */}
-            {selectedTreasure && (
-              <RouteControl
-                start={userPosition}
-                end={selectedTreasure.position}
+          {isLiveMap ? (
+            <MapContainer
+              center={center}
+              zoom={15}
+              style={{ height: "100%", width: "100%" }}
+              zoomControl={false}
+              attributionControl={false}
+            >
+              <TileLayer
+                url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                maxZoom={19}
+                minZoom={13}
               />
-            )}
-          </MapContainer>
+              {/* User Position with new marker */}
+              <Marker position={userPosition} icon={currentLocationMarker}>
+                <Popup>You are here</Popup>
+              </Marker>
+              {/* Treasure Markers with active state */}
+              {treasures.map((treasure) => (
+                <Marker
+                  key={treasure.id}
+                  position={treasure.position}
+                  icon={
+                    selectedTreasure?.id === treasure.id
+                      ? activeTreasureMarker
+                      : treasureMarker
+                  }
+                  eventHandlers={{
+                    click: () => handleTreasureClick(treasure),
+                  }}
+                >
+                  {/* <Popup>
+                    <div className="treasure-popup">
+                      <h3>Treasure {treasure.id}</h3>
+                      <p>{treasure.found ? "Found" : "Not Found"}</p>
+                      <button
+                        className="treasure-action-btn"
+                        onClick={() => handleTreasureClick(treasure)}
+                      >
+                        {selectedTreasure?.id === treasure.id
+                          ? "Hide Route"
+                          : "Show Route"}
+                      </button>
+                    </div>
+                  </Popup> */}
+                </Marker>
+              ))}
+              {/* Route Control */}
+              {selectedTreasure && (
+                <RouteControl
+                  start={userPosition}
+                  end={selectedTreasure.position}
+                />
+              )}
+            </MapContainer>
+          ) : (
+            <img
+              src={staticMap}
+              alt="Static Map"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                borderRadius: 16,
+              }}
+            />
+          )}
         </div>
 
         {/* Camera View */}
@@ -344,6 +361,10 @@ const Home = () => {
             title="Camera View"
             className="camera-webview"
             allow="camera"
+            style={{
+              visibility:
+                isHintModalOpen || isDrawerOpen ? "hidden" : "visible",
+            }}
           />
         </div>
       </div>
