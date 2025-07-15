@@ -157,29 +157,42 @@ const RouteControl = ({
             setTimeout(() => {
               if (isMountedRef.current && map) {
                 try {
-                  // Get all route coordinates to fit the entire route
+                  // Always ensure both start and end points are visible
+                  const bounds = L.latLngBounds([
+                    [start[0], start[1]],
+                    [end[0], end[1]],
+                  ]);
+
+                  // Add route coordinates if available for better fitting
                   const routeCoords = e.routes[0].coordinates || [];
                   if (routeCoords.length > 0) {
-                    // Create bounds that include start, end, and route points
-                    const bounds = L.latLngBounds([
-                      [start[0], start[1]],
-                      [end[0], end[1]],
-                      ...routeCoords.map((coord) => [coord.lat, coord.lng]),
-                    ]);
-
-                    // Fit map to show entire route with padding
-                    map.fitBounds(bounds, {
-                      padding: [20, 20],
-                      maxZoom: 16,
-                      animate: true,
+                    routeCoords.forEach((coord) => {
+                      bounds.extend([coord.lat, coord.lng]);
                     });
-                    console.log("Map recentered to show full route");
                   }
+
+                  // Add via points to bounds if they exist
+                  if (viaPoints.length > 0) {
+                    viaPoints.forEach((point) => {
+                      bounds.extend(point);
+                    });
+                  }
+
+                  // Fit map to show entire route with padding
+                  map.fitBounds(bounds, {
+                    padding: [30, 30], // Increased padding for better visibility
+                    maxZoom: 15, // Slightly lower max zoom to ensure both points are visible
+                    animate: true,
+                  });
+                  console.log(
+                    "Map recentered to show full route with bounds:",
+                    bounds
+                  );
                 } catch (error) {
                   console.warn("Error recentering map:", error);
                 }
               }
-            }, 200); // Slight delay to ensure route is fully drawn
+            }, 300); // Increased delay to ensure route is fully drawn
           }
 
           if (animate && e.routes && e.routes[0]) {
