@@ -123,10 +123,14 @@ const Wayfinder = () => {
 
   useEffect(() => {
     if (useCurrentLocation) {
+      console.log("Checkbox checked - getting current location");
       getCurrentLocation();
     } else {
-      // Reset to North Sydney when not using current location
+      console.log("Checkbox unchecked - using default North Sydney location");
+      // Always reset to North Sydney when not using current location
       setUserLocation([-33.84115, 151.20741]);
+      // Reset loading state when unchecking current location
+      setIsLoadingLocation(false);
     }
   }, [useCurrentLocation]);
 
@@ -135,6 +139,11 @@ const Wayfinder = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          console.log(
+            "Got current location:",
+            position.coords.latitude,
+            position.coords.longitude
+          );
           setUserLocation([
             position.coords.latitude,
             position.coords.longitude,
@@ -143,11 +152,17 @@ const Wayfinder = () => {
         },
         (error) => {
           console.error("Error getting location:", error);
+          console.log("Falling back to default North Sydney location");
+          // Reset to North Sydney if geolocation fails
+          setUserLocation([-33.84115, 151.20741]);
           setIsLoadingLocation(false);
-          // Keep default Sydney location
         }
       );
     } else {
+      console.log(
+        "Geolocation not supported, using default North Sydney location"
+      );
+      setUserLocation([-33.84115, 151.20741]);
       setIsLoadingLocation(false);
     }
   };
@@ -173,15 +188,27 @@ const Wayfinder = () => {
       return;
     }
 
+    // If using custom location input (optional), log it
+    if (!useCurrentLocation && customLocation.trim()) {
+      console.log(
+        "Using custom location input:",
+        customLocation,
+        "(with default coordinates)"
+      );
+    } else if (!useCurrentLocation) {
+      console.log("Using default North Sydney location");
+    }
+
     setLocationConfirmed(true);
     setIsTrackingLocation(true);
   };
 
-  // Track user location to detect arrival
+  // Track user location to detect arrival - only if using current location
   useEffect(() => {
     let watchId;
 
-    if (isTrackingLocation && bibData && !hasArrived) {
+    if (isTrackingLocation && bibData && !hasArrived && useCurrentLocation) {
+      console.log("Starting location tracking for arrival detection");
       watchId = navigator.geolocation.watchPosition(
         (position) => {
           const currentLat = position.coords.latitude;
@@ -193,8 +220,15 @@ const Wayfinder = () => {
             bibData.assemblyCoordinates[1]
           );
 
+          console.log(
+            "Current distance to assembly:",
+            distance.toFixed(3),
+            "km"
+          );
+
           // If within 50 meters (0.05 km) of assembly point
           if (distance <= 0.05) {
+            console.log("Arrived at assembly point!");
             setHasArrived(true);
             setIsTrackingLocation(false);
           }
@@ -208,14 +242,18 @@ const Wayfinder = () => {
           maximumAge: 30000,
         }
       );
+    } else if (isTrackingLocation && !useCurrentLocation) {
+      console.log("Location tracking disabled - using default location");
+      setIsTrackingLocation(false);
     }
 
     return () => {
       if (watchId) {
+        console.log("Stopping location tracking");
         navigator.geolocation.clearWatch(watchId);
       }
     };
-  }, [isTrackingLocation, bibData, hasArrived]);
+  }, [isTrackingLocation, bibData, hasArrived, useCurrentLocation]);
 
   const handleArrivalDone = () => {
     setHasArrived(false);
@@ -347,7 +385,7 @@ const Wayfinder = () => {
           <button
             className="confirm-button"
             onClick={handleConfirm}
-            disabled={isLoadingLocation}
+            disabled={useCurrentLocation && isLoadingLocation}
           >
             {isLoadingLocation ? "GETTING LOCATION..." : "CONFIRM"}
           </button>
