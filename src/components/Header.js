@@ -319,6 +319,8 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isHomePage = location.pathname === "/home";
+  const isFindRoutePage = location.pathname === "/find-my-route";
+  const isWayfinderPage = location.pathname === "/wayfinder";
   const { isDrawerOpen, setIsDrawerOpen } = useDrawer();
   const [drawerClosing, setDrawerClosing] = useState(false);
   const [collapse, setCollapse] = useState({
@@ -381,10 +383,6 @@ const Header = () => {
   };
 
   const handleBack = () => {
-    console.log("Back button clicked from:", location.pathname);
-    console.log("History length:", window.history.length);
-    console.log("History state:", window.history.state);
-
     // Define explicit back navigation routes based on current location
     const backRoutes = {
       "/welcome": "/", // From welcome, go to splash/root
@@ -428,6 +426,7 @@ const Header = () => {
     // Implement sign out functionality
     console.log("Signing out");
     localStorage.removeItem("userData");
+    setIsDrawerOpen(false);
     navigate("/");
   };
 
@@ -488,7 +487,7 @@ const Header = () => {
               </button>
             </>
           ) : null}
-          {isHomePage ? null : (
+          {isHomePage || isFindRoutePage || isWayfinderPage ? null : (
             <button className="help-button" onClick={handleHelp}>
               HELP <span className="help-icon">?</span>
             </button>
@@ -529,6 +528,7 @@ const Header = () => {
                   borderRadius: "50%",
                   background: "#fff",
                   objectFit: "cover",
+                  aspectRatio: 1 / 1,
                 }}
                 onError={(e) => {
                   e.target.onerror = null;

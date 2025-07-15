@@ -1,0 +1,636 @@
+.wayfinder-screen {
+  height: 100vh;
+  background-color: #081f2d;
+  position: relative;
+  overflow: hidden;
+}
+
+.wayfinder-screen .app-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.map-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #f0f0f0;
+  z-index: 1;
+  overflow: hidden;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.map-container .leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+  z-index: 1 !important;
+  position: relative !important;
+}
+
+/* Custom marker styles */
+.current-location-marker {
+  position: relative;
+}
+
+.current-location-dot {
+  width: 20px;
+  height: 20px;
+  background: #4fc3f7;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.current-location-pulse {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #4fc3f7;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+  opacity: 0.6;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+}
+
+.assembly-point-marker {
+  position: relative;
+}
+
+.assembly-point-icon {
+  width: 40px;
+  height: 40px;
+  background: #ff5722;
+  border: 3px solid white;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.assembly-point-icon::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.location-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  padding: 24px;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.panel-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #081f2d;
+  margin: 0 0 24px 0;
+  text-align: center;
+}
+
+.location-options {
+  margin-bottom: 24px;
+}
+
+.location-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.location-option-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.location-icon {
+  width: 24px;
+  height: 24px;
+  color: #4fc3f7;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.location-text {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #081f2d;
+}
+
+.location-checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: #4fc3f7;
+}
+
+.custom-location-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  color: #999;
+  font-size: 1rem;
+  z-index: 1;
+}
+
+.location-input {
+  width: 100%;
+  padding: 16px 16px 16px 48px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 1rem;
+  background-color: #f8f9fa;
+  color: #081f2d;
+  transition: all 0.3s ease;
+}
+
+.location-input:focus {
+  outline: none;
+  border-color: #4fc3f7;
+  background-color: white;
+}
+
+.location-input:disabled {
+  background-color: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.location-input::placeholder {
+  color: #999;
+}
+
+.confirm-button {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 16px;
+}
+
+.confirm-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #29b6f6 0%, #1976d2 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 195, 247, 0.3);
+}
+
+.confirm-button:disabled {
+  background: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.route-info {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 12px;
+  border-left: 4px solid #4fc3f7;
+}
+
+.route-info p {
+  margin: 4px 0;
+  font-size: 0.9rem;
+  color: #081f2d;
+}
+
+.route-info strong {
+  font-weight: 600;
+}
+
+.error-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  color: white;
+}
+
+.error-container h2 {
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+}
+
+.error-container p {
+  font-size: 1rem;
+  margin-bottom: 24px;
+  opacity: 0.8;
+}
+
+.go-back-button {
+  padding: 12px 24px;
+  background: #4fc3f7;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.go-back-button:hover {
+  background: #29b6f6;
+}
+
+/* Assembly Info Panel Styles */
+.assembly-info-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.assembly-header {
+  position: relative;
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.close-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.close-button:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.assembly-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.assembly-icon {
+  font-size: 24px;
+  color: #ff5722;
+}
+
+.assembly-title h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #081f2d;
+  margin: 0;
+}
+
+.assembly-details {
+  padding: 16px 24px;
+}
+
+.distance-info {
+  font-size: 1rem;
+  color: #666;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.route-status {
+  font-size: 0.9rem;
+  color: #4fc3f7;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.route-status i {
+  font-size: 1rem;
+}
+
+.assembly-actions {
+  padding: 16px 24px 24px 24px;
+  display: flex;
+  gap: 12px;
+}
+
+.direction-button {
+  flex: 1;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.direction-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #29b6f6 0%, #1976d2 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 195, 247, 0.3);
+}
+
+.direction-button.active {
+  background: #27ae60;
+}
+
+.direction-button.active:hover {
+  background: #229954;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.start-button {
+  flex: 1;
+  padding: 14px 20px;
+  background: white;
+  color: #081f2d;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.start-button:hover {
+  border-color: #4fc3f7;
+  color: #4fc3f7;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.direction-button i,
+.start-button i {
+  font-size: 1rem;
+}
+
+/* Arrival Modal Styles */
+.arrival-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.arrival-modal {
+  background: #081f2d;
+  border-radius: 16px;
+  padding: 32px 24px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  color: white;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.arrival-header {
+  margin-bottom: 24px;
+}
+
+.arrival-icon {
+  width: 48px;
+  height: 48px;
+  background: #27ae60;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px auto;
+  font-size: 24px;
+  color: white;
+}
+
+.arrival-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 0;
+  color: white;
+}
+
+.arrival-content {
+  margin-bottom: 32px;
+  border-top: 1px dotted rgba(255, 255, 255, 0.3);
+  border-bottom: 1px dotted rgba(255, 255, 255, 0.3);
+  padding: 24px 0;
+}
+
+.arrival-zone {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: white;
+}
+
+.arrival-description {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.arrival-done-button {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.arrival-done-button:hover {
+  background: linear-gradient(135deg, #29b6f6 0%, #1976d2 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 195, 247, 0.3);
+}
+
+.arrival-done-button i {
+  font-size: 1rem;
+}
+
+/* Test Controls - Remove in production */
+.test-controls {
+  padding: 16px 24px 0 24px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.test-arrival-button {
+  width: 100%;
+  padding: 12px;
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.test-arrival-button:hover {
+  background: #e55656;
+}
+
+/* Route Animation Styles */
+.route-draw-animation {
+  animation: drawRoute 2s ease-in-out forwards;
+}
+
+@keyframes drawRoute {
+  0% {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+  100% {
+    stroke-dasharray: 8, 8;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .location-panel {
+    padding: 20px 16px;
+  }
+
+  .panel-title {
+    font-size: 1.3rem;
+  }
+
+  .header-title {
+    font-size: 1.3rem;
+  }
+
+  .assembly-header {
+    padding: 20px 16px 12px 16px;
+  }
+
+  .assembly-details {
+    padding: 12px 16px;
+  }
+
+  .assembly-actions {
+    padding: 12px 16px 20px 16px;
+    flex-direction: column;
+  }
+
+  .assembly-title h2 {
+    font-size: 1.2rem;
+  }
+
+  .direction-button,
+  .start-button {
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+
+  .arrival-modal {
+    padding: 24px 20px;
+    margin: 0 16px;
+  }
+
+  .arrival-zone {
+    font-size: 1.3rem;
+  }
+
+  .arrival-description {
+    font-size: 0.9rem;
+  }
+}

@@ -668,3 +668,155 @@ body,
   position: relative;
   z-index: 10;
 }
+
+/* Permission Popup Styles */
+.permission-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.permission-popup {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 24px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: popupSlideIn 0.3s ease-out;
+}
+
+@keyframes popupSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.permission-header {
+  padding: 40px 32px 24px;
+  text-align: center;
+}
+
+.permission-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background: linear-gradient(135deg, #0096db 0%, #007ab8 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 8px 24px rgba(0, 150, 219, 0.3);
+}
+
+.permission-icon.success {
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  box-shadow: 0 8px 24px rgba(76, 175, 80, 0.3);
+}
+
+.permission-header h3 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  color: #081f2d;
+}
+
+.permission-header p {
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0;
+  color: #666;
+}
+
+.permission-actions {
+  padding: 24px 32px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.permission-button {
+  padding: 16px 24px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.permission-button.primary {
+  background: linear-gradient(135deg, #0096db 0%, #007ab8 100%);
+  color: white;
+  box-shadow: 0 4px 16px rgba(0, 150, 219, 0.3);
+}
+
+.permission-button.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 150, 219, 0.4);
+}
+
+.permission-button.primary:active {
+  transform: translateY(0);
+}
+
+.permission-button.secondary {
+  background: #f1f3f4;
+  color: #666;
+  border: 1px solid #e0e0e0;
+}
+
+.permission-button.secondary:hover {
+  background: #e8eaed;
+  transform: translateY(-1px);
+}
+
+.permission-button.secondary:active {
+  transform: translateY(0);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .permission-popup {
+    margin: 20px;
+    max-width: none;
+  }
+
+  .permission-header {
+    padding: 32px 24px 20px;
+  }
+
+  .permission-actions {
+    padding: 20px 24px 32px;
+  }
+
+  .permission-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 20px;
+  }
+
+  .permission-header h3 {
+    font-size: 20px;
+  }
+
+  .permission-header p {
+    font-size: 14px;
+  }
+}

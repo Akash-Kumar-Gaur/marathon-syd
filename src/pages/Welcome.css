@@ -344,6 +344,12 @@
   letter-spacing: 0.5px;
 }
 
+.send-otp-button:disabled {
+  background: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
+}
+
 @media (max-width: 600px) {
   .center-card {
     padding: 24px 20px;

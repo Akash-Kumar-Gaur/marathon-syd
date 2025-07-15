@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
@@ -75,9 +75,53 @@ const Home = () => {
   const [rewardData, setRewardData] = useState(null);
   const [showBoostPopup, setShowBoostPopup] = useState(false);
   const [selectedGame, setSelectedGame] = useState(null); // 'jigsaw', 'flip', 'quiz'
+  const [permissionsChecked, setPermissionsChecked] = useState(false);
+  const [isRequestingPermissions, setIsRequestingPermissions] = useState(false);
+  const permissionInitRef = useRef(false);
   const { isDrawerOpen } = useDrawer();
 
-  console.warn("isDrawerOpen", isDrawerOpen);
+  // iOS detection function
+  const isIOS = () => {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  };
+
+  // Check permissions and initialize popup on mount
+  useEffect(() => {
+    console.log(
+      "Home useEffect running, permissionsChecked:",
+      permissionsChecked,
+      "permissionInitRef.current:",
+      permissionInitRef.current
+    );
+
+    if (!permissionsChecked && !permissionInitRef.current) {
+      console.log("Checking if permissions are already granted");
+      permissionInitRef.current = true;
+      checkAndInitializePermissions();
+    }
+  }, []);
+
+  const checkAndInitializePermissions = async () => {
+    try {
+      const cameraPermission = await navigator.permissions.query({
+        name: "camera",
+      });
+
+      console.log("Camera permission state:", cameraPermission.state);
+
+      if (cameraPermission.state === "granted") {
+        console.log("Camera permission already granted, skipping popup");
+        setPermissionsChecked(true);
+      } else {
+        console.log("Camera permission not granted, showing popup");
+        setPermissionsChecked(true);
+      }
+    } catch (error) {
+      console.error("Error checking camera permission:", error);
+      console.log("Couldn't check permissions, showing popup");
+      setPermissionsChecked(true);
+    }
+  };
 
   // // Simulation trigger - remove this in production
   // useEffect(() => {
@@ -202,6 +246,89 @@ const Home = () => {
     setIsHintModalOpen(true);
   };
 
+  const handleGrantPermission = async () => {
+    console.log("handleGrantPermission called");
+
+    // Prevent multiple simultaneous permission requests
+    if (isRequestingPermissions) {
+      console.log("Permission request already in progress, ignoring");
+      return;
+    }
+
+    setIsRequestingPermissions(true);
+    console.log("Starting permission request sequence");
+
+    try {
+      // Request camera permission first
+      console.log("About to call getUserMedia for camera...");
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      console.log("getUserMedia returned successfully, stopping stream...");
+      stream.getTracks().forEach((track) => track.stop());
+      console.log("Camera permission granted, stream stopped");
+
+      // Handle iOS-specific permissions
+      if (isIOS()) {
+        if (typeof DeviceOrientationEvent.requestPermission === "function") {
+          const orientationPermission =
+            await DeviceOrientationEvent.requestPermission();
+          if (orientationPermission !== "granted") {
+            console.error("Orientation permission not granted.");
+            toast("Device orientation access is required for AR features", {
+              duration: 3000,
+              position: "bottom-center",
+              style: {
+                background: "#ff6b6b",
+                color: "#fff",
+                borderRadius: "16px",
+                padding: "16px",
+                marginBottom: "120px",
+              },
+            });
+            return;
+          }
+        }
+        if (typeof DeviceMotionEvent.requestPermission === "function") {
+          const motionPermission = await DeviceMotionEvent.requestPermission();
+          if (motionPermission !== "granted") {
+            console.error("Motion permission not granted.");
+            toast("Device motion access is required for AR features", {
+              duration: 3000,
+              position: "bottom-center",
+              style: {
+                background: "#ff6b6b",
+                color: "#fff",
+                borderRadius: "16px",
+                padding: "16px",
+                marginBottom: "120px",
+              },
+            });
+            return;
+          }
+        }
+      }
+
+      // Note: Motion sensor permissions are handled automatically by the browser when needed
+      console.log("Camera permission granted successfully");
+      console.log("Permission request completed successfully");
+    } catch (error) {
+      console.error("Error requesting permissions:", error);
+      toast("Please allow camera access to continue", {
+        duration: 3000,
+        position: "bottom-center",
+        style: {
+          background: "#ff6b6b",
+          color: "#fff",
+          borderRadius: "16px",
+          padding: "16px",
+          marginBottom: "120px",
+        },
+      });
+    } finally {
+      setIsRequestingPermissions(false);
+      console.log("Permission request sequence finished");
+    }
+  };
+
   return (
     <div className="home-screen">
       <Toaster />
@@ -257,6 +384,7 @@ const Home = () => {
       >
         <MarathonQuizGame />
       </GamePopup>
+
       <Header />
 
       {/* Stats Bar */}
@@ -360,7 +488,10 @@ const Home = () => {
             src="https://akashgaur.8thwall.app/markers/"
             title="Camera View"
             className="camera-webview"
-            allow="camera"
+            allow="camera; microphone; autoplay; encrypted-media; fullscreen; gyroscope; accelerometer; magnetometer"
+            allowfullscreen
+            webkitallowfullscreen="true"
+            mozallowfullscreen="true"
             style={{
               visibility:
                 isHintModalOpen || isDrawerOpen ? "hidden" : "visible",

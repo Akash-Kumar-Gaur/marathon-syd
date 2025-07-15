@@ -13,7 +13,10 @@ import Welcome from "./pages/Welcome";
 import LearnToHunt from "./pages/LearnToHunt";
 import Home from "./pages/Home";
 import PhotoBooth from "./pages/PhotoBooth";
+import FindMyRoute from "./pages/FindMyRoute";
+import Wayfinder from "./pages/Wayfinder";
 import { DrawerProvider } from "./context/DrawerContext";
+import { getFlowConfig, isRouteEnabled } from "./config/flowConfig";
 
 // Navigation logger component
 const NavigationLogger = () => {
@@ -25,6 +28,7 @@ const NavigationLogger = () => {
     console.log("Route state:", location.state);
     console.log("History length:", window.history.length);
     console.log("History state:", window.history.state);
+    console.log("Current flow:", getFlowConfig().type);
     console.log("==================");
   }, [location]);
 
@@ -32,17 +36,40 @@ const NavigationLogger = () => {
 };
 
 function App() {
+  const flowConfig = getFlowConfig();
+
+  console.log("App initialized with flow:", flowConfig.type);
+
   return (
     <DrawerProvider>
       <div className="App">
         <Router>
           <NavigationLogger />
           <Routes>
+            {/* Splash screen is always available */}
             <Route path="/" element={<SplashScreen />} />
-            <Route path="/welcome" element={<Welcome />} />
-            <Route path="/hunt" element={<LearnToHunt />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/photobooth" element={<PhotoBooth />} />
+
+            {/* Conditionally render routes based on flow configuration */}
+            {isRouteEnabled("/welcome") && (
+              <Route path="/welcome" element={<Welcome />} />
+            )}
+            {isRouteEnabled("/hunt") && (
+              <Route path="/hunt" element={<LearnToHunt />} />
+            )}
+            {isRouteEnabled("/home") && (
+              <Route path="/home" element={<Home />} />
+            )}
+            {isRouteEnabled("/photobooth") && (
+              <Route path="/photobooth" element={<PhotoBooth />} />
+            )}
+            {isRouteEnabled("/find-my-route") && (
+              <Route path="/find-my-route" element={<FindMyRoute />} />
+            )}
+            {isRouteEnabled("/find-my-route") && (
+              <Route path="/wayfinder" element={<Wayfinder />} />
+            )}
+
+            {/* Fallback route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>

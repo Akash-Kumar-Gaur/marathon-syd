@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./SplashScreen.css";
 import sydTcsLogo from "../assets/images/syd-tcs-logo.png";
+import { getAfterSplashRoute } from "../config/flowConfig";
 
 const SplashScreen = () => {
   const [progress, setProgress] = useState(0);
@@ -21,12 +22,13 @@ const SplashScreen = () => {
           clearInterval(interval);
           setTimeout(() => {
             setIsLoading(false);
-            console.log("SplashScreen - About to navigate to /welcome");
+            const nextRoute = getAfterSplashRoute();
+            console.log("SplashScreen - About to navigate to", nextRoute);
             console.log(
               "SplashScreen - History length before navigate:",
               window.history.length
             );
-            navigate("/welcome", { replace: true });
+            navigate(nextRoute, { replace: true });
             setTimeout(() => {
               console.log(
                 "SplashScreen - History length after navigate:",
