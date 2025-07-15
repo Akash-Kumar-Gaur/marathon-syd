@@ -63,6 +63,7 @@ const RouteControl = ({
   viaPoints = [],
   animate = false,
   onRouteFound,
+  onRoutePlotted,
 }) => {
   const map = useMap();
   const routingControlRef = useRef(null);
@@ -149,6 +150,36 @@ const RouteControl = ({
             const distanceKm = route.summary.totalDistance / 1000; // Convert meters to km
             console.log("Actual route distance:", distanceKm.toFixed(2), "km");
             onRouteFound(distanceKm);
+          }
+
+          // Recenter map to show full route after plotting
+          if (e.routes && e.routes[0] && onRoutePlotted) {
+            setTimeout(() => {
+              if (isMountedRef.current && map) {
+                try {
+                  // Get all route coordinates to fit the entire route
+                  const routeCoords = e.routes[0].coordinates || [];
+                  if (routeCoords.length > 0) {
+                    // Create bounds that include start, end, and route points
+                    const bounds = L.latLngBounds([
+                      [start[0], start[1]],
+                      [end[0], end[1]],
+                      ...routeCoords.map((coord) => [coord.lat, coord.lng]),
+                    ]);
+
+                    // Fit map to show entire route with padding
+                    map.fitBounds(bounds, {
+                      padding: [20, 20],
+                      maxZoom: 16,
+                      animate: true,
+                    });
+                    console.log("Map recentered to show full route");
+                  }
+                } catch (error) {
+                  console.warn("Error recentering map:", error);
+                }
+              }
+            }, 200); // Slight delay to ensure route is fully drawn
           }
 
           if (animate && e.routes && e.routes[0]) {

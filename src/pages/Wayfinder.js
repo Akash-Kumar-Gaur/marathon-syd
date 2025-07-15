@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -97,12 +97,16 @@ const Wayfinder = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const bibNumber = location.state?.bibNumber;
+  const mapRef = useRef(null);
 
   const [center] = useState([-33.84115, 151.20741]); // Fixed map center - North Sydney
   const [userLocation, setUserLocation] = useState([-33.84115, 151.20741]); // North Sydney coordinates from Google Maps
   const [customLocation, setCustomLocation] = useState("");
   const [useCurrentLocation, setUseCurrentLocation] = useState(false); // Changed to false by default
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const [bibData, setBibData] = useState(null);
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [locationConfirmed, setLocationConfirmed] = useState(false);
@@ -131,6 +135,10 @@ const Wayfinder = () => {
       setUserLocation([-33.84115, 151.20741]);
       // Reset loading state when unchecking current location
       setIsLoadingLocation(false);
+      // Center map on default location
+      if (mapRef.current) {
+        mapRef.current.setView([-33.84115, 151.20741], 15);
+      }
     }
   }, [useCurrentLocation]);
 
@@ -144,11 +152,18 @@ const Wayfinder = () => {
             position.coords.latitude,
             position.coords.longitude
           );
-          setUserLocation([
+          const newLocation = [
             position.coords.latitude,
             position.coords.longitude,
-          ]);
+          ];
+          setUserLocation(newLocation);
           setIsLoadingLocation(false);
+
+          // Center map on current location
+          if (mapRef.current) {
+            mapRef.current.setView(newLocation, 15);
+            console.log("Map centered on current location");
+          }
         },
         (error) => {
           console.error("Error getting location:", error);
@@ -273,6 +288,76 @@ const Wayfinder = () => {
     setCustomLocation(e.target.value);
   };
 
+  // Geocoding function to search for locations
+  const searchLocation = async (query) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    setIsSearchingLocation(true);
+    try {
+      // Using OpenStreetMap Nominatim API for geocoding
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          query
+        )}&limit=5&addressdetails=1&countrycodes=au`
+      );
+      const data = await response.json();
+
+      const results = data.map((item) => ({
+        display_name: item.display_name,
+        lat: parseFloat(item.lat),
+        lon: parseFloat(item.lon),
+        type: item.type,
+      }));
+
+      setSearchResults(results);
+      setShowSearchResults(true);
+    } catch (error) {
+      console.error("Error searching location:", error);
+      setSearchResults([]);
+    } finally {
+      setIsSearchingLocation(false);
+    }
+  };
+
+  // Handle location search with debouncing
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (customLocation.trim() && !useCurrentLocation) {
+        searchLocation(customLocation);
+      } else {
+        setSearchResults([]);
+        setShowSearchResults(false);
+      }
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timeoutId);
+  }, [customLocation, useCurrentLocation]);
+
+  // Handle selecting a search result
+  const handleLocationSelect = (result) => {
+    console.log(
+      "Selected location:",
+      result.display_name,
+      "at",
+      result.lat,
+      result.lon
+    );
+    setUserLocation([result.lat, result.lon]);
+    setCustomLocation(result.display_name);
+    setShowSearchResults(false);
+    setSearchResults([]);
+
+    // Center map on selected location
+    if (mapRef.current) {
+      mapRef.current.setView([result.lat, result.lon], 15);
+      console.log("Map centered on selected location");
+    }
+  };
+
   if (!bibNumber || !bibData) {
     return (
       <div className="wayfinder-screen">
@@ -298,6 +383,7 @@ const Wayfinder = () => {
       {/* Map Container */}
       <div className="map-container">
         <MapContainer
+          ref={mapRef}
           center={center}
           zoom={15}
           style={{ height: "100%", width: "100%" }}
@@ -340,6 +426,9 @@ const Wayfinder = () => {
               viaPoints={routeViaPoints[selectedRoute?.id] || []}
               animate={true}
               onRouteFound={(distance) => setRouteDistance(distance)}
+              onRoutePlotted={() =>
+                console.log("Route plotted, map will recenter")
+              }
             />
           )}
         </MapContainer>
@@ -373,12 +462,36 @@ const Wayfinder = () => {
               </div>
               <input
                 type="text"
-                placeholder="Type your location here"
+                placeholder="Search for your location..."
                 value={customLocation}
                 onChange={handleLocationTypeChange}
                 className="location-input"
                 disabled={useCurrentLocation}
               />
+              {isSearchingLocation && (
+                <div className="search-loading">
+                  <i className="fas fa-spinner fa-spin"></i>
+                </div>
+              )}
+
+              {/* Search Results Dropdown */}
+              {showSearchResults && searchResults.length > 0 && (
+                <div className="search-results">
+                  {searchResults.map((result, index) => (
+                    <div
+                      key={index}
+                      className="search-result-item"
+                      onClick={() => handleLocationSelect(result)}
+                    >
+                      <i className="fas fa-map-marker-alt"></i>
+                      <div className="result-details">
+                        <div className="result-name">{result.display_name}</div>
+                        <div className="result-type">{result.type}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
