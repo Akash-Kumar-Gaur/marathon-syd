@@ -1,0 +1,418 @@
+import React, { useState, useEffect, useRef } from "react";
+import "./Home.css";
+import Header from "../components/Header";
+import MapModeToggle from "../components/MapModeToggle";
+import MapboxMap from "../components/MapboxMap";
+import RouteSource from "../components/RouteSource";
+import { Toaster, toast } from "react-hot-toast";
+import HintModal from "../components/HintModal";
+import RewardPopup from "../components/RewardPopup";
+import BoostScorePopup from "../components/BoostScorePopup";
+import GamePopup from "../components/GamePopup";
+import JigsawTrayPuzzle from "../components/JigsawTrayPuzzle";
+import FlipCardsGame from "../components/FlipCardsGame";
+import MarathonQuizGame from "../components/MarathonQuizGame";
+import coinsIcon from "../assets/images/coins.svg";
+import treasureImage from "../assets/images/treasure1.png";
+import staticMap from "../assets/images/staticMap.png";
+import { useDrawer } from "../context/DrawerContext";
+
+const Home = () => {
+  const [center] = useState([151.2093, -33.8688]); // Note: Mapbox uses [lng, lat] format
+  const [treasures] = useState([
+    {
+      id: 1,
+      position: [151.208, -33.8688],
+      found: false,
+      title: "Treasure 1",
+      description: "A hidden treasure waiting to be found!",
+    },
+    {
+      id: 2,
+      position: [151.208, -33.8695],
+      found: false,
+      title: "Treasure 2",
+      description: "Another treasure in the area!",
+    },
+    {
+      id: 3,
+      position: [151.208, -33.871],
+      found: false,
+      title: "Treasure 3",
+      description: "The final treasure awaits!",
+    },
+  ]);
+  const [userPosition] = useState([151.2093, -33.8688]);
+  const [isLiveMap, setIsLiveMap] = useState(true);
+  const [activeView, setActiveView] = useState("map");
+  const [selectedTreasure, setSelectedTreasure] = useState(null);
+  const [isHintModalOpen, setIsHintModalOpen] = useState(false);
+  const [isRewardPopupOpen, setIsRewardPopupOpen] = useState(false);
+  const [rewardData, setRewardData] = useState(null);
+  const [showBoostPopup, setShowBoostPopup] = useState(false);
+  const [selectedGame, setSelectedGame] = useState(null);
+  const [permissionsChecked, setPermissionsChecked] = useState(false);
+  const [isRequestingPermissions, setIsRequestingPermissions] = useState(false);
+  const permissionInitRef = useRef(false);
+  const { isDrawerOpen } = useDrawer();
+
+  // iOS detection function
+  const isIOS = () => {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  };
+
+  // Check permissions and initialize popup on mount
+  useEffect(() => {
+    console.log(
+      "Home useEffect running, permissionsChecked:",
+      permissionsChecked,
+      "permissionInitRef.current:",
+      permissionInitRef.current
+    );
+
+    if (!permissionsChecked && !permissionInitRef.current) {
+      console.log("Checking if permissions are already granted");
+      permissionInitRef.current = true;
+      checkAndInitializePermissions();
+    }
+  }, []);
+
+  const checkAndInitializePermissions = async () => {
+    try {
+      const cameraPermission = await navigator.permissions.query({
+        name: "camera",
+      });
+
+      console.log("Camera permission state:", cameraPermission.state);
+
+      if (cameraPermission.state === "granted") {
+        console.log("Camera permission already granted, skipping popup");
+        setPermissionsChecked(true);
+      } else {
+        console.log("Camera permission not granted, showing popup");
+        setPermissionsChecked(true);
+      }
+    } catch (error) {
+      console.error("Error checking camera permission:", error);
+      console.log("Couldn't check permissions, showing popup");
+      setPermissionsChecked(true);
+    }
+  };
+
+  // Original postMessage handler
+  useEffect(() => {
+    const handleMessage = (event) => {
+      // Only accept messages from our trusted domain
+      if (event.origin !== "https://akashgaur.8thwall.app") return;
+
+      // Check if the message is about image target detection
+      if (event.data && event.data.type === "imageTargetDetected") {
+        const { targetName } = event.data;
+        console.log("🎯 Image Target Detected:", targetName);
+
+        // Example reward data - this should be dynamic based on targetName
+        const demoRewardData = {
+          headerText: "Open Run Pro 2",
+          pointsIcon: coinsIcon,
+          points: "+20 Points",
+          productImage: treasureImage,
+          title: "OPEN RUN PRO 2",
+          subtitle: "NEW FLAGSHIP MODEL\nRedefining The Sound Of Sports",
+          gameType: "flip", // Change to 'flip' or 'quiz' to test other games
+        };
+
+        setRewardData(demoRewardData);
+
+        // Show toast notification
+        toast(`Found target: ${targetName}`, {
+          duration: 3000,
+          position: "bottom-center",
+          style: {
+            background: "#081F2D",
+            color: "#fff",
+            borderRadius: "16px",
+            padding: "16px",
+            maxWidth: "90%",
+            textAlign: "center",
+            marginBottom: "120px",
+          },
+        });
+
+        // Show reward popup after 3 seconds
+        setTimeout(() => {
+          setIsRewardPopupOpen(true);
+        }, 3000);
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, []);
+
+  // Handler for BoostScorePopup play
+  const handleBoostPlay = () => {
+    setShowBoostPopup(false);
+    // Add your boost play logic here
+  };
+
+  const handleTreasureClick = (treasure) => {
+    setSelectedTreasure(selectedTreasure?.id === treasure.id ? null : treasure);
+  };
+
+  const toggleMapMode = () => {
+    setIsLiveMap(!isLiveMap);
+  };
+
+  const toggleView = (view) => {
+    setActiveView(view);
+  };
+
+  const handleHintClick = () => {
+    setIsHintModalOpen(true);
+  };
+
+  const handleGrantPermission = async () => {
+    setIsRequestingPermissions(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach((track) => track.stop());
+      console.log("Camera permission granted");
+      setIsRequestingPermissions(false);
+    } catch (error) {
+      console.error("Error requesting camera permission:", error);
+      setIsRequestingPermissions(false);
+    }
+  };
+
+  // Prepare markers for Mapbox
+  const mapMarkers = [
+    // User position marker
+    {
+      id: "user",
+      position: userPosition,
+      title: "You are here",
+      className: "current-location-marker",
+      content: (
+        <div className="current-location-marker">
+          <div className="current-location-dot"></div>
+          <div className="current-location-pulse"></div>
+        </div>
+      ),
+    },
+    // Treasure markers
+    ...treasures.map((treasure) => ({
+      id: `treasure-${treasure.id}`,
+      position: treasure.position,
+      title: treasure.title,
+      description: treasure.description,
+      className:
+        selectedTreasure?.id === treasure.id
+          ? "treasure-marker active"
+          : "treasure-marker",
+      icon: treasureImage,
+    })),
+  ];
+
+  return (
+    <div className="home">
+      <Toaster />
+
+      <HintModal
+        isOpen={isHintModalOpen}
+        onClose={() => setIsHintModalOpen(false)}
+      />
+
+      <RewardPopup
+        isOpen={isRewardPopupOpen}
+        onClose={() => setIsRewardPopupOpen(false)}
+        data={rewardData}
+        onGameSelect={setSelectedGame}
+      />
+
+      <BoostScorePopup
+        isOpen={showBoostPopup}
+        onClose={() => setShowBoostPopup(false)}
+        onPlay={handleBoostPlay}
+      />
+
+      <GamePopup
+        isOpen={selectedGame === "jigsaw"}
+        onClose={() => setSelectedGame(null)}
+      >
+        <div style={{ textAlign: "center", padding: "20px" }}>
+          <h3 style={{ marginBottom: "10px", color: "#081F2D" }}>
+            Jigsaw Puzzle Challenge!
+          </h3>
+          <p style={{ fontSize: 12, fontWeight: "normal", color: "#081F2D" }}>
+            Arrange the puzzle pieces to complete the image and earn points!
+          </p>
+          <p style={{ fontSize: 12, fontWeight: "normal", color: "#081F2D" }}>
+            TIME - 00:30
+          </p>
+        </div>
+        <JigsawTrayPuzzle />
+      </GamePopup>
+
+      <GamePopup
+        isOpen={selectedGame === "flip"}
+        onClose={() => setSelectedGame(null)}
+      >
+        <div style={{ textAlign: "center", padding: "20px" }}>
+          <h3 style={{ marginBottom: "10px", color: "#081F2D" }}>
+            Memory Card Challenge!
+          </h3>
+          <p style={{ fontSize: 12, fontWeight: "normal", color: "#081F2D" }}>
+            Tap on the individual squares to flip the cards, once a match they
+            will stay visible.
+          </p>
+          <p style={{ fontSize: 12, fontWeight: "normal", color: "#081F2D" }}>
+            TIME - 00:18
+          </p>
+        </div>
+        <FlipCardsGame />
+      </GamePopup>
+
+      <GamePopup
+        isOpen={selectedGame === "quiz"}
+        onClose={() => setSelectedGame(null)}
+      >
+        <MarathonQuizGame />
+      </GamePopup>
+
+      <Header />
+
+      {/* Stats Bar */}
+      <div className="stats-bar">
+        <div className="stat-item pill">
+          <i className="fas fa-gift"></i>
+          <span>4</span>
+        </div>
+        <div className="stat-item pill">
+          <i className="fas fa-coins"></i>
+          <span>150 Pt</span>
+        </div>
+      </div>
+
+      {activeView === "map" && (
+        <MapModeToggle isLive={isLiveMap} onToggle={toggleMapMode} />
+      )}
+
+      <div className="views-container">
+        <div
+          className={`map-container ${activeView === "map" ? "active" : ""}`}
+        >
+          {isLiveMap ? (
+            <MapboxMap
+              center={center}
+              zoom={15}
+              markers={mapMarkers}
+              onMarkerClick={handleTreasureClick}
+              showRoute={!!selectedTreasure}
+              routeStart={selectedTreasure ? userPosition : null}
+              routeEnd={selectedTreasure ? selectedTreasure.position : null}
+            />
+          ) : (
+            <img
+              src={staticMap}
+              alt="Static Map"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                borderRadius: 16,
+              }}
+            />
+          )}
+        </div>
+
+        {/* Camera View */}
+        <div
+          className={`camera-container ${
+            activeView === "camera" ? "active" : ""
+          }`}
+        >
+          <iframe
+            src="https://akashgaur.8thwall.app/markers/"
+            title="Camera View"
+            className="camera-webview"
+            allow="camera; microphone; autoplay; encrypted-media; fullscreen; gyroscope; accelerometer; magnetometer"
+            allowfullscreen
+            webkitallowfullscreen="true"
+            mozallowfullscreen="true"
+            style={{
+              visibility:
+                isHintModalOpen || isDrawerOpen ? "hidden" : "visible",
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Bottom Action Buttons */}
+      <div className="bottom-actions">
+        <div className="action-slider">
+          <div className={`slider-pill ${activeView}`}></div>
+          <button
+            className={`action-button ${activeView === "map" ? "active" : ""}`}
+            onClick={() => toggleView("map")}
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="12" cy="12" r="3" fill="currentColor" />
+              <path
+                d="M12 2C7.58 2 4 5.58 4 10c0 5.25 7 12 8 12s8-6.75 8-12c0-4.42-3.58-8-8-8zm0 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"
+                fill="currentColor"
+              />
+            </svg>
+          </button>
+          <button
+            className={`action-button ${
+              activeView === "camera" ? "active" : ""
+            }`}
+            onClick={() => toggleView("camera")}
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 15.2C13.7673 15.2 15.2 13.7673 15.2 12C15.2 10.2327 13.7673 8.8 12 8.8C10.2327 8.8 8.8 10.2327 8.8 12C8.8 13.7673 10.2327 15.2 12 15.2Z"
+                fill="currentColor"
+              />
+              <path
+                d="M9 2L7.17 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4H16.83L15 2H9ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17Z"
+                fill="currentColor"
+              />
+            </svg>
+          </button>
+        </div>
+        <button className="action-button idea-button" onClick={handleHintClick}>
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z"
+              fill="currentColor"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Home;

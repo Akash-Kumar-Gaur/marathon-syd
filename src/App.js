@@ -11,10 +11,10 @@ import "./App.css";
 import SplashScreen from "./components/SplashScreen";
 import Welcome from "./pages/Welcome";
 import LearnToHunt from "./pages/LearnToHunt";
-import Home from "./pages/Home";
+import Home from "./pages/HomeMapbox";
 import PhotoBooth from "./pages/PhotoBooth";
 import FindMyRoute from "./pages/FindMyRoute";
-import Wayfinder from "./pages/Wayfinder";
+import Wayfinder from "./pages/WayfinderMapbox";
 import { DrawerProvider } from "./context/DrawerContext";
 import { getFlowConfig, isRouteEnabled } from "./config/flowConfig";
 
