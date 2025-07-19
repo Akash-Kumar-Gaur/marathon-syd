@@ -83,6 +83,9 @@ const Wayfinder = () => {
   const [showDirections, setShowDirections] = useState(false);
 
   const [routeDistance, setRouteDistance] = useState(null);
+  const [originalStartLocation, setOriginalStartLocation] = useState(null);
+  const [cachedRoute, setCachedRoute] = useState(null);
+  const [lastRouteUpdate, setLastRouteUpdate] = useState(0);
 
   useEffect(() => {
     if (bibNumber) {
@@ -186,15 +189,62 @@ const Wayfinder = () => {
       console.log("Using default North Sydney location");
     }
 
+    // Store the original starting location for route calculation
+    setOriginalStartLocation([...userLocation]);
     setLocationConfirmed(true);
-    setIsTrackingLocation(true);
   };
+
+  // Continuous location tracking to update map marker - works when using current location
+  useEffect(() => {
+    let watchId;
+
+    if (useCurrentLocation && locationConfirmed) {
+      console.log("Starting continuous location tracking for map updates");
+      watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          const currentLat = position.coords.latitude;
+          const currentLon = position.coords.longitude;
+          const newLocation = [currentLon, currentLat];
+
+          // Update user location on map
+          setUserLocation(newLocation);
+
+          // Check if route should be updated (throttled)
+          if (showDirections && shouldUpdateRoute(newLocation)) {
+            console.log("Updating route due to significant movement");
+            setCachedRoute({
+              start: newLocation,
+              end: bibData.assemblyCoordinates,
+              timestamp: Date.now(),
+            });
+            setLastRouteUpdate(Date.now());
+          }
+
+          console.log("Updated user location on map:", currentLat, currentLon);
+        },
+        (error) => {
+          console.error("Error updating location on map:", error);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 30000,
+        }
+      );
+    }
+
+    return () => {
+      if (watchId) {
+        console.log("Stopping continuous location tracking");
+        navigator.geolocation.clearWatch(watchId);
+      }
+    };
+  }, [useCurrentLocation, locationConfirmed, showDirections, bibData]);
 
   // Track user location to detect arrival - works for both current and default location
   useEffect(() => {
     let watchId;
-
-    if (isTrackingLocation && bibData && !hasArrived) {
+    if (locationConfirmed && bibData && !hasArrived) {
       console.log("Starting location tracking for arrival detection");
       watchId = navigator.geolocation.watchPosition(
         (position) => {
@@ -217,7 +267,6 @@ const Wayfinder = () => {
           if (distance <= 0.05) {
             console.log("Arrived at assembly point!");
             setHasArrived(true);
-            setIsTrackingLocation(false);
           }
         },
         (error) => {
@@ -229,9 +278,6 @@ const Wayfinder = () => {
           maximumAge: 30000,
         }
       );
-    } else if (isTrackingLocation && !useCurrentLocation) {
-      console.log("Location tracking disabled - using default location");
-      setIsTrackingLocation(false);
     }
 
     return () => {
@@ -240,12 +286,50 @@ const Wayfinder = () => {
         navigator.geolocation.clearWatch(watchId);
       }
     };
-  }, [isTrackingLocation, bibData, hasArrived, useCurrentLocation]);
+  }, [locationConfirmed, bibData, hasArrived]);
+
+  // Function to simulate movement for testing
+  const simulateMovement = () => {
+    if (!locationConfirmed) return;
+
+    // Simulate movement towards assembly point
+    const currentLat = userLocation[1];
+    const currentLng = userLocation[0];
+    const targetLat = bibData.assemblyCoordinates[1];
+    const targetLng = bibData.assemblyCoordinates[0];
+
+    // Move 10% closer to target
+    const newLat = currentLat + (targetLat - currentLat) * 0.1;
+    const newLng = currentLng + (targetLng - currentLng) * 0.1;
+
+    setUserLocation([newLng, newLat]);
+    console.log("Simulated movement to:", newLat, newLng);
+  };
 
   const handleArrivalDone = () => {
     setHasArrived(false);
     // Could navigate to next screen or back to home
     // navigate("/");
+  };
+
+  // Function to check if route should be updated (throttled)
+  const shouldUpdateRoute = (currentLocation) => {
+    if (!cachedRoute) return true;
+
+    const now = Date.now();
+    const timeSinceLastUpdate = now - lastRouteUpdate;
+
+    // Only update route every 10 seconds or if user moved significantly (>100m)
+    if (timeSinceLastUpdate < 10000) return false;
+
+    const distanceFromLastUpdate = calculateDistance(
+      currentLocation[1],
+      currentLocation[0],
+      cachedRoute.start[1],
+      cachedRoute.start[0]
+    );
+
+    return distanceFromLastUpdate > 0.1; // 100 meters
   };
 
   const handleDirectionsClick = () => {
@@ -282,6 +366,7 @@ const Wayfinder = () => {
     } else {
       // Reset route distance when hiding directions
       setRouteDistance(null);
+      setCachedRoute(null);
     }
   };
 
@@ -535,8 +620,8 @@ const Wayfinder = () => {
             <div className="distance-info">
               Distance:{" "}
               {(() => {
-                // Use actual route distance if available, otherwise use straight-line distance
-                const distance =
+                // Show current route distance (updates as user moves)
+                const currentDistance =
                   routeDistance ||
                   calculateDistance(
                     userLocation[1], // lat
@@ -544,12 +629,12 @@ const Wayfinder = () => {
                     bibData.assemblyCoordinates[1], // lat
                     bibData.assemblyCoordinates[0] // lng
                   );
-                return distance.toFixed(1);
+                return currentDistance.toFixed(1);
               })()}{" "}
               km (~
               {(() => {
-                // Use actual route distance for time calculation if available
-                const distance =
+                // Show current route time
+                const currentDistance =
                   routeDistance ||
                   calculateDistance(
                     userLocation[1], // lat
@@ -557,9 +642,9 @@ const Wayfinder = () => {
                     bibData.assemblyCoordinates[1], // lat
                     bibData.assemblyCoordinates[0] // lng
                   );
-                return Math.round(distance * 12);
+                return Math.round(currentDistance * 12);
               })()}{" "}
-              min walk) {routeDistance ? "(actual route)" : "(direct)"}
+              min walk) {routeDistance ? "(current route)" : "(direct)"}
             </div>
             {showDirections && (
               <div className="route-status">
@@ -587,6 +672,23 @@ const Wayfinder = () => {
             >
               <i className="fas fa-play"></i>
               START
+            </button>
+            {/* Simulation button for testing */}
+            <button
+              className="simulate-button"
+              onClick={simulateMovement}
+              style={{
+                backgroundColor: "#ff6b35",
+                color: "white",
+                border: "none",
+                padding: "8px 12px",
+                borderRadius: "4px",
+                marginLeft: "8px",
+                fontSize: "12px",
+              }}
+            >
+              <i className="fas fa-walking"></i>
+              SIMULATE
             </button>
           </div>
         </div>

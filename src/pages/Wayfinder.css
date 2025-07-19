@@ -3,6 +3,15 @@
   background-color: #081f2d;
   position: relative;
   overflow: hidden;
+  /* Prevent zooming and unwanted interactions */
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .wayfinder-screen .app-header {
@@ -26,6 +35,10 @@
   overflow: hidden;
   visibility: visible !important;
   opacity: 1 !important;
+  /* Prevent double-click zoom */
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .map-container .leaflet-container {
@@ -112,6 +125,10 @@
   border-radius: 20px 20px 0 0;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
   z-index: 10;
+  /* Prevent zooming and unwanted interactions */
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .panel-title {
@@ -366,6 +383,10 @@
   border-radius: 20px 20px 0 0;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
   z-index: 10;
+  /* Prevent zooming and unwanted interactions */
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .assembly-header {
@@ -462,6 +483,10 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  /* Prevent zooming and unwanted interactions */
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .direction-button:hover:not(:disabled) {
@@ -497,6 +522,10 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  /* Prevent zooming and unwanted interactions */
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .start-button:hover {
