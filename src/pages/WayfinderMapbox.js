@@ -288,24 +288,6 @@ const Wayfinder = () => {
     };
   }, [locationConfirmed, bibData, hasArrived]);
 
-  // Function to simulate movement for testing
-  const simulateMovement = () => {
-    if (!locationConfirmed) return;
-
-    // Simulate movement towards assembly point
-    const currentLat = userLocation[1];
-    const currentLng = userLocation[0];
-    const targetLat = bibData.assemblyCoordinates[1];
-    const targetLng = bibData.assemblyCoordinates[0];
-
-    // Move 10% closer to target
-    const newLat = currentLat + (targetLat - currentLat) * 0.1;
-    const newLng = currentLng + (targetLng - currentLng) * 0.1;
-
-    setUserLocation([newLng, newLat]);
-    console.log("Simulated movement to:", newLat, newLng);
-  };
-
   const handleArrivalDone = () => {
     setHasArrived(false);
     // Could navigate to next screen or back to home
@@ -672,23 +654,6 @@ const Wayfinder = () => {
             >
               <i className="fas fa-play"></i>
               START
-            </button>
-            {/* Simulation button for testing */}
-            <button
-              className="simulate-button"
-              onClick={simulateMovement}
-              style={{
-                backgroundColor: "#ff6b35",
-                color: "white",
-                border: "none",
-                padding: "8px 12px",
-                borderRadius: "4px",
-                marginLeft: "8px",
-                fontSize: "12px",
-              }}
-            >
-              <i className="fas fa-walking"></i>
-              SIMULATE
             </button>
           </div>
         </div>
