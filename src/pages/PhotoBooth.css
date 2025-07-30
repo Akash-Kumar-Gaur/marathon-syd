@@ -35,24 +35,15 @@
   transform: scaleX(-1); /* Mirror effect for front camera */
 }
 
-.draggable-prize {
+.fixed-prize {
   position: absolute;
-  width: 180px;
-  height: 180px;
+  width: 150px;
+  height: 150px;
   object-fit: contain;
   transform: translate(-50%, -50%);
   z-index: 5;
   user-select: none;
-  pointer-events: auto;
-  transition: transform 0.1s ease;
-}
-
-.draggable-prize:hover {
-  transform: translate(-50%, -50%) scale(1.05);
-}
-
-.draggable-prize:active {
-  transform: translate(-50%, -50%) scale(0.95);
+  pointer-events: none;
 }
 
 /* Camera Controls */
@@ -653,5 +644,200 @@
 @media (max-width: 399px) {
   .responsive-quote {
     font-size: 10px !important;
+  }
+}
+
+/* Popup Styles */
+.popup-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 20px;
+  backdrop-filter: blur(5px);
+}
+
+.popup-content {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 40px 30px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: popupFadeIn 0.4s ease-out;
+}
+
+@keyframes popupFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.popup-content h2 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a2a3a;
+  margin: 0 0 10px 0;
+  line-height: 1.2;
+}
+
+.popup-content h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #4a4a4a;
+  margin: 0 0 20px 0;
+  line-height: 1.3;
+}
+
+.popup-content p {
+  font-size: 16px;
+  color: #666;
+  margin: 0 0 30px 0;
+  line-height: 1.5;
+}
+
+.popup-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.popup-button {
+  padding: 16px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup-button.primary {
+  background: #1a9bd6;
+  color: white;
+  box-shadow: 0 4px 12px rgba(26, 155, 214, 0.3);
+}
+
+.popup-button.primary:hover {
+  background: #1587c2;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(26, 155, 214, 0.4);
+}
+
+.popup-button.primary:active {
+  transform: translateY(0);
+}
+
+/* Pledge Selection Popup */
+.pledge-popup {
+  max-width: 450px;
+}
+
+.pledge-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 0 30px 0;
+}
+
+.pledge-option {
+  padding: 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: white;
+  font-size: 16px;
+  font-weight: 600;
+  color: #4a4a4a;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pledge-option:hover {
+  border-color: #1a9bd6;
+  background: #f8fcff;
+  transform: translateY(-1px);
+}
+
+.pledge-option.selected {
+  border-color: #1a9bd6;
+  background: #e8f4f8;
+  color: #1a9bd6;
+  font-weight: 700;
+}
+
+.take-selfie-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.take-selfie-button:disabled:hover {
+  transform: none !important;
+  box-shadow: 0 4px 12px rgba(26, 155, 214, 0.3) !important;
+}
+
+.take-selfie-button {
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Mobile responsiveness for popups */
+@media (max-width: 480px) {
+  .popup-content {
+    padding: 30px 20px;
+    max-width: 90vw;
+  }
+
+  .popup-content h2 {
+    font-size: 24px;
+  }
+
+  .popup-content h3 {
+    font-size: 18px;
+  }
+
+  .popup-content p {
+    font-size: 14px;
+  }
+
+  .popup-button {
+    font-size: 14px;
+    padding: 14px 20px;
+    min-height: 50px;
+  }
+
+  .pledge-option {
+    font-size: 14px;
+    padding: 16px;
+    min-height: 50px;
+  }
+
+  .pledge-popup {
+    max-width: 90vw;
   }
 }

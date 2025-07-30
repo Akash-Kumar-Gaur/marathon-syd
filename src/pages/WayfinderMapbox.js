@@ -86,6 +86,8 @@ const Wayfinder = () => {
   const [originalStartLocation, setOriginalStartLocation] = useState(null);
   const [cachedRoute, setCachedRoute] = useState(null);
   const [lastRouteUpdate, setLastRouteUpdate] = useState(0);
+  const [routeStartLocation, setRouteStartLocation] = useState(null);
+  const [routeEndLocation, setRouteEndLocation] = useState(null);
 
   useEffect(() => {
     if (bibNumber) {
@@ -212,11 +214,8 @@ const Wayfinder = () => {
           // Check if route should be updated (throttled)
           if (showDirections && shouldUpdateRoute(newLocation)) {
             console.log("Updating route due to significant movement");
-            setCachedRoute({
-              start: newLocation,
-              end: bibData.assemblyCoordinates,
-              timestamp: Date.now(),
-            });
+            setRouteStartLocation(newLocation);
+            setRouteEndLocation(bibData.assemblyCoordinates);
             setLastRouteUpdate(Date.now());
           }
 
@@ -296,22 +295,22 @@ const Wayfinder = () => {
 
   // Function to check if route should be updated (throttled)
   const shouldUpdateRoute = (currentLocation) => {
-    if (!cachedRoute) return true;
+    if (!routeStartLocation) return true;
 
     const now = Date.now();
     const timeSinceLastUpdate = now - lastRouteUpdate;
 
-    // Only update route every 10 seconds or if user moved significantly (>100m)
-    if (timeSinceLastUpdate < 10000) return false;
+    // Only update route every 30 seconds or if user moved significantly (>200m)
+    if (timeSinceLastUpdate < 30000) return false;
 
     const distanceFromLastUpdate = calculateDistance(
       currentLocation[1],
       currentLocation[0],
-      cachedRoute.start[1],
-      cachedRoute.start[0]
+      routeStartLocation[1],
+      routeStartLocation[0]
     );
 
-    return distanceFromLastUpdate > 0.1; // 100 meters
+    return distanceFromLastUpdate > 0.2; // 200 meters - more conservative
   };
 
   const handleDirectionsClick = () => {
@@ -344,11 +343,17 @@ const Wayfinder = () => {
         zoom: zoom,
       }));
 
+      // Set initial route locations when first showing directions
+      setRouteStartLocation(userLocation);
+      setRouteEndLocation(bibData.assemblyCoordinates);
+      setLastRouteUpdate(Date.now());
+
       console.log("Map centered to show both start and end points");
     } else {
       // Reset route distance when hiding directions
       setRouteDistance(null);
-      setCachedRoute(null);
+      setRouteStartLocation(null);
+      setRouteEndLocation(null);
     }
   };
 
@@ -498,18 +503,22 @@ const Wayfinder = () => {
           )}
 
           {/* Route Control - show path only after directions button clicked */}
-          {bibData && locationConfirmed && showDirections && (
-            <RouteSource
-              start={userLocation}
-              end={bibData.assemblyCoordinates}
-              onRouteFound={(routeData) => {
-                console.log("Route found:", routeData);
-                if (routeData && routeData.distance) {
-                  setRouteDistance(routeData.distance);
-                }
-              }}
-            />
-          )}
+          {bibData &&
+            locationConfirmed &&
+            showDirections &&
+            routeStartLocation &&
+            routeEndLocation && (
+              <RouteSource
+                start={routeStartLocation}
+                end={routeEndLocation}
+                onRouteFound={(routeData) => {
+                  console.log("Route found:", routeData);
+                  if (routeData && routeData.distance) {
+                    setRouteDistance(routeData.distance);
+                  }
+                }}
+              />
+            )}
         </Map>
       </div>
 
@@ -626,7 +635,7 @@ const Wayfinder = () => {
                   );
                 return Math.round(currentDistance * 12);
               })()}{" "}
-              min walk) {routeDistance ? "(current route)" : "(direct)"}
+              min walk) {routeDistance ? "(cached route)" : "(direct)"}
             </div>
             {showDirections && (
               <div className="route-status">

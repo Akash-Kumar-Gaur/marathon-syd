@@ -34,16 +34,20 @@ const PhotoBooth = () => {
   const canvasRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [capturedImage, setCapturedImage] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [facingMode, setFacingMode] = useState("user"); // "user" for front camera, "environment" for back camera
-  const [prizePosition, setPrizePosition] = useState({ x: 50, y: 50 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [prizePosition, setPrizePosition] = useState({ x: 80, y: 75 }); // Bottom right corner, avoiding capture button
   const cameraViewRef = useRef(null);
   const [timer, setTimer] = useState(0);
   const [pendingCapture, setPendingCapture] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+
+  // New state for popup flow
+  const [showIntroPopup, setShowIntroPopup] = useState(true);
+  const [showPledgePopup, setShowPledgePopup] = useState(false);
+  const [selectedPledge, setSelectedPledge] = useState("");
+  const [cameraStarted, setCameraStarted] = useState(false);
 
   const randomQuote = useMemo(() => {
     if (!confirmed) return null;
@@ -52,13 +56,15 @@ const PhotoBooth = () => {
   }, [confirmed]);
 
   useEffect(() => {
-    startCamera();
+    if (cameraStarted) {
+      startCamera();
+    }
     return () => {
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [facingMode]);
+  }, [facingMode, cameraStarted]);
 
   // Ensure video plays when returning to camera view
   useEffect(() => {
@@ -132,7 +138,7 @@ const PhotoBooth = () => {
       prizeImg.crossOrigin = "anonymous";
       prizeImg.onload = () => {
         // Use a larger base size for the prize
-        const basePrizeWidth = 220; // px, adjust as needed
+        const basePrizeWidth = 180; // px, adjust as needed
         // Maintain aspect ratio
         const aspect = prizeImg.naturalWidth / prizeImg.naturalHeight;
         const basePrizeHeight = basePrizeWidth / aspect;
@@ -153,6 +159,12 @@ const PhotoBooth = () => {
           (prizePosition.y / 100) * canvas.height - prizeFinalHeight / 2;
 
         // Draw the prize (not mirrored)
+        console.log("Drawing prize at:", {
+          prizeX,
+          prizeY,
+          prizeFinalWidth,
+          prizeFinalHeight,
+        });
         context.drawImage(
           prizeImg,
           prizeX,
@@ -171,6 +183,18 @@ const PhotoBooth = () => {
           0.9
         );
       };
+      prizeImg.onerror = (error) => {
+        console.error("Error loading prize image:", error);
+        // Continue without prize if image fails to load
+        canvas.toBlob(
+          (blob) => {
+            const imageUrl = URL.createObjectURL(blob);
+            setCapturedImage(imageUrl);
+          },
+          "image/jpeg",
+          0.9
+        );
+      };
       prizeImg.src = prizePng;
     }
   };
@@ -180,9 +204,6 @@ const PhotoBooth = () => {
       URL.revokeObjectURL(capturedImage);
       setCapturedImage(null);
     }
-
-    // Reset prize position
-    setPrizePosition({ x: 50, y: 50 });
 
     // Ensure camera is working when returning to camera view
     if (stream && videoRef.current) {
@@ -212,101 +233,105 @@ const PhotoBooth = () => {
     setFacingMode((prevMode) => (prevMode === "user" ? "environment" : "user"));
   };
 
-  const handlePrizeMouseDown = (e) => {
-    setIsDragging(true);
-    const rect = cameraViewRef.current.getBoundingClientRect();
-    const prizeElement = e.target;
-    const prizeRect = prizeElement.getBoundingClientRect();
-    setDragOffset({
-      x: e.clientX - prizeRect.left - prizeRect.width / 2,
-      y: e.clientY - prizeRect.top - prizeRect.height / 2,
-    });
-  };
-
-  const handlePrizeTouchStart = (e) => {
-    setIsDragging(true);
-    const touch = e.touches[0];
-    const rect = cameraViewRef.current.getBoundingClientRect();
-    const prizeElement = e.target;
-    const prizeRect = prizeElement.getBoundingClientRect();
-    setDragOffset({
-      x: touch.clientX - prizeRect.left - prizeRect.width / 2,
-      y: touch.clientY - prizeRect.top - prizeRect.height / 2,
-    });
-  };
-
-  const handleMouseMove = (e) => {
-    if (!isDragging || !cameraViewRef.current) return;
-
-    const rect = cameraViewRef.current.getBoundingClientRect();
-    const x = ((e.clientX - dragOffset.x - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - dragOffset.y - rect.top) / rect.height) * 100;
-
-    setPrizePosition({
-      x: Math.max(0, Math.min(100, x)),
-      y: Math.max(0, Math.min(100, y)),
-    });
-  };
-
-  const handleTouchMove = (e) => {
-    if (!isDragging || !cameraViewRef.current) return;
-
-    const touch = e.touches[0];
-    const rect = cameraViewRef.current.getBoundingClientRect();
-    const x = ((touch.clientX - dragOffset.x - rect.left) / rect.width) * 100;
-    const y = ((touch.clientY - dragOffset.y - rect.top) / rect.height) * 100;
-
-    setPrizePosition({
-      x: Math.max(0, Math.min(100, x)),
-      y: Math.max(0, Math.min(100, y)),
-    });
-  };
-
-  const handleDragEnd = () => {
-    setIsDragging(false);
-  };
-
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleDragEnd);
-      document.addEventListener("touchmove", handleTouchMove);
-      document.addEventListener("touchend", handleDragEnd);
-
-      return () => {
-        document.removeEventListener("mousemove", handleMouseMove);
-        document.removeEventListener("mouseup", handleDragEnd);
-        document.removeEventListener("touchmove", handleTouchMove);
-        document.removeEventListener("touchend", handleDragEnd);
-      };
-    }
-  }, [isDragging, dragOffset]);
-
   // Wrap the capture button logic
   const handleStartCapture = () => {
     setTimer(3);
     setPendingCapture(true);
   };
 
+  // Popup handlers
+  const handleTakePledge = () => {
+    setShowIntroPopup(false);
+    setShowPledgePopup(true);
+  };
+
+  const handlePledgeSelect = (pledge) => {
+    setSelectedPledge(pledge);
+  };
+
+  const handleTakeSelfie = () => {
+    setShowPledgePopup(false);
+    setCameraStarted(true);
+    setIsLoading(true);
+  };
+
   return (
     <div className="photobooth-container">
       <Header />
       <div className="photobooth-content">
+        {/* Intro Popup */}
+        {showIntroPopup && (
+          <div className="popup-overlay">
+            <div className="popup-content intro-popup">
+              <h2>AR Photobooth</h2>
+              <h3>Pledge Selfie</h3>
+              <p>Take a pledge by capturing a selfie with an AR filter</p>
+              <div className="popup-buttons">
+                <button
+                  className="popup-button primary"
+                  onClick={handleTakePledge}
+                >
+                  TAKE A PLEDGE
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Pledge Selection Popup */}
+        {showPledgePopup && (
+          <div className="popup-overlay">
+            <div className="popup-content pledge-popup">
+              <h2>Take the Sydney Marathon Pledge!</h2>
+              <h3>Pick Your Pledge!</h3>
+              <div className="pledge-options">
+                <button
+                  className={`pledge-option ${
+                    selectedPledge === "I run for strength" ? "selected" : ""
+                  }`}
+                  onClick={() => handlePledgeSelect("I run for strength")}
+                >
+                  I run for strength
+                </button>
+                <button
+                  className={`pledge-option ${
+                    selectedPledge === "Striding forward for a better future!"
+                      ? "selected"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    handlePledgeSelect("Striding forward for a better future!")
+                  }
+                >
+                  Striding forward for a better future!
+                </button>
+              </div>
+              <button
+                className="popup-button primary take-selfie-button"
+                onClick={handleTakeSelfie}
+                disabled={!selectedPledge}
+              >
+                TAKE A SELFIE
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Timer Overlay */}
-        {timer > 0 && (
+        {timer > 0 && cameraStarted && (
           <div className="timer-overlay">
             <div className="timer-number">{timer}</div>
           </div>
         )}
 
-        {isLoading && (
+        {isLoading && cameraStarted && (
           <div className="loading-overlay">
             <div className="loading-spinner"></div>
             <p>Starting camera...</p>
           </div>
         )}
 
-        {error && (
+        {error && cameraStarted && (
           <div className="error-overlay">
             <div className="error-message">
               <i className="fas fa-exclamation-triangle"></i>
@@ -318,7 +343,7 @@ const PhotoBooth = () => {
           </div>
         )}
 
-        {!capturedImage ? (
+        {!capturedImage && cameraStarted ? (
           <div className="camera-view" ref={cameraViewRef}>
             <video
               ref={videoRef}
@@ -332,15 +357,11 @@ const PhotoBooth = () => {
             <img
               src={prizePng}
               alt="Prize"
-              className="draggable-prize"
+              className="fixed-prize"
               style={{
                 left: `${prizePosition.x}%`,
                 top: `${prizePosition.y}%`,
-                cursor: isDragging ? "grabbing" : "grab",
               }}
-              onMouseDown={handlePrizeMouseDown}
-              onTouchStart={handlePrizeTouchStart}
-              draggable={false}
             />
 
             <div className="camera-controls">
@@ -365,7 +386,9 @@ const PhotoBooth = () => {
               </button>
             </div>
           </div>
-        ) : (
+        ) : null}
+
+        {capturedImage && (
           <div className="photo-preview">
             <div className="preview-header">
               <h2>

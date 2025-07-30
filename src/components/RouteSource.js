@@ -77,6 +77,7 @@ const RouteSource = ({ start, end, onRouteFound }) => {
           "line-color": "#007cbf",
           "line-width": 4,
           "line-opacity": 0.8,
+          "line-dasharray": [2, 1], // Creates dotted line effect
         }}
       />
     </Source>

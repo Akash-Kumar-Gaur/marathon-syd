@@ -17,6 +17,7 @@ import mascot from "../assets/images/mascot.png";
 import headphones from "../assets/images/headphones.svg";
 import shokzLogo from "../assets/images/shokz.png";
 import { useDrawer } from "../context/DrawerContext";
+import { treasureData } from "../data/treasureData";
 
 const avatarMap = {
   1: avatar1,
@@ -33,9 +34,9 @@ const CHALLENGES = [
   {
     name: "PUZZLE",
     img: puzzleTile,
-    points: 60,
+    points: 0,
     totalPoints: 120,
-    progress: 2,
+    progress: 0,
     totalProgress: 4,
     alt: "Puzzle",
   },
@@ -44,7 +45,7 @@ const CHALLENGES = [
     img: matchTile,
     points: 40,
     totalPoints: 80,
-    progress: 1,
+    progress: 0,
     totalProgress: 2,
     alt: "Match Tile",
   },
@@ -53,7 +54,7 @@ const CHALLENGES = [
     img: trivia,
     points: 60,
     totalPoints: 120,
-    progress: 2,
+    progress: 0,
     totalProgress: 4,
     alt: "Trivia",
   },
@@ -411,6 +412,37 @@ const Header = () => {
     }
   };
 
+  const handleChallengeClick = (challenge) => {
+    // Only navigate if the challenge has no points (progress is 0)
+    if (challenge.progress === 0) {
+      let gameType = null;
+      switch (challenge.name) {
+        case "PUZZLE":
+          gameType = "jigsaw";
+          break;
+        case "MATCH TILE":
+          gameType = "flip";
+          break;
+        case "TRIVIA":
+          gameType = "quiz";
+          break;
+        default:
+          console.log("Unknown challenge:", challenge.name);
+          return;
+      }
+
+      // Navigate to home page with game type in state
+      navigate("/home", {
+        state: {
+          selectedGame: gameType,
+        },
+      });
+
+      // Close the drawer after navigation
+      handleDrawerClose();
+    }
+  };
+
   const handleCollapse = (section) => {
     setCollapse((prev) => {
       const newState = { ...prev, [section]: !prev[section] };
@@ -440,9 +472,10 @@ const Header = () => {
   const unlockedTreasures = [0, 2, 5]; // Replace with actual user data
 
   // Prepare treasure data with unlocked status
-  const treasures = [...Array(16)].map((_, i) => ({
+  const treasures = treasureData.map((treasure, i) => ({
     index: i,
     unlocked: unlockedTreasures.includes(i),
+    name: treasure.treasure,
   }));
   // Sort unlocked treasures to the start
   const sortedTreasures = [
@@ -587,7 +620,7 @@ const Header = () => {
                 >
                   <i
                     className={`fas fa-chevron-down${
-                      collapse.challenges ? " rotated" : ""
+                      collapse.challenges ? " fa-rotate-180" : ""
                     }`}
                   ></i>
                 </span>
@@ -618,12 +651,17 @@ const Header = () => {
                       (challenge.progress / challenge.totalProgress) *
                         challenge.totalPoints
                     );
+                    const isClickable = challenge.progress === 0;
                     return (
                       <div
                         key={challenge.name}
                         style={{
                           width: "100%",
+                          cursor: isClickable ? "pointer" : "default",
                         }}
+                        onClick={() =>
+                          isClickable && handleChallengeClick(challenge)
+                        }
                       >
                         <div
                           style={{
@@ -731,7 +769,7 @@ const Header = () => {
                 >
                   <i
                     className={`fas fa-chevron-down${
-                      collapse.treasure ? " rotated" : ""
+                      collapse.treasure ? " fa-rotate-180" : ""
                     }`}
                   ></i>
                 </span>
@@ -754,11 +792,11 @@ const Header = () => {
                       padding: "0px 0 8px 0",
                       display: "grid",
                       gridTemplateColumns: "repeat(2, 1fr)",
-                      gap: 20,
+                      gap: 14,
                       marginTop: 16,
                     }}
                   >
-                    {sortedTreasures.map(({ index, unlocked }) => {
+                    {sortedTreasures.map(({ index, unlocked, name }) => {
                       const cardStyle = {
                         background: "#fff",
                         borderRadius: 12,
@@ -790,7 +828,7 @@ const Header = () => {
                               fontSize: 12,
                               color: unlocked ? "#081F2D" : "#fff",
                               background: unlocked ? "#fff" : "#081F2DCC",
-                              borderRadius: 12,
+                              borderRadius: 8,
                               padding: "10px 6px",
                               width: "100%",
                               boxSizing: "border-box",
@@ -798,9 +836,13 @@ const Header = () => {
                               // boxShadow: "0px 3.11px 3.11px 0px #00000040",
                             }}
                           >
-                            TREASURE {index + 1}
+                            {unlocked
+                              ? name.length > 12
+                                ? `${name.substring(0, 12)}...`
+                                : name
+                              : "Locked"}
                           </div>
-                          <div
+                          {/* <div
                             style={cardStyle}
                             onClick={() =>
                               unlocked && setSelectedTreasure(index)
@@ -855,7 +897,7 @@ const Header = () => {
                                 </div>
                               </div>
                             )}
-                          </div>
+                          </div> */}
                         </div>
                       );
                     })}

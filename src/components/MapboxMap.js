@@ -20,6 +20,7 @@ const MapboxMap = ({
   zoom = 9,
   markers = [],
   onMarkerClick,
+  onMapMove,
   showRoute = false,
   routeStart = null,
   routeEnd = null,
@@ -33,14 +34,26 @@ const MapboxMap = ({
 
   const [popupInfo, setPopupInfo] = useState(null);
 
-  const onMove = useCallback((evt) => {
-    setViewState(evt.viewState);
-  }, []);
+  const onMove = useCallback(
+    (evt) => {
+      setViewState(evt.viewState);
+      // Call onMapMove callback with new center coordinates
+      if (onMapMove) {
+        onMapMove([evt.viewState.longitude, evt.viewState.latitude]);
+      }
+    },
+    [onMapMove]
+  );
 
   const handleMarkerClick = useCallback(
     (event, marker) => {
       event.originalEvent.stopPropagation();
-      setPopupInfo(marker);
+      // Only show popup for user marker, not treasure markers
+      if (marker.id === "user") {
+        setPopupInfo(marker);
+      } else {
+        setPopupInfo(null);
+      }
       if (onMarkerClick) {
         onMarkerClick(marker);
       }
@@ -84,7 +97,7 @@ const MapboxMap = ({
           onClose={() => setPopupInfo(null)}
           closeOnClick={false}
         >
-          <div className="popup-content">
+          <div className="popup-content-data">
             <h3>{popupInfo.title}</h3>
             {popupInfo.description && <p>{popupInfo.description}</p>}
             {popupInfo.content && popupInfo.content}

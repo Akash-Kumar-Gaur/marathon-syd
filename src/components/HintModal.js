@@ -2,7 +2,7 @@ import React from "react";
 import "./HintModal.css";
 import hintIcon from "../assets/images/hintIcon.png";
 
-const HintModal = ({ isOpen, onClose }) => {
+const HintModal = ({ isOpen, onClose, hint }) => {
   if (!isOpen) return null;
 
   return (
@@ -13,8 +13,7 @@ const HintModal = ({ isOpen, onClose }) => {
           <img src={hintIcon} alt="Hint" />
         </div>
         <p className="hint-message">
-          Head to where runners re-energize, look for a banner with bold goals
-          and bold flavors.
+          {hint || "No hint available for this treasure."}
         </p>
       </div>
     </div>

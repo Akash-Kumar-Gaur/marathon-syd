@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import "./Home.css";
 import Header from "../components/Header";
 import MapModeToggle from "../components/MapModeToggle";
@@ -13,35 +14,37 @@ import JigsawTrayPuzzle from "../components/JigsawTrayPuzzle";
 import FlipCardsGame from "../components/FlipCardsGame";
 import MarathonQuizGame from "../components/MarathonQuizGame";
 import coinsIcon from "../assets/images/coins.svg";
-import treasureImage from "../assets/images/treasure1.png";
+import treasureImage from "../assets/images/treasureIcon.png";
 import staticMap from "../assets/images/staticMap.png";
 import { useDrawer } from "../context/DrawerContext";
+import { treasureData } from "../data/treasureData";
 
 const Home = () => {
-  const [center] = useState([151.2093, -33.8688]); // Note: Mapbox uses [lng, lat] format
-  const [treasures] = useState([
-    {
-      id: 1,
-      position: [151.208, -33.8688],
-      found: false,
-      title: "Treasure 1",
-      description: "A hidden treasure waiting to be found!",
-    },
-    {
-      id: 2,
-      position: [151.208, -33.8695],
-      found: false,
-      title: "Treasure 2",
-      description: "Another treasure in the area!",
-    },
-    {
-      id: 3,
-      position: [151.208, -33.871],
-      found: false,
-      title: "Treasure 3",
-      description: "The final treasure awaits!",
-    },
-  ]);
+  const location = useLocation();
+  const [center, setCenter] = useState([151.2093, -33.8688]); // Note: Mapbox uses [lng, lat] format
+
+  // Convert treasure data to the format expected by the component
+  const [treasures, setTreasures] = useState(() => {
+    // Select nearby treasures (around 10) based on proximity to center
+    const nearbyTreasures = treasureData
+      .slice(0, 10)
+      .map((treasure, index) => ({
+        id: index + 1,
+        position: [
+          treasure.coordinates.longitude,
+          treasure.coordinates.latitude,
+        ],
+        found: false,
+        title: treasure.treasure,
+        description: treasure.offer,
+        hint: treasure.hint,
+        address: treasure.address,
+        openingHours: treasure.openingHours,
+        uniqueRedemption: treasure.uniqueRedemption,
+      }));
+
+    return nearbyTreasures;
+  });
   const [userPosition] = useState([151.2093, -33.8688]);
   const [isLiveMap, setIsLiveMap] = useState(true);
   const [activeView, setActiveView] = useState("map");
@@ -75,6 +78,24 @@ const Home = () => {
       permissionInitRef.current = true;
       checkAndInitializePermissions();
     }
+  }, []);
+
+  // Handle game selection from navigation state
+  useEffect(() => {
+    if (location.state && location.state.selectedGame) {
+      setSelectedGame(location.state.selectedGame);
+      // Clear the state to prevent re-triggering on re-renders
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debouncedMapMove.current) {
+        clearTimeout(debouncedMapMove.current);
+      }
+    };
   }, []);
 
   const checkAndInitializePermissions = async () => {
@@ -159,7 +180,18 @@ const Home = () => {
   };
 
   const handleTreasureClick = (treasure) => {
-    setSelectedTreasure(selectedTreasure?.id === treasure.id ? null : treasure);
+    // Use the full treasure data if available, otherwise find it by ID
+    const fullTreasure =
+      treasure.treasureData ||
+      treasures.find(
+        (t) => t.id === parseInt(treasure.id.replace("treasure-", ""))
+      );
+
+    setSelectedTreasure(
+      selectedTreasure?.id === fullTreasure?.id ? null : fullTreasure
+    );
+    // Hide reward popup when treasure is clicked
+    setIsRewardPopupOpen(false);
   };
 
   const toggleMapMode = () => {
@@ -171,8 +203,73 @@ const Home = () => {
   };
 
   const handleHintClick = () => {
-    setIsHintModalOpen(true);
+    if (selectedTreasure) {
+      setIsHintModalOpen(true);
+    }
   };
+
+  // Calculate distance between two points using Haversine formula
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Radius of the Earth in kilometers
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) *
+        Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in kilometers
+  };
+
+  // Find nearby treasures based on current map center
+  const findNearbyTreasures = (mapCenter) => {
+    const nearbyTreasures = treasureData
+      .map((treasure, index) => ({
+        id: index + 1,
+        position: [
+          treasure.coordinates.longitude,
+          treasure.coordinates.latitude,
+        ],
+        found: false,
+        title: treasure.treasure,
+        description: treasure.offer,
+        hint: treasure.hint,
+        address: treasure.address,
+        openingHours: treasure.openingHours,
+        uniqueRedemption: treasure.uniqueRedemption,
+        distance: calculateDistance(
+          mapCenter[1], // lat
+          mapCenter[0], // lng
+          treasure.coordinates.latitude,
+          treasure.coordinates.longitude
+        ),
+      }))
+      .sort((a, b) => a.distance - b.distance) // Sort by distance
+      .slice(0, 10); // Take the 10 closest
+
+    return nearbyTreasures;
+  };
+
+  // Debounced map movement handler
+  const debouncedMapMove = useRef(null);
+
+  // Handle map movement with delay
+  const handleMapMove = useCallback((newCenter) => {
+    setCenter(newCenter);
+
+    // Clear existing timeout
+    if (debouncedMapMove.current) {
+      clearTimeout(debouncedMapMove.current);
+    }
+
+    // Set new timeout for finding nearby treasures
+    debouncedMapMove.current = setTimeout(() => {
+      const nearbyTreasures = findNearbyTreasures(newCenter);
+      setTreasures(nearbyTreasures);
+    }, 500); // 500ms delay
+  }, []);
 
   const handleGrantPermission = async () => {
     setIsRequestingPermissions(true);
@@ -213,6 +310,7 @@ const Home = () => {
           ? "treasure-marker active"
           : "treasure-marker",
       icon: treasureImage,
+      treasureData: treasure, // Include the full treasure data
     })),
   ];
 
@@ -223,6 +321,7 @@ const Home = () => {
       <HintModal
         isOpen={isHintModalOpen}
         onClose={() => setIsHintModalOpen(false)}
+        hint={selectedTreasure?.hint}
       />
 
       <RewardPopup
@@ -268,9 +367,6 @@ const Home = () => {
             Tap on the individual squares to flip the cards, once a match they
             will stay visible.
           </p>
-          <p style={{ fontSize: 12, fontWeight: "normal", color: "#081F2D" }}>
-            TIME - 00:18
-          </p>
         </div>
         <FlipCardsGame />
       </GamePopup>
@@ -310,6 +406,7 @@ const Home = () => {
               zoom={15}
               markers={mapMarkers}
               onMarkerClick={handleTreasureClick}
+              onMapMove={handleMapMove}
               showRoute={!!selectedTreasure}
               routeStart={selectedTreasure ? userPosition : null}
               routeEnd={selectedTreasure ? selectedTreasure.position : null}
@@ -396,20 +493,25 @@ const Home = () => {
             </svg>
           </button>
         </div>
-        <button className="action-button idea-button" onClick={handleHintClick}>
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+        {selectedTreasure && (
+          <button
+            className="action-button idea-button"
+            onClick={handleHintClick}
           >
-            <path
-              d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z"
-              fill="currentColor"
-            />
-          </svg>
-        </button>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z"
+                fill="currentColor"
+              />
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   );

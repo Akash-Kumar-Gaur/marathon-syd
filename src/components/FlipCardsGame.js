@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from "react";
 import flipPlace from "../assets/images/flipPlace.png";
+import bottle from "../assets/images/bottle.png";
+import boy from "../assets/images/boy.png";
+import shoe from "../assets/images/shoe.png";
 
-// Use emojis for card faces
-const CARD_EMOJIS = ["🍎", "🚗", "🐶", "🌟"];
-const CARDS = [...CARD_EMOJIS, ...CARD_EMOJIS]; // 4 pairs, 8 cards
+// Use images for card faces
+const CARD_IMAGES = [
+  { src: bottle, alt: "Bottle" },
+  { src: boy, alt: "Boy" },
+  { src: shoe, alt: "Shoe" },
+];
+const CARDS = [...CARD_IMAGES, ...CARD_IMAGES]; // 3 pairs, 6 cards
 
 function shuffle(array) {
   const arr = array.slice();
@@ -24,7 +31,7 @@ function formatTime(seconds) {
 
 const FlipCardsGame = () => {
   const [cards, setCards] = useState(() =>
-    shuffle(CARDS.map((emoji, i) => ({ id: i, emoji })))
+    shuffle(CARDS.map((image, i) => ({ id: i, ...image })))
   );
   const [flipped, setFlipped] = useState([]); // indices of currently flipped cards
   const [matched, setMatched] = useState([]); // indices of matched cards
@@ -57,7 +64,7 @@ const FlipCardsGame = () => {
     if (!hasTried && newFlipped.length === 2) setHasTried(true);
     if (newFlipped.length === 2) {
       const [i1, i2] = newFlipped;
-      if (cards[i1].emoji === cards[i2].emoji) {
+      if (cards[i1].src === cards[i2].src) {
         setTimeout(() => {
           setMatched((prev) => [...prev, i1, i2]);
           setFlipped([]);
@@ -89,7 +96,7 @@ const FlipCardsGame = () => {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(4, 70px)",
+          gridTemplateColumns: "repeat(3, 70px)",
           gridGap: 12,
           justifyContent: "center",
           marginBottom: 24,
@@ -150,16 +157,19 @@ const FlipCardsGame = () => {
                     width: "100%",
                     height: "100%",
                     backfaceVisibility: "hidden",
-                    background: "#fff",
+                    background: "#081F2D",
                     borderRadius: 10,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     transform: "rotateY(180deg)",
-                    fontSize: 36,
                   }}
                 >
-                  {card.emoji}
+                  <img
+                    src={card.src}
+                    alt={card.alt}
+                    style={{ width: 36, height: 36, objectFit: "contain" }}
+                  />
                 </div>
               </div>
             </div>
@@ -178,7 +188,7 @@ const FlipCardsGame = () => {
             textAlign: "center",
           }}
         >
-          {matched.length / 2} out of 4 pairs matched!
+          {matched.length / 2} out of 3 pairs matched!
         </div>
       ) : (
         hasTried && (
