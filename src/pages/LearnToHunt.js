@@ -12,19 +12,19 @@ const slides = [
     image: slide1,
     title: "Learn to Hunt",
     description:
-      "Go through the our guide to be able to navigate and complete the augmented reality treasure Hunt successfully.",
+      "Go through the explore mode and complete the augmented reality treasure Hunt successfully.",
   },
   {
     image: slide2,
     title: "Scan Posters Around the City",
     description:
-      "Look out for digitally-ready, enabled posters placed around the city. Scan your phone to scan them and unlock hidden treasures.",
+      "Look out for the posters based on the treasure locations on your explore mode. Use your phone to scan them and unlock hidden treasures.",
   },
   {
     image: slide3,
     title: "Collect. Redeem.",
     description:
-      "Each checkpoint gives you points. Collect enough to redeem exclusive marathon rewards and be the first to win.",
+      "Each checkpoint gives you points. Collect them to redeem exclusive marathon rewards and partner discounts.",
   },
 ];
 

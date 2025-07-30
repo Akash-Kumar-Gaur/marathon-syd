@@ -362,13 +362,10 @@ const Home = () => {
       >
         <div style={{ textAlign: "center", padding: "20px" }}>
           <h3 style={{ marginBottom: "10px", color: "#081F2D" }}>
-            Jigsaw Puzzle Challenge!
+            Complete the puzzle!
           </h3>
           <p style={{ fontSize: 12, fontWeight: "normal", color: "#081F2D" }}>
-            Arrange the puzzle pieces to complete the image and earn points!
-          </p>
-          <p style={{ fontSize: 12, fontWeight: "normal", color: "#081F2D" }}>
-            TIME - 00:30
+            Drag and drop to complete the puzzle
           </p>
         </div>
         <JigsawTrayPuzzle />
@@ -380,11 +377,11 @@ const Home = () => {
       >
         <div style={{ textAlign: "center", padding: "20px" }}>
           <h3 style={{ marginBottom: "10px", color: "#081F2D" }}>
-            Memory Card Challenge!
+            Match in the given time!
           </h3>
           <p style={{ fontSize: 12, fontWeight: "normal", color: "#081F2D" }}>
-            Tap on the individual squares to flip the cards, once a match they
-            will stay visible.
+            Tap on the individual squares to flip the <br />
+            cards, once a match they will stay visible.
           </p>
         </div>
         <FlipCardsGame />

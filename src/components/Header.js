@@ -13,12 +13,14 @@ import avatar7 from "../assets/avatar/avatar7.png";
 import puzzleTile from "../assets/images/puzzleTile.png";
 import matchTile from "../assets/images/matchTile.png";
 import trivia from "../assets/images/trivia.png";
-import mascot from "../assets/images/mascot.png";
+// import mascot from "../assets/images/mascot.png";
 import headphones from "../assets/images/headphones.svg";
 import shokzLogo from "../assets/images/shokz.png";
 import { useDrawer } from "../context/DrawerContext";
 import { treasureData } from "../data/treasureData";
 import FAQModal from "./FAQModal";
+import LeaderboardModal from "./LeaderboardModal";
+import { leaderboardData } from "../data/leaderboardData";
 
 const avatarMap = {
   1: avatar1,
@@ -336,6 +338,7 @@ const Header = () => {
   });
   const [selectedTreasure, setSelectedTreasure] = useState(null);
   const [showFAQModal, setShowFAQModal] = useState(false);
+  const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
 
   useEffect(() => {
     if (isDrawerOpen) {
@@ -368,7 +371,7 @@ const Header = () => {
   };
 
   const handleTrophy = () => {
-    console.log("Trophy clicked");
+    setShowLeaderboardModal(true);
   };
 
   const handleNotifications = () => {
@@ -625,7 +628,7 @@ const Header = () => {
                 }}
               >
                 <i className="fas fa-th-large"></i>
-                <span>CHALLENGES</span>
+                <span>SCORE BOOSTERS</span>
                 <span
                   style={{ marginLeft: "auto", transition: "transform 0.2s" }}
                 >
@@ -1021,6 +1024,12 @@ const Header = () => {
       )}
 
       <FAQModal isOpen={showFAQModal} onClose={() => setShowFAQModal(false)} />
+      <LeaderboardModal
+        isOpen={showLeaderboardModal}
+        onClose={() => setShowLeaderboardModal(false)}
+        userData={userData}
+        leaderboardData={leaderboardData}
+      />
     </>
   );
 };
