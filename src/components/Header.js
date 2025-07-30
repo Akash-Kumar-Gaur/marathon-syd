@@ -18,6 +18,7 @@ import headphones from "../assets/images/headphones.svg";
 import shokzLogo from "../assets/images/shokz.png";
 import { useDrawer } from "../context/DrawerContext";
 import { treasureData } from "../data/treasureData";
+import FAQModal from "./FAQModal";
 
 const avatarMap = {
   1: avatar1,
@@ -334,6 +335,7 @@ const Header = () => {
     phone: "+61 412345678",
   });
   const [selectedTreasure, setSelectedTreasure] = useState(null);
+  const [showFAQModal, setShowFAQModal] = useState(false);
 
   useEffect(() => {
     if (isDrawerOpen) {
@@ -358,8 +360,11 @@ const Header = () => {
   }, [location]);
 
   const handleHelp = () => {
-    // Handle help functionality
-    console.log("Help clicked");
+    // Close drawer first, then show FAQ modal
+    handleDrawerClose();
+    setTimeout(() => {
+      setShowFAQModal(true);
+    }, 300); // Wait for drawer close animation to complete
   };
 
   const handleTrophy = () => {
@@ -522,7 +527,7 @@ const Header = () => {
           ) : null}
           {isHomePage || isFindRoutePage || isWayfinderPage ? null : (
             <button className="help-button" onClick={handleHelp}>
-              HELP <span className="help-icon">?</span>
+              FAQ <span className="help-icon">?</span>
             </button>
           )}
         </div>
@@ -578,7 +583,8 @@ const Header = () => {
                 <div
                   className="drawer-email"
                   style={{
-                    color: "#6D6D6D",
+                    color:
+                      userData.isVerified === false ? "#ff4444" : "#6D6D6D",
                     fontWeight: 500,
                     fontSize: 14,
                     wordBreak: "break-all",
@@ -588,12 +594,17 @@ const Header = () => {
                   }}
                 >
                   {userData.email || "alex.johnson@example.com"}
-                </div>
-                <div
-                  className="drawer-phone"
-                  style={{ color: "#6D6D6D", fontWeight: 500, fontSize: 14 }}
-                >
-                  {userData.phone || "+61 9393020202"}
+                  {userData.isVerified === false && (
+                    <span
+                      style={{
+                        marginLeft: "8px",
+                        fontSize: "12px",
+                        opacity: 0.8,
+                      }}
+                    >
+                      (Guest)
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -950,29 +961,66 @@ const Header = () => {
             >
               TRY PHOTOBOOTH
             </button>
-            <button
-              className="drawer-signout"
-              onClick={handleSignOut}
+            <div
               style={{
-                margin: "24px auto",
+                display: "flex",
+                gap: "8px",
+                margin: "16px",
                 marginTop: 0,
-                background: "transparent",
-                color: "#081F2D",
-                fontWeight: 700,
-                fontSize: 18,
-                border: "1px solid #000000",
-                borderRadius: 14,
-                width: "calc(100% - 150px)",
-                height: 54,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                letterSpacing: 1,
               }}
             >
-              SIGN OUT
-            </button>
+              <button
+                className="drawer-faq"
+                onClick={handleHelp}
+                style={{
+                  flex: 1,
+                  background: "transparent",
+                  color: "#081F2D",
+                  fontWeight: 500,
+                  fontSize: 14,
+                  border: "none",
+                  borderRadius: 0,
+                  height: 48,
+                  // textDecoration: "underline",
+                  letterSpacing: 0.5,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                }}
+              >
+                FAQ
+                <span
+                  className="help-icon"
+                  style={{ border: "2px solid #081F2D", color: "#081F2D" }}
+                >
+                  ?
+                </span>
+              </button>
+              <button
+                className="drawer-signout"
+                onClick={handleSignOut}
+                style={{
+                  flex: 1,
+                  background: "transparent",
+                  color: "#081F2D",
+                  fontWeight: 700,
+                  fontSize: 18,
+                  border: "1px solid #000000",
+                  borderRadius: 14,
+                  height: 54,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                  letterSpacing: 1,
+                }}
+              >
+                SIGN OUT
+              </button>
+            </div>
           </div>
         </div>
       )}
+
+      <FAQModal isOpen={showFAQModal} onClose={() => setShowFAQModal(false)} />
     </>
   );
 };

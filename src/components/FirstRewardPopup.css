@@ -1,0 +1,119 @@
+.first-reward-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 40px;
+}
+
+.first-reward-modal {
+  background: #eaf7fc;
+  border: 2px solid #081f2d;
+  border-radius: 16px;
+  padding: 0;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.first-reward-image-container {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.first-reward-image {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.first-reward-header {
+  text-align: center;
+  /* margin-bottom: 16px; */
+}
+
+.first-reward-title {
+  color: #081f2d;
+  font-size: 30px;
+  font-weight: 700;
+  font-style: normal;
+  line-height: 90%;
+  letter-spacing: 0%;
+  margin: 0 0 16px 0;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  vertical-align: middle;
+}
+
+.first-reward-description p {
+  color: #081f2d;
+  font-size: 22px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 113%;
+  letter-spacing: 0%;
+  text-align: center;
+  vertical-align: middle;
+  margin: 0;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+.first-reward-actions {
+  text-align: center;
+  padding: 24px;
+  padding-bottom: 0;
+}
+
+.first-reward-collect-button {
+  background: #0096db;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 32px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0, 150, 219, 0.3);
+}
+
+.first-reward-collect-button:hover {
+  background: #0078a8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 150, 219, 0.4);
+}
+
+.first-reward-collect-button:active {
+  transform: translateY(0);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .first-reward-modal {
+    padding: 20px;
+    max-width: 90vw;
+  }
+
+  .first-reward-title {
+    font-size: 1.2rem;
+  }
+
+  .first-reward-description p {
+    font-size: 0.9rem;
+  }
+
+  .first-reward-collect-button {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+  }
+}

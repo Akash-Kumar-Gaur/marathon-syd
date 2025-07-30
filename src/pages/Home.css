@@ -820,3 +820,53 @@ body,
     font-size: 14px;
   }
 }
+
+/* Hint Balloon Popup */
+.hint-button-container {
+  position: relative;
+}
+
+.hint-balloon {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 12px;
+  z-index: 1000;
+  animation: balloonFadeIn 0.3s ease-out;
+}
+
+.hint-balloon-content {
+  background: #081f2d;
+  color: white;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+  max-width: 280px;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.hint-balloon-arrow {
+  position: absolute;
+  top: 100%;
+  right: 20px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #081f2d;
+}
+
+@keyframes balloonFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

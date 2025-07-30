@@ -5,7 +5,10 @@ import { styled } from "@mui/material/styles";
 import "./Welcome.css";
 import startBg from "../assets/images/startBg.png";
 import formBg from "../assets/images/formBg.png";
+import troubleOtp from "../assets/images/troubleOtp.png";
 import Header from "../components/Header";
+import FirstRewardPopup from "../components/FirstRewardPopup";
+import { firstRewardConfig } from "../data/firstRewardConfig";
 
 // Import avatar images
 import avatar1 from "../assets/avatar/avatar1.png";
@@ -20,18 +23,20 @@ import avatar from "../assets/avatar/avatar.png";
 // Styled Material UI components
 const StyledSelect = styled(Select)({
   height: 50,
-  backgroundColor: "rgba(255, 255, 255, 0.95)",
+  backgroundColor: "#edf2f7",
   borderRadius: 12,
   "& .MuiOutlinedInput-notchedOutline": {
     border: "none",
   },
   "& .MuiSelect-select": {
-    padding: "8px 16px !important",
-    color: "#081F2D",
+    padding: "12px 16px !important",
+    color: "#1a202c",
     fontSize: "1rem",
+    fontFamily:
+      '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   },
   "& .MuiSelect-icon": {
-    color: "#081F2D",
+    color: "#1a202c",
     right: 16,
   },
   "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
@@ -41,7 +46,9 @@ const StyledSelect = styled(Select)({
 
 const StyledMenuItem = styled(MenuItem)({
   fontSize: "1rem",
-  color: "#081F2D",
+  color: "#1a202c",
+  fontFamily:
+    '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
 });
 
 const Welcome = () => {
@@ -61,6 +68,8 @@ const Welcome = () => {
   });
   const [otp, setOtp] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
+  const [showTroubleModal, setShowTroubleModal] = useState(false);
+  const [showFirstReward, setShowFirstReward] = useState(false);
 
   // Avatar options - using actual avatar images
   const avatarOptions = [
@@ -138,8 +147,60 @@ const Welcome = () => {
       "Welcome - History length before navigate:",
       window.history.length
     );
-    // Add your OTP verification logic here
+
+    // Store user data with verification status as true
+    const userData = {
+      ...formData,
+      avatar: selectedAvatar,
+      isVerified: true,
+      loginMethod: "otp",
+    };
+
+    // Store user data in localStorage or sessionStorage
+    localStorage.setItem("userData", JSON.stringify(userData));
+
+    // Show first reward popup before navigating
+    setShowFirstReward(true);
+  };
+
+  const handleGuestLogin = () => {
+    console.log("Welcome - Guest login clicked, navigating to /hunt");
+    console.log(
+      "Welcome - History length before navigate:",
+      window.history.length
+    );
+
+    // Store user data with verification status as false
+    const userData = {
+      ...formData,
+      avatar: selectedAvatar,
+      isVerified: false,
+      loginMethod: "guest",
+    };
+
+    // Store user data in localStorage or sessionStorage
+    localStorage.setItem("userData", JSON.stringify(userData));
+
+    // Show first reward popup before navigating
+    setShowFirstReward(true);
+  };
+
+  const handleCollectReward = () => {
+    // Store the collected reward in localStorage
+    const collectedRewards = JSON.parse(
+      localStorage.getItem("collectedRewards") || "[]"
+    );
+    collectedRewards.push({
+      ...firstRewardConfig,
+      collectedAt: new Date().toISOString(),
+      id: "first-reward",
+    });
+    localStorage.setItem("collectedRewards", JSON.stringify(collectedRewards));
+
+    // Close the popup and navigate to hunt
+    setShowFirstReward(false);
     navigate("/hunt");
+
     setTimeout(() => {
       console.log(
         "Welcome - History length after navigate:",
@@ -154,8 +215,8 @@ const Welcome = () => {
         <div className="otp-header">
           <h1>Enter One Time Password</h1>
           <p>
-            We've sent a 6-digit code to your mobile number. Please enter it
-            below to verify your identity.
+            We've sent a 6-digit code to your E-mail. Please enter it below to
+            verify your identity.
           </p>
         </div>
         <div className="otp-input-group">
@@ -171,23 +232,75 @@ const Welcome = () => {
             maxLength={6}
           />
         </div>
-        <div>
-          <div className="otp-actions">
-            <span className="resend-text">Didn't receive the code?</span>
-            {resendTimer > 0 ? (
-              <button className="resend-button" disabled>
-                Resend in 00:{String(resendTimer).padStart(2, "0")} sec
-              </button>
-            ) : (
-              <button className="resend-button" onClick={handleResendOtp}>
-                Resend OTP
-              </button>
-            )}
+        <div className="otp-actions">
+          <span className="resend-text">Didn't receive the code?</span>
+          {resendTimer > 0 ? (
+            <button className="resend-button" disabled>
+              Resend in 00:{String(resendTimer).padStart(2, "0")} sec
+            </button>
+          ) : (
+            <button className="resend-button" onClick={handleResendOtp}>
+              Resend OTP
+            </button>
+          )}
+        </div>
+        <button className="verify-button" onClick={handleVerifyOtp}>
+          VERIFY
+        </button>
+        <button
+          className="trouble-link"
+          onClick={() => setShowTroubleModal(true)}
+        >
+          Trouble recieving OTP?
+        </button>
+      </div>
+    );
+  };
+
+  const renderTroubleModal = () => {
+    if (!showTroubleModal) return null;
+
+    return (
+      <div
+        className="trouble-modal-overlay"
+        onClick={() => setShowTroubleModal(false)}
+      >
+        <div className="trouble-modal" onClick={(e) => e.stopPropagation()}>
+          <h2 className="trouble-modal-title">Trouble Receiving OTP?</h2>
+
+          <div className="trouble-modal-illustration">
+            <img
+              src={troubleOtp}
+              alt="Trouble OTP Illustration"
+              className="trouble-illustration-img"
+            />
           </div>
-          <button className="verify-button" onClick={handleVerifyOtp}>
-            VERIFY
-          </button>
-          <button className="trouble-link">Trouble recieving OTP?</button>
+
+          <p className="trouble-modal-message">
+            Oops! We're currently unable to send an OTP. You can proceed as a
+            guest and verify your account later.
+          </p>
+
+          <div className="trouble-modal-actions">
+            <button
+              className="guest-login-button"
+              onClick={() => {
+                setShowTroubleModal(false);
+                handleGuestLogin();
+              }}
+            >
+              LOG IN AS A GUEST
+            </button>
+            <button
+              className="retry-button"
+              onClick={() => {
+                setShowTroubleModal(false);
+                handleResendOtp();
+              }}
+            >
+              RETRY
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -214,6 +327,9 @@ const Welcome = () => {
                 alt={`Avatar ${avatar.id}`}
                 className="avatar-image"
               />
+              {selectedAvatar?.id === avatar.id && (
+                <div className="avatar-tick-icon">✓</div>
+              )}
             </div>
           ))}
         </div>
@@ -240,6 +356,13 @@ const Welcome = () => {
             <div className="form-content">{renderAvatarSelection()}</div>
           </div>
         </div>
+
+        <FirstRewardPopup
+          isOpen={showFirstReward}
+          onClose={() => setShowFirstReward(false)}
+          onCollect={handleCollectReward}
+          rewardData={firstRewardConfig}
+        />
       </div>
     );
   }
@@ -255,7 +378,10 @@ const Welcome = () => {
           <div className="center-card">
             <div className="form-content">
               {showOTP ? (
-                renderOTPVerification()
+                <>
+                  {renderOTPVerification()}
+                  {renderTroubleModal()}
+                </>
               ) : (
                 <>
                   <div className="form-welcome">
@@ -273,6 +399,16 @@ const Welcome = () => {
                         name="name"
                         placeholder="Your full name"
                         value={formData.name}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Email ID</label>
+                      <input
+                        type="email"
+                        name="email"
+                        placeholder="Your email ID"
+                        value={formData.email}
                         onChange={handleInputChange}
                       />
                     </div>
@@ -301,72 +437,15 @@ const Welcome = () => {
                         </StyledSelect>
                       </FormControl>
                     </div>
-                    <div className="form-row">
-                      <div className="form-group half">
-                        <label>City</label>
-                        <FormControl fullWidth>
-                          <StyledSelect
-                            value={formData.city}
-                            onChange={(e) => handleSelectChange(e, "city")}
-                            displayEmpty
-                          >
-                            <StyledMenuItem value="" disabled>
-                              Your city
-                            </StyledMenuItem>
-                            <StyledMenuItem value="sydney">
-                              Sydney
-                            </StyledMenuItem>
-                            <StyledMenuItem value="melbourne">
-                              Melbourne
-                            </StyledMenuItem>
-                            <StyledMenuItem value="brisbane">
-                              Brisbane
-                            </StyledMenuItem>
-                            <StyledMenuItem value="perth">Perth</StyledMenuItem>
-                            <StyledMenuItem value="other">Other</StyledMenuItem>
-                          </StyledSelect>
-                        </FormControl>
-                      </div>
-                      <div className="form-group half">
-                        <label>Postcode</label>
-                        <input
-                          type="text"
-                          name="postcode"
-                          placeholder="Your Postcode"
-                          value={formData.postcode}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                    </div>
                     <div className="form-group">
-                      <label>Email ID</label>
+                      <label>Postcode</label>
                       <input
-                        type="email"
-                        name="email"
-                        placeholder="Your email ID"
-                        value={formData.email}
+                        type="text"
+                        name="postcode"
+                        placeholder="Your postcode"
+                        value={formData.postcode}
                         onChange={handleInputChange}
                       />
-                    </div>
-                    <div className="form-group">
-                      <label>Phone Number</label>
-                      <div className="phone-input-container">
-                        <span className="phone-prefix">+61</span>
-                        <input
-                          type="tel"
-                          name="phone"
-                          className="phone-input"
-                          placeholder="XXXXXXXXX"
-                          value={formData.phone.replace("+61", "")}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, "");
-                            setFormData((prev) => ({
-                              ...prev,
-                              phone: "+61" + value,
-                            }));
-                          }}
-                        />
-                      </div>
                     </div>
                     <button
                       type="button"
@@ -381,6 +460,13 @@ const Welcome = () => {
             </div>
           </div>
         </div>
+
+        <FirstRewardPopup
+          isOpen={showFirstReward}
+          onClose={() => setShowFirstReward(false)}
+          onCollect={handleCollectReward}
+          rewardData={firstRewardConfig}
+        />
       </div>
     );
   }
@@ -414,6 +500,13 @@ const Welcome = () => {
           </button>
         </div>
       </div>
+
+      <FirstRewardPopup
+        isOpen={showFirstReward}
+        onClose={() => setShowFirstReward(false)}
+        onCollect={handleCollectReward}
+        rewardData={firstRewardConfig}
+      />
     </div>
   );
 };

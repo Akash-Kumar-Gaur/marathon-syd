@@ -50,7 +50,7 @@ const MapboxMap = ({
       event.originalEvent.stopPropagation();
       // Only show popup for user marker, not treasure markers
       if (marker.id === "user") {
-        setPopupInfo(marker);
+        setPopupInfo(null);
       } else {
         setPopupInfo(null);
       }

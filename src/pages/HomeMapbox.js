@@ -21,13 +21,29 @@ import { treasureData } from "../data/treasureData";
 
 const Home = () => {
   const location = useLocation();
+
+  // Calculate distance between two points using Haversine formula
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Radius of the Earth in kilometers
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) *
+        Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in kilometers
+  };
+
   const [center, setCenter] = useState([151.2093, -33.8688]); // Note: Mapbox uses [lng, lat] format
 
   // Convert treasure data to the format expected by the component
   const [treasures, setTreasures] = useState(() => {
-    // Select nearby treasures (around 10) based on proximity to center
+    // Use the same logic as findNearbyTreasures for initial selection
+    const initialCenter = [151.2093, -33.8688]; // Default center
     const nearbyTreasures = treasureData
-      .slice(0, 10)
       .map((treasure, index) => ({
         id: index + 1,
         position: [
@@ -41,7 +57,15 @@ const Home = () => {
         address: treasure.address,
         openingHours: treasure.openingHours,
         uniqueRedemption: treasure.uniqueRedemption,
-      }));
+        distance: calculateDistance(
+          initialCenter[1], // lat
+          initialCenter[0], // lng
+          treasure.coordinates.latitude,
+          treasure.coordinates.longitude
+        ),
+      }))
+      .sort((a, b) => a.distance - b.distance) // Sort by distance
+      .slice(0, 10); // Take the 10 closest
 
     return nearbyTreasures;
   });
@@ -56,6 +80,7 @@ const Home = () => {
   const [selectedGame, setSelectedGame] = useState(null);
   const [permissionsChecked, setPermissionsChecked] = useState(false);
   const [isRequestingPermissions, setIsRequestingPermissions] = useState(false);
+  const [showHintBalloon, setShowHintBalloon] = useState(false);
   const permissionInitRef = useRef(false);
   const { isDrawerOpen } = useDrawer();
 
@@ -96,6 +121,15 @@ const Home = () => {
         clearTimeout(debouncedMapMove.current);
       }
     };
+  }, []);
+
+  // Show hint balloon for 5 seconds after render
+  useEffect(() => {
+    setShowHintBalloon(true);
+    const timer = setTimeout(() => {
+      setShowHintBalloon(false);
+    }, 5000);
+    return () => clearTimeout(timer);
   }, []);
 
   const checkAndInitializePermissions = async () => {
@@ -206,21 +240,6 @@ const Home = () => {
     if (selectedTreasure) {
       setIsHintModalOpen(true);
     }
-  };
-
-  // Calculate distance between two points using Haversine formula
-  const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Radius of the Earth in kilometers
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) *
-        Math.cos(lat2 * (Math.PI / 180)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distance in kilometers
   };
 
   // Find nearby treasures based on current map center
@@ -392,9 +411,9 @@ const Home = () => {
         </div>
       </div>
 
-      {activeView === "map" && (
+      {/* {activeView === "map" && (
         <MapModeToggle isLive={isLiveMap} onToggle={toggleMapMode} />
-      )}
+      )} */}
 
       <div className="views-container">
         <div
@@ -494,23 +513,35 @@ const Home = () => {
           </button>
         </div>
         {selectedTreasure && (
-          <button
-            className="action-button idea-button"
-            onClick={handleHintClick}
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+          <div className="hint-button-container">
+            <button
+              className="action-button idea-button"
+              onClick={handleHintClick}
             >
-              <path
-                d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z"
-                fill="currentColor"
-              />
-            </svg>
-          </button>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+            {showHintBalloon && (
+              <div className="hint-balloon">
+                <div className="hint-balloon-content">
+                  Need help? Use a hint to uncover your
+                  <br />
+                  next hidden treasure.
+                </div>
+                <div className="hint-balloon-arrow"></div>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>

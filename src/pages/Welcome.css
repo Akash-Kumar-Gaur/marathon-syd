@@ -251,7 +251,7 @@
   position: relative;
   z-index: 3;
   width: 100%;
-  background: #081f2d;
+  background: #1a202c;
   border-radius: 24px 24px 0 0;
   padding: 32px 24px;
 }
@@ -266,26 +266,31 @@
 }
 
 .form-welcome {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
+  text-align: left;
 }
 
 .form-welcome h1 {
   color: white;
   font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 .form-welcome p {
   color: rgba(255, 255, 255, 0.9);
   font-size: 1rem;
-  line-height: 1.3;
+  line-height: 1.4;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 .registration-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   flex: 1;
 }
 
@@ -301,21 +306,25 @@
   font-weight: 500;
   margin-left: 2px;
   line-height: 1;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 .form-group input {
   width: 100%;
-  padding: 8px 16px;
+  padding: 12px 16px;
   border-radius: 12px;
   border: none;
-  background: rgba(255, 255, 255, 0.95);
+  background: #edf2f7;
   font-size: 1rem;
-  color: #081f2d;
+  color: #1a202c;
   height: 50px;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 .form-group input::placeholder {
-  color: rgba(8, 31, 45, 0.5);
+  color: #a0aec0;
   font-size: 1rem;
 }
 
@@ -330,18 +339,20 @@
 
 .send-otp-button {
   width: 100%;
-  padding: 8px;
+  padding: 12px;
   border-radius: 12px;
   border: none;
-  background: #3498db;
+  background: #4299e1;
   color: white;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 4px;
+  margin-top: 8px;
   height: 50px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 .send-otp-button:disabled {
@@ -446,16 +457,16 @@
   width: 100%;
   max-width: 480px;
   margin: 0 auto;
-  /* padding: 40px 32px; */
   display: flex;
   flex-direction: column;
+  gap: 24px;
 }
 
 .otp-header {
   text-align: left;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .otp-header h1 {
@@ -464,6 +475,8 @@
   font-weight: 700;
   line-height: 1.1;
   margin: 0;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 .otp-header p {
@@ -473,59 +486,73 @@
   margin: 0;
   font-weight: 400;
   max-width: 400px;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 .otp-input-group {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-top: 50px;
+  gap: 6px;
 }
 
 .otp-input-group label {
   color: white;
   font-size: 1rem;
   font-weight: 500;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 .otp-input-field {
   width: 100%;
-  height: 56px;
-  background: white;
+  height: 50px;
+  background: #edf2f7;
   border: none;
   border-radius: 12px;
-  padding: 8px 20px;
-  font-size: 1.1rem;
-  color: #666;
+  padding: 12px 16px;
+  font-size: 1rem;
+  color: #1a202c;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 .otp-input-field::placeholder {
-  color: #666;
+  color: #a0aec0;
 }
 
 .otp-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 24px 0 32px;
+  margin: 0;
 }
 
 .resend-text {
   color: rgba(255, 255, 255, 0.7);
   font-style: italic;
   font-size: 1rem;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 .resend-button {
-  background: rgba(52, 61, 69, 0.8);
+  background: #4a5568;
   border: none;
-  border-radius: 100px;
-  color: rgba(255, 255, 255, 0.9);
-  padding: 12px 18px;
-  font-size: 1rem;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 16px;
+  font-size: 0.9rem;
   cursor: pointer;
-  min-width: 200px;
+  min-width: 160px;
   text-align: center;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+.resend-button:not(:disabled) {
+  background: #4299e1;
+  color: white;
 }
 
 .resend-button:disabled {
@@ -535,29 +562,125 @@
 
 .verify-button {
   width: 100%;
-  height: 52px;
-  background: #3498db;
+  height: 50px;
+  background: #4299e1;
   border: none;
   border-radius: 12px;
   color: white;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 24px;
+  letter-spacing: 0.5px;
+  margin: 0;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 .trouble-link {
   background: none;
   border: none;
-  color: #0096db;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 1rem;
   font-weight: 500;
   text-decoration: underline;
   cursor: pointer;
-  margin-top: 20px;
+  margin: 0;
   padding: 0;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  text-align: center;
+  width: 100%;
+}
+
+/* Trouble Modal Styles */
+.trouble-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.trouble-modal {
+  background: #e6f3ff;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.trouble-modal-title {
+  color: #1a202c;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+.trouble-modal-illustration {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.trouble-illustration-img {
+  width: 120px;
+  height: auto;
+  max-width: 100%;
+}
+
+.trouble-modal-message {
+  color: #1a202c;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 20px;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+.trouble-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guest-login-button {
+  background: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+.trouble-modal .retry-button {
+  background: transparent;
+  color: #081f2d;
+  border: 2px solid #081f2d;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
 }
@@ -617,7 +740,7 @@
   transition: all 0.3s ease;
   border: 3px solid transparent;
   position: relative;
-  overflow: hidden;
+  /* overflow: hidden; */
   outline: none;
   background: none;
   -webkit-tap-highlight-color: transparent;
@@ -630,8 +753,36 @@
 }
 
 .avatar-option.selected {
-  border-color: #0096db;
   transform: scale(1.05);
+}
+
+.avatar-tick-icon {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: 20px;
+  height: 20px;
+  background: #0096db;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 10;
+  animation: fadeInScale 0.3s ease-out;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .avatar-image {
