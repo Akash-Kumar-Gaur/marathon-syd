@@ -423,17 +423,456 @@ const Welcome = () => {
                           <StyledMenuItem value="" disabled>
                             Country of origin
                           </StyledMenuItem>
+                          <StyledMenuItem value="afghanistan">
+                            Afghanistan
+                          </StyledMenuItem>
+                          <StyledMenuItem value="albania">
+                            Albania
+                          </StyledMenuItem>
+                          <StyledMenuItem value="algeria">
+                            Algeria
+                          </StyledMenuItem>
+                          <StyledMenuItem value="andorra">
+                            Andorra
+                          </StyledMenuItem>
+                          <StyledMenuItem value="angola">Angola</StyledMenuItem>
+                          <StyledMenuItem value="antigua-and-barbuda">
+                            Antigua and Barbuda
+                          </StyledMenuItem>
+                          <StyledMenuItem value="argentina">
+                            Argentina
+                          </StyledMenuItem>
+                          <StyledMenuItem value="armenia">
+                            Armenia
+                          </StyledMenuItem>
                           <StyledMenuItem value="australia">
                             Australia
                           </StyledMenuItem>
-                          <StyledMenuItem value="usa">
-                            United States
+                          <StyledMenuItem value="austria">
+                            Austria
+                          </StyledMenuItem>
+                          <StyledMenuItem value="azerbaijan">
+                            Azerbaijan
+                          </StyledMenuItem>
+                          <StyledMenuItem value="bahamas">
+                            Bahamas
+                          </StyledMenuItem>
+                          <StyledMenuItem value="bahrain">
+                            Bahrain
+                          </StyledMenuItem>
+                          <StyledMenuItem value="bangladesh">
+                            Bangladesh
+                          </StyledMenuItem>
+                          <StyledMenuItem value="barbados">
+                            Barbados
+                          </StyledMenuItem>
+                          <StyledMenuItem value="belarus">
+                            Belarus
+                          </StyledMenuItem>
+                          <StyledMenuItem value="belgium">
+                            Belgium
+                          </StyledMenuItem>
+                          <StyledMenuItem value="belize">Belize</StyledMenuItem>
+                          <StyledMenuItem value="benin">Benin</StyledMenuItem>
+                          <StyledMenuItem value="bhutan">Bhutan</StyledMenuItem>
+                          <StyledMenuItem value="bolivia">
+                            Bolivia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="bosnia-and-herzegovina">
+                            Bosnia and Herzegovina
+                          </StyledMenuItem>
+                          <StyledMenuItem value="botswana">
+                            Botswana
+                          </StyledMenuItem>
+                          <StyledMenuItem value="brazil">Brazil</StyledMenuItem>
+                          <StyledMenuItem value="brunei">Brunei</StyledMenuItem>
+                          <StyledMenuItem value="bulgaria">
+                            Bulgaria
+                          </StyledMenuItem>
+                          <StyledMenuItem value="burkina-faso">
+                            Burkina Faso
+                          </StyledMenuItem>
+                          <StyledMenuItem value="burundi">
+                            Burundi
+                          </StyledMenuItem>
+                          <StyledMenuItem value="cambodia">
+                            Cambodia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="cameroon">
+                            Cameroon
+                          </StyledMenuItem>
+                          <StyledMenuItem value="canada">Canada</StyledMenuItem>
+                          <StyledMenuItem value="cape-verde">
+                            Cape Verde
+                          </StyledMenuItem>
+                          <StyledMenuItem value="central-african-republic">
+                            Central African Republic
+                          </StyledMenuItem>
+                          <StyledMenuItem value="chad">Chad</StyledMenuItem>
+                          <StyledMenuItem value="chile">Chile</StyledMenuItem>
+                          <StyledMenuItem value="china">China</StyledMenuItem>
+                          <StyledMenuItem value="colombia">
+                            Colombia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="comoros">
+                            Comoros
+                          </StyledMenuItem>
+                          <StyledMenuItem value="congo">Congo</StyledMenuItem>
+                          <StyledMenuItem value="costa-rica">
+                            Costa Rica
+                          </StyledMenuItem>
+                          <StyledMenuItem value="croatia">
+                            Croatia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="cuba">Cuba</StyledMenuItem>
+                          <StyledMenuItem value="cyprus">Cyprus</StyledMenuItem>
+                          <StyledMenuItem value="czech-republic">
+                            Czech Republic
+                          </StyledMenuItem>
+                          <StyledMenuItem value="denmark">
+                            Denmark
+                          </StyledMenuItem>
+                          <StyledMenuItem value="djibouti">
+                            Djibouti
+                          </StyledMenuItem>
+                          <StyledMenuItem value="dominica">
+                            Dominica
+                          </StyledMenuItem>
+                          <StyledMenuItem value="dominican-republic">
+                            Dominican Republic
+                          </StyledMenuItem>
+                          <StyledMenuItem value="east-timor">
+                            East Timor
+                          </StyledMenuItem>
+                          <StyledMenuItem value="ecuador">
+                            Ecuador
+                          </StyledMenuItem>
+                          <StyledMenuItem value="egypt">Egypt</StyledMenuItem>
+                          <StyledMenuItem value="el-salvador">
+                            El Salvador
+                          </StyledMenuItem>
+                          <StyledMenuItem value="equatorial-guinea">
+                            Equatorial Guinea
+                          </StyledMenuItem>
+                          <StyledMenuItem value="eritrea">
+                            Eritrea
+                          </StyledMenuItem>
+                          <StyledMenuItem value="estonia">
+                            Estonia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="eswatini">
+                            Eswatini
+                          </StyledMenuItem>
+                          <StyledMenuItem value="ethiopia">
+                            Ethiopia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="fiji">Fiji</StyledMenuItem>
+                          <StyledMenuItem value="finland">
+                            Finland
+                          </StyledMenuItem>
+                          <StyledMenuItem value="france">France</StyledMenuItem>
+                          <StyledMenuItem value="gabon">Gabon</StyledMenuItem>
+                          <StyledMenuItem value="gambia">Gambia</StyledMenuItem>
+                          <StyledMenuItem value="georgia">
+                            Georgia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="germany">
+                            Germany
+                          </StyledMenuItem>
+                          <StyledMenuItem value="ghana">Ghana</StyledMenuItem>
+                          <StyledMenuItem value="greece">Greece</StyledMenuItem>
+                          <StyledMenuItem value="grenada">
+                            Grenada
+                          </StyledMenuItem>
+                          <StyledMenuItem value="guatemala">
+                            Guatemala
+                          </StyledMenuItem>
+                          <StyledMenuItem value="guinea">Guinea</StyledMenuItem>
+                          <StyledMenuItem value="guinea-bissau">
+                            Guinea-Bissau
+                          </StyledMenuItem>
+                          <StyledMenuItem value="guyana">Guyana</StyledMenuItem>
+                          <StyledMenuItem value="haiti">Haiti</StyledMenuItem>
+                          <StyledMenuItem value="honduras">
+                            Honduras
+                          </StyledMenuItem>
+                          <StyledMenuItem value="hungary">
+                            Hungary
+                          </StyledMenuItem>
+                          <StyledMenuItem value="iceland">
+                            Iceland
+                          </StyledMenuItem>
+                          <StyledMenuItem value="india">India</StyledMenuItem>
+                          <StyledMenuItem value="indonesia">
+                            Indonesia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="iran">Iran</StyledMenuItem>
+                          <StyledMenuItem value="iraq">Iraq</StyledMenuItem>
+                          <StyledMenuItem value="ireland">
+                            Ireland
+                          </StyledMenuItem>
+                          <StyledMenuItem value="israel">Israel</StyledMenuItem>
+                          <StyledMenuItem value="italy">Italy</StyledMenuItem>
+                          <StyledMenuItem value="ivory-coast">
+                            Ivory Coast
+                          </StyledMenuItem>
+                          <StyledMenuItem value="jamaica">
+                            Jamaica
+                          </StyledMenuItem>
+                          <StyledMenuItem value="japan">Japan</StyledMenuItem>
+                          <StyledMenuItem value="jordan">Jordan</StyledMenuItem>
+                          <StyledMenuItem value="kazakhstan">
+                            Kazakhstan
+                          </StyledMenuItem>
+                          <StyledMenuItem value="kenya">Kenya</StyledMenuItem>
+                          <StyledMenuItem value="kiribati">
+                            Kiribati
+                          </StyledMenuItem>
+                          <StyledMenuItem value="kuwait">Kuwait</StyledMenuItem>
+                          <StyledMenuItem value="kyrgyzstan">
+                            Kyrgyzstan
+                          </StyledMenuItem>
+                          <StyledMenuItem value="laos">Laos</StyledMenuItem>
+                          <StyledMenuItem value="latvia">Latvia</StyledMenuItem>
+                          <StyledMenuItem value="lebanon">
+                            Lebanon
+                          </StyledMenuItem>
+                          <StyledMenuItem value="lesotho">
+                            Lesotho
+                          </StyledMenuItem>
+                          <StyledMenuItem value="liberia">
+                            Liberia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="libya">Libya</StyledMenuItem>
+                          <StyledMenuItem value="liechtenstein">
+                            Liechtenstein
+                          </StyledMenuItem>
+                          <StyledMenuItem value="lithuania">
+                            Lithuania
+                          </StyledMenuItem>
+                          <StyledMenuItem value="luxembourg">
+                            Luxembourg
+                          </StyledMenuItem>
+                          <StyledMenuItem value="madagascar">
+                            Madagascar
+                          </StyledMenuItem>
+                          <StyledMenuItem value="malawi">Malawi</StyledMenuItem>
+                          <StyledMenuItem value="malaysia">
+                            Malaysia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="maldives">
+                            Maldives
+                          </StyledMenuItem>
+                          <StyledMenuItem value="mali">Mali</StyledMenuItem>
+                          <StyledMenuItem value="malta">Malta</StyledMenuItem>
+                          <StyledMenuItem value="marshall-islands">
+                            Marshall Islands
+                          </StyledMenuItem>
+                          <StyledMenuItem value="mauritania">
+                            Mauritania
+                          </StyledMenuItem>
+                          <StyledMenuItem value="mauritius">
+                            Mauritius
+                          </StyledMenuItem>
+                          <StyledMenuItem value="mexico">Mexico</StyledMenuItem>
+                          <StyledMenuItem value="micronesia">
+                            Micronesia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="moldova">
+                            Moldova
+                          </StyledMenuItem>
+                          <StyledMenuItem value="monaco">Monaco</StyledMenuItem>
+                          <StyledMenuItem value="mongolia">
+                            Mongolia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="montenegro">
+                            Montenegro
+                          </StyledMenuItem>
+                          <StyledMenuItem value="morocco">
+                            Morocco
+                          </StyledMenuItem>
+                          <StyledMenuItem value="mozambique">
+                            Mozambique
+                          </StyledMenuItem>
+                          <StyledMenuItem value="myanmar">
+                            Myanmar
+                          </StyledMenuItem>
+                          <StyledMenuItem value="namibia">
+                            Namibia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="nauru">Nauru</StyledMenuItem>
+                          <StyledMenuItem value="nepal">Nepal</StyledMenuItem>
+                          <StyledMenuItem value="netherlands">
+                            Netherlands
+                          </StyledMenuItem>
+                          <StyledMenuItem value="new-zealand">
+                            New Zealand
+                          </StyledMenuItem>
+                          <StyledMenuItem value="nicaragua">
+                            Nicaragua
+                          </StyledMenuItem>
+                          <StyledMenuItem value="niger">Niger</StyledMenuItem>
+                          <StyledMenuItem value="nigeria">
+                            Nigeria
+                          </StyledMenuItem>
+                          <StyledMenuItem value="north-korea">
+                            North Korea
+                          </StyledMenuItem>
+                          <StyledMenuItem value="north-macedonia">
+                            North Macedonia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="norway">Norway</StyledMenuItem>
+                          <StyledMenuItem value="oman">Oman</StyledMenuItem>
+                          <StyledMenuItem value="pakistan">
+                            Pakistan
+                          </StyledMenuItem>
+                          <StyledMenuItem value="palau">Palau</StyledMenuItem>
+                          <StyledMenuItem value="panama">Panama</StyledMenuItem>
+                          <StyledMenuItem value="papua-new-guinea">
+                            Papua New Guinea
+                          </StyledMenuItem>
+                          <StyledMenuItem value="paraguay">
+                            Paraguay
+                          </StyledMenuItem>
+                          <StyledMenuItem value="peru">Peru</StyledMenuItem>
+                          <StyledMenuItem value="philippines">
+                            Philippines
+                          </StyledMenuItem>
+                          <StyledMenuItem value="poland">Poland</StyledMenuItem>
+                          <StyledMenuItem value="portugal">
+                            Portugal
+                          </StyledMenuItem>
+                          <StyledMenuItem value="qatar">Qatar</StyledMenuItem>
+                          <StyledMenuItem value="romania">
+                            Romania
+                          </StyledMenuItem>
+                          <StyledMenuItem value="russia">Russia</StyledMenuItem>
+                          <StyledMenuItem value="rwanda">Rwanda</StyledMenuItem>
+                          <StyledMenuItem value="saint-kitts-and-nevis">
+                            Saint Kitts and Nevis
+                          </StyledMenuItem>
+                          <StyledMenuItem value="saint-lucia">
+                            Saint Lucia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="saint-vincent-and-the-grenadines">
+                            Saint Vincent and the Grenadines
+                          </StyledMenuItem>
+                          <StyledMenuItem value="samoa">Samoa</StyledMenuItem>
+                          <StyledMenuItem value="san-marino">
+                            San Marino
+                          </StyledMenuItem>
+                          <StyledMenuItem value="sao-tome-and-principe">
+                            São Tomé and Príncipe
+                          </StyledMenuItem>
+                          <StyledMenuItem value="saudi-arabia">
+                            Saudi Arabia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="senegal">
+                            Senegal
+                          </StyledMenuItem>
+                          <StyledMenuItem value="serbia">Serbia</StyledMenuItem>
+                          <StyledMenuItem value="seychelles">
+                            Seychelles
+                          </StyledMenuItem>
+                          <StyledMenuItem value="sierra-leone">
+                            Sierra Leone
+                          </StyledMenuItem>
+                          <StyledMenuItem value="singapore">
+                            Singapore
+                          </StyledMenuItem>
+                          <StyledMenuItem value="slovakia">
+                            Slovakia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="slovenia">
+                            Slovenia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="solomon-islands">
+                            Solomon Islands
+                          </StyledMenuItem>
+                          <StyledMenuItem value="somalia">
+                            Somalia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="south-africa">
+                            South Africa
+                          </StyledMenuItem>
+                          <StyledMenuItem value="south-korea">
+                            South Korea
+                          </StyledMenuItem>
+                          <StyledMenuItem value="south-sudan">
+                            South Sudan
+                          </StyledMenuItem>
+                          <StyledMenuItem value="spain">Spain</StyledMenuItem>
+                          <StyledMenuItem value="sri-lanka">
+                            Sri Lanka
+                          </StyledMenuItem>
+                          <StyledMenuItem value="sudan">Sudan</StyledMenuItem>
+                          <StyledMenuItem value="suriname">
+                            Suriname
+                          </StyledMenuItem>
+                          <StyledMenuItem value="sweden">Sweden</StyledMenuItem>
+                          <StyledMenuItem value="switzerland">
+                            Switzerland
+                          </StyledMenuItem>
+                          <StyledMenuItem value="syria">Syria</StyledMenuItem>
+                          <StyledMenuItem value="taiwan">Taiwan</StyledMenuItem>
+                          <StyledMenuItem value="tajikistan">
+                            Tajikistan
+                          </StyledMenuItem>
+                          <StyledMenuItem value="tanzania">
+                            Tanzania
+                          </StyledMenuItem>
+                          <StyledMenuItem value="thailand">
+                            Thailand
+                          </StyledMenuItem>
+                          <StyledMenuItem value="togo">Togo</StyledMenuItem>
+                          <StyledMenuItem value="tonga">Tonga</StyledMenuItem>
+                          <StyledMenuItem value="trinidad-and-tobago">
+                            Trinidad and Tobago
+                          </StyledMenuItem>
+                          <StyledMenuItem value="tunisia">
+                            Tunisia
+                          </StyledMenuItem>
+                          <StyledMenuItem value="turkey">Turkey</StyledMenuItem>
+                          <StyledMenuItem value="turkmenistan">
+                            Turkmenistan
+                          </StyledMenuItem>
+                          <StyledMenuItem value="tuvalu">Tuvalu</StyledMenuItem>
+                          <StyledMenuItem value="uganda">Uganda</StyledMenuItem>
+                          <StyledMenuItem value="ukraine">
+                            Ukraine
+                          </StyledMenuItem>
+                          <StyledMenuItem value="united-arab-emirates">
+                            United Arab Emirates
                           </StyledMenuItem>
                           <StyledMenuItem value="uk">
                             United Kingdom
                           </StyledMenuItem>
-                          <StyledMenuItem value="canada">Canada</StyledMenuItem>
-                          <StyledMenuItem value="other">Other</StyledMenuItem>
+                          <StyledMenuItem value="usa">
+                            United States
+                          </StyledMenuItem>
+                          <StyledMenuItem value="uruguay">
+                            Uruguay
+                          </StyledMenuItem>
+                          <StyledMenuItem value="uzbekistan">
+                            Uzbekistan
+                          </StyledMenuItem>
+                          <StyledMenuItem value="vanuatu">
+                            Vanuatu
+                          </StyledMenuItem>
+                          <StyledMenuItem value="vatican-city">
+                            Vatican City
+                          </StyledMenuItem>
+                          <StyledMenuItem value="venezuela">
+                            Venezuela
+                          </StyledMenuItem>
+                          <StyledMenuItem value="vietnam">
+                            Vietnam
+                          </StyledMenuItem>
+                          <StyledMenuItem value="yemen">Yemen</StyledMenuItem>
+                          <StyledMenuItem value="zambia">Zambia</StyledMenuItem>
+                          <StyledMenuItem value="zimbabwe">
+                            Zimbabwe
+                          </StyledMenuItem>
                         </StyledSelect>
                       </FormControl>
                     </div>

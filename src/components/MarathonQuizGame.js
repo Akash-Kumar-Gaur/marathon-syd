@@ -14,12 +14,13 @@ const QUESTIONS = [
 ];
 
 const QuizResult = ({ score, total, onCollect }) => {
-  // 3 stars: 100%, 2 stars: >= 60%, 1 star: >= 30%, 0: < 30%
-  const percent = score / (total * 10);
+  // 3 stars: 100% (5/5), 2 stars: >= 60% (3/5), 1 star: >= 40% (2/5), 0: < 40%
+  const maxScore = 5;
+  const percent = score / maxScore;
   let stars = 1;
   if (percent >= 0.95) stars = 3;
   else if (percent >= 0.6) stars = 2;
-  else if (percent >= 0.3) stars = 1;
+  else if (percent >= 0.4) stars = 1;
   else stars = 0;
   return (
     <div
@@ -34,7 +35,7 @@ const QuizResult = ({ score, total, onCollect }) => {
         Well done!
       </h2>
       <div style={{ color: "#22313F", fontSize: 16, margin: "12px 0 24px 0" }}>
-        You've completed the quiz and earned <b>+10 Bonus Points!</b>
+        You've completed the quiz and earned <b>+{score} Bonus Points!</b>
       </div>
       <div style={{ margin: "16px 0" }}>
         {[0, 1, 2].map((i) => (
@@ -58,7 +59,7 @@ const QuizResult = ({ score, total, onCollect }) => {
           margin: "16px 0 24px 0",
         }}
       >
-        Your Score: {score}/{total * 10}
+        Your Score: {score}/5
       </div>
       <button
         style={{
@@ -113,7 +114,12 @@ const MarathonQuizGame = () => {
   const correctCount = answers.filter(
     (ans, i) => ans === QUESTIONS[i].answer
   ).length;
-  const score = correctCount * 10;
+
+  // New scoring system: each question = 2 points, bonus 1 for both correct
+  let score = correctCount * 2;
+  if (correctCount === 2) {
+    score += 1; // Bonus point for getting both correct
+  }
 
   return (
     <div

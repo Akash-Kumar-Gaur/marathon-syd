@@ -366,12 +366,12 @@ const Header = () => {
     // Close drawer first, then show FAQ modal
     handleDrawerClose();
     setTimeout(() => {
-      setShowFAQModal(true);
+      // setShowFAQModal(true);
     }, 300); // Wait for drawer close animation to complete
   };
 
   const handleTrophy = () => {
-    setShowLeaderboardModal(true);
+    // setShowLeaderboardModal(true);
   };
 
   const handleNotifications = () => {
