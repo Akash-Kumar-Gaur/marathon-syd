@@ -64,10 +64,11 @@ const CHALLENGES = [
   },
 ];
 
-function TreasureDetailCard({ onBack }) {
-  const coupon = "NSOCBWINIOW100";
+function TreasureDetailCard({ onBack, treasure }) {
   const handleCopy = () => {
-    navigator.clipboard.writeText(coupon);
+    if (treasure?.uniqueRedemption) {
+      navigator.clipboard.writeText(treasure.uniqueRedemption);
+    }
   };
   return (
     <div
@@ -146,31 +147,28 @@ function TreasureDetailCard({ onBack }) {
             alignItems: "center",
           }}
         >
-          <img
-            src={shokzLogo}
-            alt="Shokz"
-            style={{ height: 20, marginBottom: 6 }}
-          />
           <div
             style={{
               fontWeight: 800,
-              fontSize: 16,
+              fontSize: 18,
               color: "#081F2D",
-              marginBottom: 1,
+              marginBottom: 8,
               letterSpacing: 1,
+              textAlign: "center",
             }}
           >
-            OPEN PRO 2
+            {treasure?.treasure || "Treasure"}
           </div>
           <div
             style={{
-              color: "#22313F",
               fontWeight: 600,
-              fontSize: 11,
-              marginBottom: 8,
+              fontSize: 14,
+              color: "#1693f6",
+              marginBottom: 16,
+              textAlign: "center",
             }}
           >
-            VALID TILL: JULY 31 2025
+            {treasure?.offer || "Special offer available"}
           </div>
           <img
             src={headphones}
@@ -218,7 +216,7 @@ function TreasureDetailCard({ onBack }) {
                 letterSpacing: 1,
               }}
             >
-              {coupon}
+              {treasure?.uniqueRedemption || "No code available"}
             </div>
             <button
               onClick={handleCopy}
@@ -249,22 +247,17 @@ function TreasureDetailCard({ onBack }) {
             >
               How to Avail :
             </div>
-            <ul
+            <div
               style={{
                 color: "#22313F",
                 fontSize: 11,
                 margin: 0,
-                paddingLeft: 16,
                 marginBottom: 0,
-                listStyle: "disc",
-                // marginLeft: 12,
+                lineHeight: 1.4,
               }}
             >
-              <li>Sign up on our website using a valid email address.</li>
-              <li>Complete your profile and verify your account.</li>
-              <li>Input the coupon code to complete the process.</li>
-              <li>Once verified, you'll receive the product at no cost.</li>
-            </ul>
+              {treasure?.howToRedeem || "Show code to staff to redeem"}
+            </div>
           </div>
           <div style={{ textAlign: "left", marginBottom: 10 }}>
             <div
@@ -458,13 +451,17 @@ const Header = () => {
       ? avatarMap[userData.selectedAvatar.id]
       : avatar5;
 
-  // Example: unlocked treasures indices from user data
-  const unlockedTreasures = [0, 2, 5]; // Replace with actual user data
+  // Get unlocked treasures from user data (if available)
+  const unlockedTreasures = userData?.unlockedTreasures || [];
+
+  // For now, let's unlock some treasures based on user progress
+  // In a real app, this would be based on user achievements, location, etc.
+  const mockUnlockedTreasures = [0, 2, 5, 8, 12]; // Some treasures unlocked for demo
 
   // Prepare treasure data with unlocked status
   const treasures = treasureData.map((treasure, i) => ({
     index: i,
-    unlocked: unlockedTreasures.includes(i),
+    unlocked: mockUnlockedTreasures.includes(i),
     name: treasure.treasure,
   }));
   // Sort unlocked treasures to the start
@@ -786,21 +783,21 @@ const Header = () => {
                     }}
                   >
                     {sortedTreasures.map(({ index, unlocked, name }) => {
-                      const cardStyle = {
-                        background: "#fff",
-                        borderRadius: 12,
-                        padding: 6,
-                        width: "100%",
-                        aspectRatio: 1 / 0.7,
-                        position: "relative",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        boxSizing: "border-box",
-                        minHeight: 0,
-                        boxShadow: "0px 3.11px 3.11px 0px #00000040",
-                        ...(unlocked ? { cursor: "pointer" } : {}),
-                      };
+                      // const cardStyle = {
+                      //   background: "#fff",
+                      //   borderRadius: 12,
+                      //   padding: 6,
+                      //   width: "100%",
+                      //   aspectRatio: 1 / 0.7,
+                      //   position: "relative",
+                      //   display: "flex",
+                      //   alignItems: "center",
+                      //   justifyContent: "center",
+                      //   boxSizing: "border-box",
+                      //   minHeight: 0,
+                      //   boxShadow: "0px 3.11px 3.11px 0px #00000040",
+                      //   ...(unlocked ? { cursor: "pointer" } : {}),
+                      // };
                       return (
                         <div
                           key={index}
@@ -824,12 +821,15 @@ const Header = () => {
                               textAlign: "center",
                               // boxShadow: "0px 3.11px 3.11px 0px #00000040",
                             }}
+                            onClick={() =>
+                              unlocked && setSelectedTreasure(index)
+                            }
                           >
                             {unlocked
                               ? name.length > 12
                                 ? `${name.substring(0, 12)}...`
                                 : name
-                              : "Locked"}
+                              : "🔒 Locked"}
                           </div>
                           {/* <div
                             style={cardStyle}
@@ -911,6 +911,7 @@ const Header = () => {
                   >
                     <TreasureDetailCard
                       onBack={() => setSelectedTreasure(null)}
+                      treasure={treasureData[selectedTreasure]}
                     />
                   </div>
                 ))}
