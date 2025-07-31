@@ -1,4 +1,36 @@
-# Getting Started with Create React App
+# Sydney Marathon 2025 - Treasure Hunt Game
+
+This project is a React-based web application for the TCS Sydney Marathon 2025 treasure hunt game, featuring interactive games, user registration, and Firebase integration.
+
+## Environment Setup
+
+### Firebase Configuration
+
+This project uses Firebase for backend services. To set up the environment:
+
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Fill in your Firebase configuration values in `.env`:
+   ```
+   REACT_APP_FIREBASE_API_KEY=your_api_key_here
+   REACT_APP_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+   REACT_APP_FIREBASE_PROJECT_ID=your_project_id
+   REACT_APP_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
+   REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+   REACT_APP_FIREBASE_APP_ID=your_app_id
+   REACT_APP_FIREBASE_MEASUREMENT_ID=your_measurement_id
+   ```
+
+3. **Important**: Never commit `.env` files to version control. They are already in `.gitignore`.
+
+### Security Note
+
+The Firebase API key in the current configuration is for development purposes. For production, always use environment variables to keep your API keys secure.
+
+## Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
