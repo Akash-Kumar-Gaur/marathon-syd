@@ -2,9 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import "./Home.css";
 import Header from "../components/Header";
-import MapModeToggle from "../components/MapModeToggle";
 import MapboxMap from "../components/MapboxMap";
-import RouteSource from "../components/RouteSource";
 import { Toaster, toast } from "react-hot-toast";
 import HintModal from "../components/HintModal";
 import RewardPopup from "../components/RewardPopup";
@@ -368,7 +366,7 @@ const Home = () => {
             Drag and drop to complete the puzzle
           </p>
         </div>
-        <JigsawTrayPuzzle />
+        <JigsawTrayPuzzle onClose={() => setSelectedGame(null)} />
       </GamePopup>
 
       <GamePopup
@@ -384,14 +382,14 @@ const Home = () => {
             cards, once a match they will stay visible.
           </p>
         </div>
-        <FlipCardsGame />
+        <FlipCardsGame onClose={() => setSelectedGame(null)} />
       </GamePopup>
 
       <GamePopup
         isOpen={selectedGame === "quiz"}
         onClose={() => setSelectedGame(null)}
       >
-        <MarathonQuizGame />
+        <MarathonQuizGame onClose={() => setSelectedGame(null)} />
       </GamePopup>
 
       <Header />

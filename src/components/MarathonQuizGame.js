@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useUser } from "../context/UserContext";
 
 const QUESTIONS = [
   {
@@ -81,7 +82,8 @@ const QuizResult = ({ score, total, onCollect }) => {
   );
 };
 
-const MarathonQuizGame = () => {
+const MarathonQuizGame = ({ onClose }) => {
+  const { addBoosterScore } = useUser();
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState(null);
   const [answers, setAnswers] = useState([]);
@@ -106,8 +108,13 @@ const MarathonQuizGame = () => {
     }
   };
 
-  const handleCollect = () => {
+  const handleCollect = async () => {
+    // Add points to user's booster scores
+    await addBoosterScore(score, "TRIVIA");
     setShowResult(false);
+    if (onClose) {
+      onClose();
+    }
     // You can add logic to close the popup or trigger next flow
   };
 

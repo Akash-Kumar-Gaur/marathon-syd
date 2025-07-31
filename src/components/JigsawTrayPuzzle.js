@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import puzzleImage from "../assets/images/puzzle.png";
+import { useUser } from "../context/UserContext";
 
 const GRID_SIZE = 3;
 const PIECE_SIZE = 80; // px, adjust as needed
@@ -25,7 +26,8 @@ function shuffle(array) {
 const initialTray = shuffle([...Array(9).keys()]);
 const initialGrid = Array(9).fill(null);
 
-const JigsawTrayPuzzle = () => {
+const JigsawTrayPuzzle = ({ onClose }) => {
+  const { addBoosterScore } = useUser();
   const [tray, setTray] = useState(initialTray);
   const [grid, setGrid] = useState(initialGrid);
   const [isDragging, setIsDragging] = useState(false);
@@ -33,6 +35,8 @@ const JigsawTrayPuzzle = () => {
   const [hasMoved, setHasMoved] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [score, setScore] = useState(0);
 
   useEffect(() => {
     if (isDragging) {
@@ -108,7 +112,28 @@ const JigsawTrayPuzzle = () => {
   const handleSubmit = () => {
     const correct = grid.filter((val, idx) => val === idx).length;
     setCorrectCount(correct);
+
+    // Calculate score based on correct pieces
+    let points = 0;
+    if (correct === 9) {
+      points = 5; // Full solve
+    } else if (correct >= 1) {
+      points = 2; // At least 1 correct
+    } else {
+      points = 0; // No correct pieces
+    }
+
+    setScore(points);
     setSubmitted(true);
+  };
+
+  const handleCollectPoints = async () => {
+    // Add points to user's booster scores
+    await addBoosterScore(score, "PUZZLE");
+    setShowResult(false);
+    if (onClose) {
+      onClose();
+    }
   };
 
   return (
@@ -234,19 +259,58 @@ const JigsawTrayPuzzle = () => {
             <div
               style={{
                 width: GRID_SIZE * PIECE_SIZE,
-                height: PIECE_SIZE + 16,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 24,
-                fontWeight: 600,
-                color: "#1693f6",
-                background: "rgba(255,255,255,0.85)",
+                padding: "14px",
+                background: "rgba(255,255,255,0.95)",
                 borderRadius: 16,
                 margin: "0 auto",
+                textAlign: "center",
               }}
             >
-              {correctCount} out of 9 correct!
+              {/* <h2
+                style={{
+                  fontWeight: 700,
+                  fontSize: 28,
+                  margin: "0 0 16px 0",
+                  color: "#081F2D",
+                }}
+              >
+                Puzzle Complete!
+              </h2> */}
+              {/* <div
+                style={{
+                  color: "#22313F",
+                  fontSize: 16,
+                  margin: "0 0 16px 0",
+                }}
+              >
+                You got {correctCount} out of 9 pieces correct!
+              </div> */}
+              <div
+                style={{
+                  fontWeight: 700,
+                  fontSize: 16,
+                  color: "#1693f6",
+                  margin: "0 0 24px 0",
+                }}
+              >
+                Score: {score} points
+              </div>
+              <button
+                style={{
+                  width: "100%",
+                  padding: "8px 0",
+                  background: "#1693f6",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 10,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+                onClick={handleCollectPoints}
+              >
+                COLLECT POINTS
+              </button>
             </div>
           ) : (
             <>

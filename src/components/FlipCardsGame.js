@@ -3,6 +3,7 @@ import flipPlace from "../assets/images/flipPlace.png";
 import bottle from "../assets/images/bottle.png";
 import boy from "../assets/images/boy.png";
 import shoe from "../assets/images/shoe.png";
+import { useUser } from "../context/UserContext";
 
 // Use images for card faces
 const CARD_IMAGES = [
@@ -29,7 +30,8 @@ function formatTime(seconds) {
   return `${m}:${s}`;
 }
 
-const FlipCardsGame = () => {
+const FlipCardsGame = ({ onClose }) => {
+  const { addBoosterScore } = useUser();
   const [cards, setCards] = useState(() =>
     shuffle(CARDS.map((image, i) => ({ id: i, ...image })))
   );
@@ -38,6 +40,7 @@ const FlipCardsGame = () => {
   const [hasTried, setHasTried] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(120);
+  const [score, setScore] = useState(0);
 
   useEffect(() => {
     if (submitted) return;
@@ -75,7 +78,31 @@ const FlipCardsGame = () => {
     }
   };
 
-  const handleSubmit = () => setSubmitted(true);
+  const handleSubmit = () => {
+    // Calculate score based on matched pairs
+    const matchedPairs = matched.length / 2;
+    let points = 0;
+    if (matchedPairs === 3) {
+      points = 5; // All pairs matched
+    } else if (matchedPairs >= 1) {
+      points = 2; // At least 1 pair matched
+    } else {
+      points = 0; // No pairs matched
+    }
+    setScore(points);
+    setSubmitted(true);
+  };
+
+  const handleCollectPoints = async () => {
+    // Add points to user's booster scores
+    await addBoosterScore(score, "MATCH TILE");
+    // setSubmitted(false);
+    console.log("onClose", onClose);
+    if (onClose) {
+      onClose();
+    }
+    // You can add logic to close the popup or trigger next flow
+  };
 
   return (
     <div style={{ width: 320, margin: "0 auto" }}>
@@ -179,16 +206,40 @@ const FlipCardsGame = () => {
       {submitted ? (
         <div
           style={{
-            fontSize: 22,
-            fontWeight: 600,
-            color: "#1693f6",
-            background: "rgba(255,255,255,0.85)",
-            borderRadius: 12,
-            padding: 16,
+            width: "100%",
+            padding: "14px",
+            background: "rgba(255,255,255,0.95)",
+            borderRadius: 16,
+            margin: "0 auto",
             textAlign: "center",
           }}
         >
-          {matched.length / 2} out of 3 pairs matched!
+          <div
+            style={{
+              fontWeight: 700,
+              fontSize: 16,
+              color: "#1693f6",
+              margin: "0 0 24px 0",
+            }}
+          >
+            Score: {score} points
+          </div>
+          <button
+            style={{
+              width: "100%",
+              padding: "8px 0",
+              background: "#1693f6",
+              color: "#fff",
+              border: "none",
+              borderRadius: 10,
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+            onClick={handleCollectPoints}
+          >
+            COLLECT POINTS
+          </button>
         </div>
       ) : (
         hasTried && (

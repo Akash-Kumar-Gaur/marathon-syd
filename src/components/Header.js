@@ -17,6 +17,7 @@ import trivia from "../assets/images/trivia.png";
 import headphones from "../assets/images/headphones.svg";
 import shokzLogo from "../assets/images/shokz.png";
 import { useDrawer } from "../context/DrawerContext";
+import { useUser } from "../context/UserContext";
 import { treasureData } from "../data/treasureData";
 import FAQModal from "./FAQModal";
 import LeaderboardModal from "./LeaderboardModal";
@@ -328,32 +329,13 @@ const Header = () => {
   const { isDrawerOpen, setIsDrawerOpen } = useDrawer();
   const [drawerClosing, setDrawerClosing] = useState(false);
   const [collapse, setCollapse] = useState({
-    challenges: false,
+    challenges: true,
     treasure: false,
   });
-  const [userData, setUserData] = useState({
-    name: "Akash Gaur",
-    email: "akash@test.com",
-    phone: "+61 412345678",
-  });
+  const { userData } = useUser();
   const [selectedTreasure, setSelectedTreasure] = useState(null);
   const [showFAQModal, setShowFAQModal] = useState(false);
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
-
-  useEffect(() => {
-    if (isDrawerOpen) {
-      try {
-        const stored = localStorage.getItem("userData");
-        if (stored) {
-          setUserData(JSON.parse(stored));
-        } else {
-          setUserData({ name: "", email: "", phone: "" });
-        }
-      } catch {
-        setUserData({ name: "", email: "", phone: "" });
-      }
-    }
-  }, [isDrawerOpen]);
 
   // Log navigation state changes
   useEffect(() => {
@@ -491,6 +473,10 @@ const Header = () => {
     ...treasures.filter((t) => !t.unlocked),
   ];
 
+  useEffect(() => {
+    console.log("userData", userData, userData.challengeScores);
+  }, [userData]);
+
   return (
     <>
       <header className="app-header">
@@ -586,8 +572,7 @@ const Header = () => {
                 <div
                   className="drawer-email"
                   style={{
-                    color:
-                      userData.isVerified === false ? "#ff4444" : "#6D6D6D",
+                    color: userData.verified === false ? "#ff4444" : "#6D6D6D",
                     fontWeight: 500,
                     fontSize: 14,
                     wordBreak: "break-all",
@@ -597,7 +582,7 @@ const Header = () => {
                   }}
                 >
                   {userData.email || "alex.johnson@example.com"}
-                  {userData.isVerified === false && (
+                  {userData.verified === false && (
                     <span
                       style={{
                         marginLeft: "8px",
@@ -630,8 +615,19 @@ const Header = () => {
                 <i className="fas fa-th-large"></i>
                 <span>SCORE BOOSTERS</span>
                 <span
-                  style={{ marginLeft: "auto", transition: "transform 0.2s" }}
+                  style={{
+                    marginLeft: "auto",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    transition: "transform 0.2s",
+                  }}
                 >
+                  {/* <span
+                    style={{ fontSize: 14, color: "#1693f6", fontWeight: 600 }}
+                  >
+                    Total: {userData?.totalBoosterScore || 0}
+                  </span> */}
                   <i
                     className={`fas fa-chevron-down${
                       collapse.challenges ? " fa-rotate-180" : ""
@@ -661,11 +657,9 @@ const Header = () => {
                   }}
                 >
                   {CHALLENGES.map((challenge) => {
-                    const earnedPoints = Math.round(
-                      (challenge.progress / challenge.totalProgress) *
-                        challenge.totalPoints
-                    );
-                    const isClickable = challenge.progress === 0;
+                    const earnedPoints =
+                      userData?.challengeScores?.[challenge.name] || 0;
+                    const isClickable = earnedPoints === 0;
                     return (
                       <div
                         key={challenge.name}
@@ -733,26 +727,7 @@ const Header = () => {
                                 color: "#1693f6",
                               }}
                             >
-                              {earnedPoints}
-                              <span
-                                style={{ color: "#22313F", fontWeight: "bold" }}
-                              >
-                                /{challenge.totalPoints}pt
-                              </span>
-                            </div>
-                            <div
-                              style={{
-                                fontWeight: 600,
-                                fontSize: 10,
-                                color: "#1693f6",
-                              }}
-                            >
-                              {challenge.progress}
-                              <span
-                                style={{ color: "#22313F", fontWeight: "bold" }}
-                              >
-                                / {challenge.totalProgress}
-                              </span>
+                              {earnedPoints} Points
                             </div>
                           </div>
                         </div>

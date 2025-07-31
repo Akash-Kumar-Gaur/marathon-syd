@@ -360,7 +360,7 @@ const Home = () => {
             Drag and drop to complete the puzzle
           </p>
         </div>
-        <JigsawTrayPuzzle />
+        <JigsawTrayPuzzle onClose={() => setSelectedGame(null)} />
       </GamePopup>
       <GamePopup
         isOpen={selectedGame === "flip"}
@@ -376,13 +376,13 @@ const Home = () => {
             TIME - 00:18
           </p>
         </div>
-        <FlipCardsGame />
+        <FlipCardsGame onClose={() => setSelectedGame(null)} />
       </GamePopup>
       <GamePopup
         isOpen={selectedGame === "quiz"}
         onClose={() => setSelectedGame(null)}
       >
-        <MarathonQuizGame />
+        <MarathonQuizGame onClose={() => setSelectedGame(null)} />
       </GamePopup>
 
       <Header />

@@ -9,6 +9,18 @@ import troubleOtp from "../assets/images/troubleOtp.png";
 import Header from "../components/Header";
 import FirstRewardPopup from "../components/FirstRewardPopup";
 import { firstRewardConfig } from "../data/firstRewardConfig";
+import { db, functions, httpsCallable } from "../services/firebase";
+import {
+  collection,
+  addDoc,
+  doc,
+  getDoc,
+  updateDoc,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
+import { useUser } from "../context/UserContext";
 
 // Import avatar images
 import avatar1 from "../assets/avatar/avatar1.png";
@@ -54,6 +66,7 @@ const StyledMenuItem = styled(MenuItem)({
 const Welcome = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { updateUserData, setUserDocumentId } = useUser();
   const [showAvatarSelection, setShowAvatarSelection] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
@@ -61,15 +74,16 @@ const Welcome = () => {
   const [formData, setFormData] = useState({
     name: "",
     country: "",
-    city: "",
     postcode: "",
     email: "",
-    phone: "+61",
+    avatar: "",
   });
   const [otp, setOtp] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
   const [showTroubleModal, setShowTroubleModal] = useState(false);
   const [showFirstReward, setShowFirstReward] = useState(false);
+  const [userDocId, setUserDocId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Avatar options - using actual avatar images
   const avatarOptions = [
@@ -107,6 +121,10 @@ const Welcome = () => {
 
   const handleAvatarSelect = (avatar) => {
     setSelectedAvatar(avatar);
+    setFormData((prev) => ({
+      ...prev,
+      avatar: avatar.image,
+    }));
   };
 
   const handleAvatarNext = () => {
@@ -131,9 +149,123 @@ const Welcome = () => {
     }));
   };
 
-  const handleSendOtp = () => {
-    setShowOTP(true);
-    setResendTimer(30);
+  // Form validation function
+  const isFormValid = () => {
+    return (
+      formData.name.trim() !== "" &&
+      formData.email.trim() !== "" &&
+      formData.country !== "" &&
+      formData.postcode.trim() !== ""
+    );
+  };
+
+  const handleSendOtp = async () => {
+    if (!isFormValid()) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // 1. Check if user with same email already exists
+      try {
+        const emailQuery = query(
+          collection(db, "users"),
+          where("email", "==", formData.email)
+        );
+        const emailSnapshot = await getDocs(emailQuery);
+
+        if (!emailSnapshot.empty) {
+          // User with same email exists
+          const existingUser = emailSnapshot.docs[0].data();
+
+          if (existingUser.verified) {
+            // User is already verified, proceed to hunt page
+            console.log(
+              "Verified user with same email exists, proceeding to hunt page"
+            );
+
+            updateUserData({
+              ...formData,
+              avatar: selectedAvatar,
+              verified: true,
+              loginMethod: "existing_user",
+            });
+
+            setIsSubmitting(false);
+            setShowFirstReward(true);
+            return;
+          } else {
+            // User exists but not verified, use existing user
+            console.log(
+              "Unverified user with same email exists, using existing user"
+            );
+            const existingUserDoc = emailSnapshot.docs[0];
+            setUserDocumentId(existingUserDoc.id);
+
+            // Continue with OTP flow using existing user
+            const sendOtpEmail = httpsCallable(functions, "sendOtpEmail");
+            const result = await sendOtpEmail({
+              email: formData.email,
+              userId: existingUserDoc.id,
+            });
+            console.log("OTP email sent to existing user:", result.data);
+
+            setShowOTP(true);
+            setResendTimer(30);
+            setIsSubmitting(false);
+            return;
+          }
+        }
+      } catch (queryError) {
+        // Only proceed if it's a "collection doesn't exist" error
+        // Don't proceed if it's a permissions error
+        if (
+          queryError.code === "permission-denied" ||
+          queryError.message?.includes("permission")
+        ) {
+          console.error("Permission error during duplicate check:", queryError);
+          alert("Error checking for existing users. Please try again.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        // For other errors (like collection not existing), proceed
+        console.log(
+          "Collection might not exist yet, proceeding with user creation:",
+          queryError
+        );
+      }
+
+      // 2. Create user in Firestore
+      const userRef = await addDoc(collection(db, "users"), {
+        ...formData,
+        createdAt: new Date(),
+        verified: false,
+      });
+      setUserDocumentId(userRef.id);
+      console.log("User created in Firestore with ID:", userRef.id);
+
+      // 3. Call Firebase Function to send OTP email
+      const sendOtpEmail = httpsCallable(functions, "sendOtpEmail");
+      const result = await sendOtpEmail({
+        email: formData.email,
+        userId: userRef.id,
+      });
+      console.log("OTP email sent:", result.data);
+
+      // 4. Show OTP screen only after successful email send
+      setShowOTP(true);
+      setResendTimer(30);
+    } catch (error) {
+      console.error("Error creating user or sending OTP:", error);
+      // Show OTP verification UI first, then trouble modal
+      setShowOTP(true);
+      setResendTimer(30);
+      setShowTroubleModal(true);
+      setIsSubmitting(false);
+    }
   };
 
   const handleResendOtp = () => {
@@ -141,61 +273,115 @@ const Welcome = () => {
     // Add your OTP resend logic here
   };
 
-  const handleVerifyOtp = () => {
-    console.log("Welcome - About to navigate to /hunt");
-    console.log(
-      "Welcome - History length before navigate:",
-      window.history.length
-    );
-
-    // Store user data with verification status as true
-    const userData = {
-      ...formData,
-      avatar: selectedAvatar,
-      isVerified: true,
-      loginMethod: "otp",
-    };
-
-    // Store user data in localStorage or sessionStorage
-    localStorage.setItem("userData", JSON.stringify(userData));
-
-    // Show first reward popup before navigating
-    setShowFirstReward(true);
+  const handleVerifyOtp = async () => {
+    if (!userDocId) {
+      alert("User not found. Please try again.");
+      return;
+    }
+    try {
+      const userSnap = await getDoc(doc(db, "users", userDocId));
+      if (!userSnap.exists()) {
+        alert("User not found. Please try again.");
+        return;
+      }
+      const userData = userSnap.data();
+      if (userData.otp === otp) {
+        // Mark user as verified
+        await updateDoc(doc(db, "users", userDocId), { verified: true });
+        // Proceed as before
+        updateUserData({
+          ...formData,
+          avatar: selectedAvatar,
+          verified: true,
+          loginMethod: "otp",
+        });
+        setShowFirstReward(true);
+      } else {
+        alert("Invalid OTP. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      alert("Verification failed. Please try again.");
+    }
   };
 
-  const handleGuestLogin = () => {
+  const handleGuestLogin = async () => {
     console.log("Welcome - Guest login clicked, navigating to /hunt");
     console.log(
       "Welcome - History length before navigate:",
       window.history.length
     );
 
-    // Store user data with verification status as false
-    const userData = {
-      ...formData,
-      avatar: selectedAvatar,
-      isVerified: false,
-      loginMethod: "guest",
-    };
+    try {
+      // Check if user with same email already exists
+      const emailQuery = query(
+        collection(db, "users"),
+        where("email", "==", formData.email)
+      );
+      const emailSnapshot = await getDocs(emailQuery);
 
-    // Store user data in localStorage or sessionStorage
-    localStorage.setItem("userData", JSON.stringify(userData));
+      let userDocId;
 
-    // Show first reward popup before navigating
-    setShowFirstReward(true);
+      if (!emailSnapshot.empty) {
+        // User exists, use existing user
+        const existingUser = emailSnapshot.docs[0];
+        userDocId = existingUser.id;
+        console.log("Using existing guest user with ID:", userDocId);
+      } else {
+        // Create new guest user in Firestore
+        const userRef = await addDoc(collection(db, "users"), {
+          ...formData,
+          avatar: selectedAvatar,
+          verified: false,
+          loginMethod: "guest",
+          createdAt: new Date(),
+          challengeScores: {},
+          totalBoosterScore: 0,
+        });
+        userDocId = userRef.id;
+        console.log("Guest user created in Firestore with ID:", userDocId);
+      }
+
+      setUserDocumentId(userDocId);
+
+      // Store user data with verification status as false
+      updateUserData({
+        ...formData,
+        avatar: selectedAvatar,
+        verified: false,
+        loginMethod: "guest",
+        challengeScores: {},
+        totalBoosterScore: 0,
+      });
+
+      // Show first reward popup before navigating
+      setShowFirstReward(true);
+    } catch (error) {
+      console.error("Error creating guest user:", error);
+
+      // Fallback to localStorage only if Firebase fails
+      updateUserData({
+        ...formData,
+        avatar: selectedAvatar,
+        verified: false,
+        loginMethod: "guest",
+        challengeScores: {},
+        totalBoosterScore: 0,
+      });
+
+      setShowFirstReward(true);
+    }
   };
 
   const handleCollectReward = () => {
-    // Store the collected reward in localStorage
-    const collectedRewards = JSON.parse(
-      localStorage.getItem("collectedRewards") || "[]"
+    localStorage.setItem(
+      "collectedRewards",
+      JSON.stringify({
+        ...firstRewardConfig,
+        collectedAt: new Date().toISOString(),
+        id: "first-reward",
+      })
     );
-    collectedRewards.push({
-      ...firstRewardConfig,
-      collectedAt: new Date().toISOString(),
-      id: "first-reward",
-    });
-    localStorage.setItem("collectedRewards", JSON.stringify(collectedRewards));
 
     // Close the popup and navigate to hunt
     setShowFirstReward(false);
@@ -392,6 +578,7 @@ const Welcome = () => {
                     </p>
                   </div>
                   <form className="registration-form">
+                    {renderTroubleModal()}
                     <div className="form-group">
                       <label>Name</label>
                       <input
@@ -890,8 +1077,16 @@ const Welcome = () => {
                       type="button"
                       className="send-otp-button"
                       onClick={handleSendOtp}
+                      disabled={!isFormValid() || isSubmitting}
+                      style={{
+                        opacity: !isFormValid() || isSubmitting ? 0.6 : 1,
+                        cursor:
+                          !isFormValid() || isSubmitting
+                            ? "not-allowed"
+                            : "pointer",
+                      }}
                     >
-                      SEND OTP
+                      {isSubmitting ? "SENDING..." : "SEND OTP"}
                     </button>
                   </form>
                 </>

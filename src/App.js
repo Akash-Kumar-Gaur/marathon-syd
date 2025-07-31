@@ -16,7 +16,9 @@ import PhotoBooth from "./pages/PhotoBooth";
 import FindMyRoute from "./pages/FindMyRoute";
 import Wayfinder from "./pages/WayfinderMapbox";
 import { DrawerProvider } from "./context/DrawerContext";
+import { UserProvider } from "./context/UserContext";
 import { getFlowConfig, isRouteEnabled } from "./config/flowConfig";
+import "./services/firebase";
 
 // Navigation logger component
 const NavigationLogger = () => {
@@ -41,40 +43,42 @@ function App() {
   console.log("App initialized with flow:", flowConfig.type);
 
   return (
-    <DrawerProvider>
-      <div className="App">
-        <Router>
-          <NavigationLogger />
-          <Routes>
-            {/* Splash screen is always available */}
-            <Route path="/" element={<SplashScreen />} />
+    <UserProvider>
+      <DrawerProvider>
+        <div className="App">
+          <Router>
+            <NavigationLogger />
+            <Routes>
+              {/* Splash screen is always available */}
+              <Route path="/" element={<SplashScreen />} />
 
-            {/* Conditionally render routes based on flow configuration */}
-            {isRouteEnabled("/welcome") && (
-              <Route path="/welcome" element={<Welcome />} />
-            )}
-            {isRouteEnabled("/hunt") && (
-              <Route path="/hunt" element={<LearnToHunt />} />
-            )}
-            {isRouteEnabled("/home") && (
-              <Route path="/home" element={<Home />} />
-            )}
-            {isRouteEnabled("/photobooth") && (
-              <Route path="/photobooth" element={<PhotoBooth />} />
-            )}
-            {isRouteEnabled("/find-my-route") && (
-              <Route path="/find-my-route" element={<FindMyRoute />} />
-            )}
-            {isRouteEnabled("/find-my-route") && (
-              <Route path="/wayfinder" element={<Wayfinder />} />
-            )}
+              {/* Conditionally render routes based on flow configuration */}
+              {isRouteEnabled("/welcome") && (
+                <Route path="/welcome" element={<Welcome />} />
+              )}
+              {isRouteEnabled("/hunt") && (
+                <Route path="/hunt" element={<LearnToHunt />} />
+              )}
+              {isRouteEnabled("/home") && (
+                <Route path="/home" element={<Home />} />
+              )}
+              {isRouteEnabled("/photobooth") && (
+                <Route path="/photobooth" element={<PhotoBooth />} />
+              )}
+              {isRouteEnabled("/find-my-route") && (
+                <Route path="/find-my-route" element={<FindMyRoute />} />
+              )}
+              {isRouteEnabled("/find-my-route") && (
+                <Route path="/wayfinder" element={<Wayfinder />} />
+              )}
 
-            {/* Fallback route */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Router>
-      </div>
-    </DrawerProvider>
+              {/* Fallback route */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Router>
+        </div>
+      </DrawerProvider>
+    </UserProvider>
   );
 }
 
