@@ -337,9 +337,31 @@ const Welcome = () => {
     }
   };
 
-  const handleResendOtp = () => {
-    setResendTimer(30);
-    // Add your OTP resend logic here
+  const handleResendOtp = async () => {
+    if (!userDocId) {
+      alert("User not found. Please try again.");
+      return;
+    }
+
+    try {
+      console.log("Resending OTP to email:", formData.email);
+
+      // Call Firebase Function to resend OTP email
+      const sendOtpEmail = httpsCallable(functions, "sendOtpEmail");
+      const result = await sendOtpEmail({
+        email: formData.email,
+        userId: userDocId,
+      });
+
+      console.log("OTP email resent:", result.data);
+      setResendTimer(30);
+
+      // Show success message
+      alert("OTP has been resent to your email.");
+    } catch (error) {
+      console.error("Error resending OTP:", error);
+      alert("Error resending OTP. Please try again.");
+    }
   };
 
   const handleVerifyOtp = async () => {
