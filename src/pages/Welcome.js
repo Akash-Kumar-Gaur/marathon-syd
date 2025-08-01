@@ -67,8 +67,13 @@ const StyledMenuItem = styled(MenuItem)({
 const Welcome = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { userData, updateUserData, setUserDocumentId, loadUserFromFirebase } =
-    useUser();
+  const {
+    userData,
+    updateUserData,
+    setUserDocumentId,
+    loadUserFromFirebase,
+    userDocId: contextUserDocId,
+  } = useUser();
   const [showAvatarSelection, setShowAvatarSelection] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
@@ -95,6 +100,10 @@ const Welcome = () => {
       // If navigating from header with showOTP state, show OTP directly
       setShowOTP(true);
       setShowForm(true);
+      // Set userDocId from context if available
+      if (contextUserDocId) {
+        setUserDocId(contextUserDocId);
+      }
       // Pre-fill form with existing user data if available
       if (userData && userData.email) {
         setFormData((prev) => ({
@@ -108,7 +117,7 @@ const Welcome = () => {
         setSelectedAvatar(userData.avatar || null);
       }
     }
-  }, [location.state, userData]);
+  }, [location.state, userData, contextUserDocId]);
 
   // Avatar options - using actual avatar images
   const avatarOptions = [
@@ -333,8 +342,9 @@ const Welcome = () => {
   };
 
   const handleResendOtp = async () => {
-    if (!userDocId) {
-      alert("User not found. Please try again.");
+    const docId = userDocId || contextUserDocId;
+    if (!docId) {
+      // User not found - let the UI handle it
       return;
     }
 
@@ -345,7 +355,7 @@ const Welcome = () => {
       const sendOtpEmail = httpsCallable(functions, "sendOtpEmail");
       const result = await sendOtpEmail({
         email: formData.email,
-        userId: userDocId,
+        userId: docId,
       });
 
       console.log("OTP email resent:", result.data);
@@ -359,7 +369,8 @@ const Welcome = () => {
   };
 
   const handleVerifyOtp = async () => {
-    if (!userDocId) {
+    const docId = userDocId || contextUserDocId;
+    if (!docId) {
       // User not found - let the UI handle it
       return;
     }
@@ -372,7 +383,7 @@ const Welcome = () => {
     setIsVerifying(true);
 
     try {
-      const userSnap = await getDoc(doc(db, "users", userDocId));
+      const userSnap = await getDoc(doc(db, "users", docId));
       if (!userSnap.exists()) {
         setIsVerifying(false);
         return;
@@ -381,7 +392,7 @@ const Welcome = () => {
       const userData = userSnap.data();
       if (userData.otp === otp) {
         // Mark user as verified
-        await updateDoc(doc(db, "users", userDocId), {
+        await updateDoc(doc(db, "users", docId), {
           verified: true,
           verifiedAt: new Date(),
         });
