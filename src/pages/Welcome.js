@@ -72,7 +72,7 @@ const Welcome = () => {
     updateUserData,
     setUserDocumentId,
     loadUserFromFirebase,
-    userDocId: contextUserDocId,
+    userDocId,
   } = useUser();
   const [showAvatarSelection, setShowAvatarSelection] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -89,7 +89,6 @@ const Welcome = () => {
   const [resendTimer, setResendTimer] = useState(0);
   const [showTroubleModal, setShowTroubleModal] = useState(false);
   const [showFirstReward, setShowFirstReward] = useState(false);
-  const [userDocId, setUserDocId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isNewUser, setIsNewUser] = useState(true);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -100,10 +99,6 @@ const Welcome = () => {
       // If navigating from header with showOTP state, show OTP directly
       setShowOTP(true);
       setShowForm(true);
-      // Set userDocId from context if available
-      if (contextUserDocId) {
-        setUserDocId(contextUserDocId);
-      }
       // Pre-fill form with existing user data if available
       if (userData && userData.email) {
         setFormData((prev) => ({
@@ -117,7 +112,7 @@ const Welcome = () => {
         setSelectedAvatar(userData.avatar || null);
       }
     }
-  }, [location.state, userData, contextUserDocId]);
+  }, [location.state, userData]);
 
   // Avatar options - using actual avatar images
   const avatarOptions = [
@@ -237,7 +232,6 @@ const Welcome = () => {
 
             const existingUserDoc = emailSnapshot.docs[0];
             setUserDocumentId(existingUserDoc.id);
-            setUserDocId(existingUserDoc.id);
 
             // Load fresh data from Firebase
             const updatedUserData = await loadUserFromFirebase(formData.email);
@@ -259,7 +253,6 @@ const Welcome = () => {
             );
             const existingUserDoc = emailSnapshot.docs[0];
             setUserDocumentId(existingUserDoc.id);
-            setUserDocId(existingUserDoc.id);
             console.log("Set userDocId for existing user:", existingUserDoc.id);
 
             // Continue with OTP flow using existing user
@@ -307,7 +300,6 @@ const Welcome = () => {
 
       const userRef = await addDoc(collection(db, "users"), newUserData);
       setUserDocumentId(userRef.id);
-      setUserDocId(userRef.id);
       console.log("Set userDocId for new user:", userRef.id);
       console.log("User created in Firestore with ID:", userRef.id);
 
@@ -342,8 +334,7 @@ const Welcome = () => {
   };
 
   const handleResendOtp = async () => {
-    const docId = userDocId || contextUserDocId;
-    if (!docId) {
+    if (!userDocId) {
       // User not found - let the UI handle it
       return;
     }
@@ -355,7 +346,7 @@ const Welcome = () => {
       const sendOtpEmail = httpsCallable(functions, "sendOtpEmail");
       const result = await sendOtpEmail({
         email: formData.email,
-        userId: docId,
+        userId: userDocId,
       });
 
       console.log("OTP email resent:", result.data);
@@ -369,8 +360,7 @@ const Welcome = () => {
   };
 
   const handleVerifyOtp = async () => {
-    const docId = userDocId || contextUserDocId;
-    if (!docId) {
+    if (!userDocId) {
       // User not found - let the UI handle it
       return;
     }
@@ -383,7 +373,7 @@ const Welcome = () => {
     setIsVerifying(true);
 
     try {
-      const userSnap = await getDoc(doc(db, "users", docId));
+      const userSnap = await getDoc(doc(db, "users", userDocId));
       if (!userSnap.exists()) {
         setIsVerifying(false);
         return;
@@ -392,7 +382,7 @@ const Welcome = () => {
       const userData = userSnap.data();
       if (userData.otp === otp) {
         // Mark user as verified
-        await updateDoc(doc(db, "users", docId), {
+        await updateDoc(doc(db, "users", userDocId), {
           verified: true,
           verifiedAt: new Date(),
         });

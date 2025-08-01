@@ -278,6 +278,7 @@ export const UserProvider = ({ children }) => {
     userData,
     isLoggedIn,
     isLoading,
+    userDocId,
     updateUserData,
     clearUserData,
     addBoosterScore,
