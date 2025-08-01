@@ -97,7 +97,6 @@ const FlipCardsGame = ({ onClose }) => {
     // Add points to user's booster scores
     await addBoosterScore(score, "MATCH TILE");
     // setSubmitted(false);
-    console.log("onClose", onClose);
     if (onClose) {
       onClose();
     }

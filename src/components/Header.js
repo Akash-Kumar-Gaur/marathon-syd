@@ -66,10 +66,11 @@ const CHALLENGES = [
 
 function TreasureDetailCard({ onBack, treasure }) {
   const handleCopy = () => {
-    if (treasure?.uniqueRedemption) {
-      navigator.clipboard.writeText(treasure.uniqueRedemption);
+    if (treasure?.code) {
+      navigator.clipboard.writeText(treasure.code);
     }
   };
+  console.log("treasure", treasure);
   return (
     <div
       style={{
@@ -164,7 +165,7 @@ function TreasureDetailCard({ onBack, treasure }) {
                 letterSpacing: 0.5,
               }}
             >
-              {treasure?.treasure || "Treasure"}
+              {treasure?.name || "Treasure"}
             </div>
           </div>
 
@@ -185,8 +186,7 @@ function TreasureDetailCard({ onBack, treasure }) {
             </div>
 
             {/* Redemption Code Section - Only show if code exists and is not NaN */}
-            {treasure?.uniqueRedemption &&
-            treasure.uniqueRedemption !== "NaN" ? (
+            {treasure?.code && treasure.code !== "NaN" ? (
               <div style={{ marginBottom: 24 }}>
                 <div
                   style={{
@@ -221,7 +221,7 @@ function TreasureDetailCard({ onBack, treasure }) {
                       textAlign: "center",
                     }}
                   >
-                    {treasure.uniqueRedemption}
+                    {treasure.code}
                   </div>
                   <button
                     onClick={handleCopy}
@@ -263,13 +263,13 @@ function TreasureDetailCard({ onBack, treasure }) {
                   lineHeight: 1.5,
                 }}
               >
-                {treasure.howToRedeem}
+                {treasure.redeem}
               </div>
             </div>
             {/* )} */}
 
-            {/* Opening Hours - Only show if openingHours exists and is not NaN */}
-            {treasure?.openingHours && treasure.openingHours !== "NaN" && (
+            {/* Opening Hours - Only show if hours exists and is not NaN */}
+            {treasure?.hours && treasure.hours !== "NaN" && (
               <div style={{ marginBottom: 24, textAlign: "left" }}>
                 <div
                   style={{
@@ -288,7 +288,7 @@ function TreasureDetailCard({ onBack, treasure }) {
                     lineHeight: 1.5,
                   }}
                 >
-                  {treasure.openingHours}
+                  {treasure.hours}
                 </div>
               </div>
             )}
@@ -467,23 +467,17 @@ const Header = () => {
 
   // For now, let's unlock some treasures based on user progress
   // In a real app, this would be based on user achievements, location, etc.
-  const mockUnlockedTreasures = [0, 2, 5, 8, 12]; // Some treasures unlocked for demo
-
-  // Prepare treasure data with unlocked status
+  // Prepare treasure data with unlocked status from userData
   const treasures = treasureData.map((treasure, i) => ({
     index: i,
-    unlocked: mockUnlockedTreasures.includes(i),
-    name: treasure.treasure,
+    unlocked: userData?.collectedTreasures?.includes(treasure.id) || false,
+    name: treasure.name,
   }));
   // Sort unlocked treasures to the start
   const sortedTreasures = [
     ...treasures.filter((t) => t.unlocked),
     ...treasures.filter((t) => !t.unlocked),
   ];
-
-  useEffect(() => {
-    console.log("userData", userData, userData.challengeScores);
-  }, [userData]);
 
   return (
     <>

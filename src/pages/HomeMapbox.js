@@ -15,10 +15,12 @@ import coinsIcon from "../assets/images/coins.svg";
 import treasureImage from "../assets/images/treasureIcon.png";
 import staticMap from "../assets/images/staticMap.png";
 import { useDrawer } from "../context/DrawerContext";
+import { useUser } from "../context/UserContext";
 import { treasureData } from "../data/treasureData";
 
 const Home = () => {
   const location = useLocation();
+  const { userData, updateUserData } = useUser();
 
   // Calculate distance between two points using Haversine formula
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -43,18 +45,19 @@ const Home = () => {
     const initialCenter = [151.2093, -33.8688]; // Default center
     const nearbyTreasures = treasureData
       .map((treasure, index) => ({
-        id: index + 1,
+        id: treasure.id,
         position: [
           treasure.coordinates.longitude,
           treasure.coordinates.latitude,
         ],
         found: false,
-        title: treasure.treasure,
+        title: treasure.name,
         description: treasure.offer,
         hint: treasure.hint,
         address: treasure.address,
-        openingHours: treasure.openingHours,
-        uniqueRedemption: treasure.uniqueRedemption,
+        openingHours: treasure.hours,
+        uniqueRedemption: treasure.code,
+        image: treasure.image,
         distance: calculateDistance(
           initialCenter[1], // lat
           initialCenter[0], // lng
@@ -79,8 +82,71 @@ const Home = () => {
   const [permissionsChecked, setPermissionsChecked] = useState(false);
   const [isRequestingPermissions, setIsRequestingPermissions] = useState(false);
   const [showHintBalloon, setShowHintBalloon] = useState(false);
+  const [isSavingTreasure, setIsSavingTreasure] = useState(false);
   const permissionInitRef = useRef(false);
   const { isDrawerOpen } = useDrawer();
+
+  // Helper function to normalize treasure IDs
+  const normalizeTreasureId = (id) => {
+    // If it's already a string with "treasure_" prefix, return as-is
+    if (typeof id === "string" && id.startsWith("treasure_")) {
+      return id;
+    }
+    // If it's a number or string number, convert to "treasure_X" format
+    const numId = parseInt(id);
+    if (!isNaN(numId)) {
+      return `treasure_${numId}`;
+    }
+    // Fallback to string
+    return String(id);
+  };
+
+  // Update treasures to filter out already collected ones
+  useEffect(() => {
+    if (userData && userData.collectedTreasures) {
+      console.log(
+        "Filtering treasures based on collected:",
+        userData.collectedTreasures
+      );
+
+      // Get all treasures and filter out collected ones
+      const initialCenter = [151.2093, -33.8688]; // Default center
+      const allTreasures = treasureData
+        .map((treasure, index) => ({
+          id: index + 1,
+          position: [
+            treasure.coordinates.longitude,
+            treasure.coordinates.latitude,
+          ],
+          found: false,
+          title: treasure.name,
+          description: treasure.offer,
+          hint: treasure.hint,
+          address: treasure.address,
+          openingHours: treasure.hours,
+          uniqueRedemption: treasure.code,
+          image: treasure.image,
+          distance: calculateDistance(
+            initialCenter[1], // lat
+            initialCenter[0], // lng
+            treasure.coordinates.latitude,
+            treasure.coordinates.longitude
+          ),
+        }))
+        .sort((a, b) => a.distance - b.distance) // Sort by distance
+        .filter((treasure) => {
+          // Normalize treasure ID and check against collected treasures
+          const treasureId = normalizeTreasureId(treasure.id);
+          return !userData.collectedTreasures.some(
+            (collectedId) => normalizeTreasureId(collectedId) === treasureId
+          );
+        }) // Filter out collected
+        .slice(0, 10); // Take the 10 closest uncollected
+
+      console.log("Filtered treasures count:", allTreasures.length);
+      setTreasures(allTreasures);
+    }
+  }, [userData]);
 
   // iOS detection function
   const isIOS = () => {
@@ -165,13 +231,22 @@ const Home = () => {
 
         // Example reward data - this should be dynamic based on targetName
         const demoRewardData = {
-          headerText: "Open Run Pro 2",
-          pointsIcon: coinsIcon,
-          points: "+20 Points",
-          productImage: treasureImage,
-          title: "OPEN RUN PRO 2",
-          subtitle: "NEW FLAGSHIP MODEL\nRedefining The Sound Of Sports",
-          gameType: "flip", // Change to 'flip' or 'quiz' to test other games
+          id: "treasure_1",
+          name: "THEECA",
+          hint: "Walk east from Taylor Square along Burton Street and scan the entryway of the chic corner spot marked by arched glass doors to claim your drink treasure.\n",
+          offer:
+            "Marathon finishers get their first drink free. Everyone else: Happy Hour prices – Wine $12, Cocktails/Spritzes $10, Beer $8, Mocktail $10. \nSofts Snacks: Olives, fries, tiramisu, cheese board.",
+          address: "1 Burton Street, Darlinghurst NSW 2010",
+          hours: "7:30am – 5:00pm",
+          redeem: "Must show code to staff/server to redeem",
+          terms: NaN,
+          code: "TCSSYDMARA25",
+          coordinates: {
+            latitude: -33.87838566944955,
+            longitude: 151.21454047745578,
+          },
+          image:
+            "https://firebasestorage.googleapis.com/v0/b/sydney-marathon-2025.firebasestorage.app/o/TREASURE%20HUNT%20IMAGES%2FTHEECA.png?alt=media&token=763e8c02-ec0e-43a4-be32-8dfe9bd0290b",
         };
 
         setRewardData(demoRewardData);
@@ -222,8 +297,9 @@ const Home = () => {
     setSelectedTreasure(
       selectedTreasure?.id === fullTreasure?.id ? null : fullTreasure
     );
-    // Hide reward popup when treasure is clicked
-    setIsRewardPopupOpen(false);
+    // Show reward popup when treasure is clicked
+    setIsRewardPopupOpen(true);
+    setRewardData(treasure.treasureData);
   };
 
   const toggleMapMode = () => {
@@ -242,20 +318,32 @@ const Home = () => {
 
   // Find nearby treasures based on current map center
   const findNearbyTreasures = (mapCenter) => {
+    console.log("findNearbyTreasures called with mapCenter:", mapCenter);
+    console.log(
+      "Current userData.collectedTreasures:",
+      userData?.collectedTreasures
+    );
+    console.log("userData available:", !!userData);
+    console.log(
+      "collectedTreasures length:",
+      userData?.collectedTreasures?.length
+    );
+
     const nearbyTreasures = treasureData
       .map((treasure, index) => ({
-        id: index + 1,
+        id: treasure.id,
         position: [
           treasure.coordinates.longitude,
           treasure.coordinates.latitude,
         ],
         found: false,
-        title: treasure.treasure,
+        title: treasure.name,
         description: treasure.offer,
         hint: treasure.hint,
         address: treasure.address,
-        openingHours: treasure.openingHours,
-        uniqueRedemption: treasure.uniqueRedemption,
+        openingHours: treasure.hours,
+        uniqueRedemption: treasure.code,
+        image: treasure.image,
         distance: calculateDistance(
           mapCenter[1], // lat
           mapCenter[0], // lng
@@ -264,8 +352,24 @@ const Home = () => {
         ),
       }))
       .sort((a, b) => a.distance - b.distance) // Sort by distance
-      .slice(0, 10); // Take the 10 closest
+      .filter((treasure) => {
+        // Normalize treasure ID and check against collected treasures
+        const treasureId = normalizeTreasureId(treasure.id);
+        const isCollected = userData?.collectedTreasures?.some(
+          (collectedId) => normalizeTreasureId(collectedId) === treasureId
+        );
+        if (isCollected) {
+          console.log("Filtering out collected treasure:", treasure.id);
+        }
+        return !isCollected;
+      }) // Filter out collected
+      .slice(0, 10); // Take the 10 closest uncollected
 
+    console.log(
+      "findNearbyTreasures returning:",
+      nearbyTreasures.length,
+      "treasures"
+    );
     return nearbyTreasures;
   };
 
@@ -273,20 +377,31 @@ const Home = () => {
   const debouncedMapMove = useRef(null);
 
   // Handle map movement with delay
-  const handleMapMove = useCallback((newCenter) => {
-    setCenter(newCenter);
+  const handleMapMove = useCallback(
+    (newCenter) => {
+      setCenter(newCenter);
 
-    // Clear existing timeout
-    if (debouncedMapMove.current) {
-      clearTimeout(debouncedMapMove.current);
-    }
+      // Clear existing timeout
+      if (debouncedMapMove.current) {
+        clearTimeout(debouncedMapMove.current);
+      }
 
-    // Set new timeout for finding nearby treasures
-    debouncedMapMove.current = setTimeout(() => {
-      const nearbyTreasures = findNearbyTreasures(newCenter);
-      setTreasures(nearbyTreasures);
-    }, 500); // 500ms delay
-  }, []);
+      // Set new timeout for finding nearby treasures
+      debouncedMapMove.current = setTimeout(() => {
+        // Only update treasures if userData is available
+        if (userData) {
+          console.log("Map move - userData available, updating treasures");
+          const nearbyTreasures = findNearbyTreasures(newCenter);
+          setTreasures(nearbyTreasures);
+        } else {
+          console.log(
+            "Map move - userData not available, skipping treasure update"
+          );
+        }
+      }, 500); // 500ms delay
+    },
+    [userData]
+  );
 
   const handleGrantPermission = async () => {
     setIsRequestingPermissions(true);
@@ -345,7 +460,64 @@ const Home = () => {
         isOpen={isRewardPopupOpen}
         onClose={() => setIsRewardPopupOpen(false)}
         data={rewardData}
-        onGameSelect={setSelectedGame}
+        isSavingTreasure={isSavingTreasure}
+        onCollect={() => {
+          console.log("onCollect called with rewardData:", rewardData);
+
+          // Set saving state to keep popup open
+          setIsSavingTreasure(true);
+
+          // Save the collected treasure ID to user data
+          if (rewardData && rewardData.id) {
+            const currentCollectedTreasures = userData.collectedTreasures || [];
+            console.log(
+              "Current collected treasures:",
+              currentCollectedTreasures
+            );
+
+            // Normalize treasure ID to ensure consistency
+            const treasureId = normalizeTreasureId(rewardData.id);
+            console.log("Normalized treasure ID:", treasureId);
+
+            // Check if already collected
+            if (currentCollectedTreasures.includes(treasureId)) {
+              console.log("Treasure already collected:", treasureId);
+              setIsSavingTreasure(false);
+              setSelectedTreasure(null);
+              setIsRewardPopupOpen(false);
+            } else {
+              const updatedCollectedTreasures = [
+                ...currentCollectedTreasures,
+                treasureId,
+              ];
+              console.log(
+                "Updated collected treasures:",
+                updatedCollectedTreasures
+              );
+
+              const updatedUserData = {
+                ...userData,
+                collectedTreasures: updatedCollectedTreasures,
+              };
+
+              console.log("Updating user data with:", updatedUserData);
+              updateUserData(updatedUserData);
+              console.log("Collected treasure saved:", treasureId);
+
+              // Keep popup open for a moment to show saving
+              setTimeout(() => {
+                setIsSavingTreasure(false);
+                setSelectedTreasure(null);
+                setIsRewardPopupOpen(false);
+              }, 1000);
+            }
+          } else {
+            console.log("No rewardData or rewardData.id found:", rewardData);
+            setIsSavingTreasure(false);
+            setSelectedTreasure(null);
+            setIsRewardPopupOpen(false);
+          }
+        }}
       />
 
       <BoostScorePopup
@@ -398,11 +570,15 @@ const Home = () => {
       <div className="stats-bar">
         <div className="stat-item pill">
           <i className="fas fa-gift"></i>
-          <span>4</span>
+          <span>{userData?.collectedTreasures?.length || 0}</span>
         </div>
         <div className="stat-item pill">
           <i className="fas fa-coins"></i>
-          <span>150 Pt</span>
+          <span>
+            {(userData?.collectedTreasures?.length || 0) * 10 +
+              (userData?.totalBoosterScore || 0)}{" "}
+            Pts
+          </span>
         </div>
       </div>
 

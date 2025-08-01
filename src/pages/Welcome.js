@@ -67,7 +67,7 @@ const StyledMenuItem = styled(MenuItem)({
 const Welcome = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { updateUserData, setUserDocumentId } = useUser();
+  const { updateUserData, setUserDocumentId, loadUserFromFirebase } = useUser();
   const [showAvatarSelection, setShowAvatarSelection] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
@@ -85,6 +85,8 @@ const Welcome = () => {
   const [showFirstReward, setShowFirstReward] = useState(false);
   const [userDocId, setUserDocId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   // Avatar options - using actual avatar images
   const avatarOptions = [
@@ -197,20 +199,31 @@ const Welcome = () => {
           const existingUser = emailSnapshot.docs[0].data();
 
           if (existingUser.verified) {
-            // User is already verified, proceed to hunt page
+            // User is already verified, load fresh data from Firebase
             console.log(
-              "Verified user with same email exists, proceeding to hunt page"
+              "Verified user with same email exists, loading fresh data from Firebase"
             );
 
-            updateUserData({
-              ...formData,
-              avatar: selectedAvatar,
-              verified: true,
-              loginMethod: "existing_user",
-            });
+            const existingUserDoc = emailSnapshot.docs[0];
+            setUserDocumentId(existingUserDoc.id);
+            setUserDocId(existingUserDoc.id);
+
+            // Load fresh data from Firebase
+            const updatedUserData = await loadUserFromFirebase(formData.email);
+            if (!updatedUserData) {
+              // Fallback to form data if Firebase load failed
+              updateUserData({
+                ...formData,
+                avatar: selectedAvatar,
+                verified: true,
+                loginMethod: "existing_user",
+              });
+            }
 
             setIsSubmitting(false);
-            setShowFirstReward(true);
+            // Redirect existing users directly to home page
+            setIsNewUser(false);
+            navigate("/home");
             return;
           } else {
             // User exists but not verified, use existing user
@@ -219,6 +232,8 @@ const Welcome = () => {
             );
             const existingUserDoc = emailSnapshot.docs[0];
             setUserDocumentId(existingUserDoc.id);
+            setUserDocId(existingUserDoc.id);
+            console.log("Set userDocId for existing user:", existingUserDoc.id);
 
             // Continue with OTP flow using existing user
             try {
@@ -262,6 +277,8 @@ const Welcome = () => {
         verified: false,
       });
       setUserDocumentId(userRef.id);
+      setUserDocId(userRef.id);
+      console.log("Set userDocId for new user:", userRef.id);
       console.log("User created in Firestore with ID:", userRef.id);
 
       // 3. Call Firebase Function to send OTP email
@@ -291,10 +308,8 @@ const Welcome = () => {
       }
     } catch (error) {
       console.error("Error creating user or sending OTP:", error);
-      // Show OTP verification UI first, then trouble modal
-      setShowOTP(true);
-      setResendTimer(30);
-      setShowTroubleModal(true);
+      // Don't show OTP UI if user creation failed
+      alert("Error creating user. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -309,23 +324,37 @@ const Welcome = () => {
       alert("User not found. Please try again.");
       return;
     }
+
+    // Prevent double submission
+    if (isVerifying) {
+      return;
+    }
+
+    setIsVerifying(true);
+
     try {
       const userSnap = await getDoc(doc(db, "users", userDocId));
       if (!userSnap.exists()) {
         alert("User not found. Please try again.");
+        setIsVerifying(false);
         return;
       }
       const userData = userSnap.data();
       if (userData.otp === otp) {
         // Mark user as verified
         await updateDoc(doc(db, "users", userDocId), { verified: true });
-        // Proceed as before
-        updateUserData({
-          ...formData,
-          avatar: selectedAvatar,
-          verified: true,
-          loginMethod: "otp",
-        });
+
+        // Load fresh data from Firebase and update context
+        const updatedUserData = await loadUserFromFirebase(formData.email);
+        if (!updatedUserData) {
+          // Fallback to form data if Firebase load failed
+          updateUserData({
+            ...formData,
+            avatar: selectedAvatar,
+            verified: true,
+            loginMethod: "otp",
+          });
+        }
         setShowFirstReward(true);
       } else {
         alert("Invalid OTP. Please try again.");
@@ -333,6 +362,8 @@ const Welcome = () => {
     } catch (error) {
       console.error("Error verifying OTP:", error);
       alert("Verification failed. Please try again.");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -358,6 +389,29 @@ const Welcome = () => {
         const existingUser = emailSnapshot.docs[0];
         userDocId = existingUser.id;
         console.log("Using existing guest user with ID:", userDocId);
+
+        // Check if user is verified
+        if (existingUser.verified) {
+          // Existing verified user - redirect to home
+          setUserDocumentId(userDocId);
+
+          // Load fresh data from Firebase
+          const updatedUserData = await loadUserFromFirebase(formData.email);
+          if (!updatedUserData) {
+            // Fallback to form data if Firebase load failed
+            updateUserData({
+              ...formData,
+              avatar: selectedAvatar,
+              verified: true,
+              loginMethod: "guest",
+            });
+          }
+
+          // Redirect existing users directly to home page
+          setIsNewUser(false);
+          navigate("/home");
+          return;
+        }
       } else {
         // Create new guest user in Firestore
         const userRef = await addDoc(collection(db, "users"), {
@@ -375,17 +429,21 @@ const Welcome = () => {
 
       setUserDocumentId(userDocId);
 
-      // Store user data with verification status as false
-      updateUserData({
-        ...formData,
-        avatar: selectedAvatar,
-        verified: false,
-        loginMethod: "guest",
-        challengeScores: {},
-        totalBoosterScore: 0,
-      });
+      // Load fresh data from Firebase and update context
+      const updatedUserData = await loadUserFromFirebase(formData.email);
+      if (!updatedUserData) {
+        // Fallback to form data if Firebase load failed
+        updateUserData({
+          ...formData,
+          avatar: selectedAvatar,
+          verified: false,
+          loginMethod: "guest",
+          challengeScores: {},
+          totalBoosterScore: 0,
+        });
+      }
 
-      // Show first reward popup before navigating
+      // Show first reward popup for new users only
       setShowFirstReward(true);
     } catch (error) {
       console.error("Error creating guest user:", error);
@@ -414,9 +472,13 @@ const Welcome = () => {
       })
     );
 
-    // Close the popup and navigate to hunt
+    // Close the popup and navigate based on user type
     setShowFirstReward(false);
-    navigate("/hunt");
+    if (isNewUser) {
+      navigate("/hunt");
+    } else {
+      navigate("/home");
+    }
 
     setTimeout(() => {
       console.log(
@@ -461,8 +523,12 @@ const Welcome = () => {
             </button>
           )}
         </div>
-        <button className="verify-button" onClick={handleVerifyOtp}>
-          VERIFY
+        <button
+          className="verify-button"
+          onClick={handleVerifyOtp}
+          disabled={isVerifying}
+        >
+          {isVerifying ? "VERIFYING..." : "VERIFY"}
         </button>
         <button
           className="trouble-link"

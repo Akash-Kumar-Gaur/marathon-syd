@@ -76,16 +76,16 @@
   background-color: #fff;
   /* padding: 16px; */
   background-color: #151515;
-  padding-bottom: 16px;
+  /* padding-bottom: 16px; */
   border-radius: 12px 12px 0 0;
 }
 
 .reward-image {
   width: 100%;
   height: auto;
-  margin-bottom: 16px;
-  max-height: 150px;
-  object-fit: scale-down;
+  /* margin-bottom: 16px; */
+  /* max-height: 150px; */
+  object-fit: contain;
   /* border-radius: 12px; */
 }
 
