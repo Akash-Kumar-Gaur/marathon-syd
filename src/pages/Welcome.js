@@ -19,6 +19,7 @@ import {
   query,
   where,
   getDocs,
+  deleteDoc,
 } from "firebase/firestore";
 import { useUser } from "../context/UserContext";
 
@@ -165,9 +166,17 @@ const Welcome = () => {
       return;
     }
 
+    // Prevent double submission
+    if (isSubmitting) {
+      console.log("Already submitting, ignoring duplicate request");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
+      console.log("Starting OTP process for email:", formData.email);
+
       // 1. Check if user with same email already exists
       try {
         const emailQuery = query(
@@ -175,6 +184,13 @@ const Welcome = () => {
           where("email", "==", formData.email)
         );
         const emailSnapshot = await getDocs(emailQuery);
+
+        console.log(
+          "Email query result - empty:",
+          emailSnapshot.empty,
+          "docs count:",
+          emailSnapshot.docs.length
+        );
 
         if (!emailSnapshot.empty) {
           // User with same email exists
@@ -205,40 +221,41 @@ const Welcome = () => {
             setUserDocumentId(existingUserDoc.id);
 
             // Continue with OTP flow using existing user
-            const sendOtpEmail = httpsCallable(functions, "sendOtpEmail");
-            const result = await sendOtpEmail({
-              email: formData.email,
-              userId: existingUserDoc.id,
-            });
-            console.log("OTP email sent to existing user:", result.data);
+            try {
+              const sendOtpEmail = httpsCallable(functions, "sendOtpEmail");
+              const result = await sendOtpEmail({
+                email: formData.email,
+                userId: existingUserDoc.id,
+              });
+              console.log("OTP email sent to existing user:", result.data);
 
-            setShowOTP(true);
-            setResendTimer(30);
-            setIsSubmitting(false);
-            return;
+              setShowOTP(true);
+              setResendTimer(30);
+              setIsSubmitting(false);
+              return;
+            } catch (otpError) {
+              console.error("Error sending OTP to existing user:", otpError);
+              alert("Error sending OTP. Please try again.");
+              setIsSubmitting(false);
+              return;
+            }
           }
         }
       } catch (queryError) {
-        // Only proceed if it's a "collection doesn't exist" error
-        // Don't proceed if it's a permissions error
-        if (
-          queryError.code === "permission-denied" ||
-          queryError.message?.includes("permission")
-        ) {
-          console.error("Permission error during duplicate check:", queryError);
-          alert("Error checking for existing users. Please try again.");
-          setIsSubmitting(false);
-          return;
-        }
+        console.error("Error checking for existing users:", queryError);
 
-        // For other errors (like collection not existing), proceed
-        console.log(
-          "Collection might not exist yet, proceeding with user creation:",
-          queryError
-        );
+        // Don't proceed with user creation if there's any error checking for duplicates
+        // This prevents creating duplicate users when we can't verify if one already exists
+        alert("Error checking for existing users. Please try again.");
+        setIsSubmitting(false);
+        return;
       }
 
       // 2. Create user in Firestore
+      console.log(
+        "No existing user found, creating new user for email:",
+        formData.email
+      );
       const userRef = await addDoc(collection(db, "users"), {
         ...formData,
         createdAt: new Date(),
@@ -248,16 +265,30 @@ const Welcome = () => {
       console.log("User created in Firestore with ID:", userRef.id);
 
       // 3. Call Firebase Function to send OTP email
-      const sendOtpEmail = httpsCallable(functions, "sendOtpEmail");
-      const result = await sendOtpEmail({
-        email: formData.email,
-        userId: userRef.id,
-      });
-      console.log("OTP email sent:", result.data);
+      try {
+        const sendOtpEmail = httpsCallable(functions, "sendOtpEmail");
+        const result = await sendOtpEmail({
+          email: formData.email,
+          userId: userRef.id,
+        });
+        console.log("OTP email sent:", result.data);
 
-      // 4. Show OTP screen only after successful email send
-      setShowOTP(true);
-      setResendTimer(30);
+        // 4. Show OTP screen only after successful email send
+        setShowOTP(true);
+        setResendTimer(30);
+      } catch (otpError) {
+        console.error("Error sending OTP to new user:", otpError);
+        // Delete the user we just created since OTP failed
+        try {
+          await deleteDoc(doc(db, "users", userRef.id));
+          console.log("Deleted user due to OTP failure:", userRef.id);
+        } catch (deleteError) {
+          console.error("Error deleting user after OTP failure:", deleteError);
+        }
+        alert("Error sending OTP. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
     } catch (error) {
       console.error("Error creating user or sending OTP:", error);
       // Show OTP verification UI first, then trouble modal

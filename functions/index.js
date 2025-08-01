@@ -1,4 +1,4 @@
-const functions = require("firebase-functions");
+const { onCall } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
 
@@ -8,11 +8,11 @@ admin.initializeApp();
 // to ensure config is loaded.
 let mailTransport;
 
-exports.sendOtpEmail = functions.https.onCall(async (data, context) => {
+exports.sendOtpEmail = onCall(async (request) => {
   // Lazy initialization of mailTransport
   if (!mailTransport) {
-    const gmailEmail = functions.config().gmail.email;
-    const gmailPassword = functions.config().gmail.password;
+    const gmailEmail = process.env.GMAIL_EMAIL || "genaiphotobooth@gmail.com";
+    const gmailPassword = process.env.GMAIL_PASSWORD || "uqvysqxoaguujopl";
 
     mailTransport = nodemailer.createTransport({
       service: "gmail",
@@ -23,12 +23,9 @@ exports.sendOtpEmail = functions.https.onCall(async (data, context) => {
     });
   }
 
-  const { email, userId } = data;
+  const { email, userId } = request.data;
   if (!email || !userId) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "Email and userId are required."
-    );
+    throw new Error("Email and userId are required.");
   }
 
   // Generate a 6-digit OTP
@@ -42,7 +39,7 @@ exports.sendOtpEmail = functions.https.onCall(async (data, context) => {
 
   // Compose and send email
   const mailOptions = {
-    from: `Sydney Marathon <${functions.config().gmail.email}>`,
+    from: `Sydney Marathon <${process.env.GMAIL_EMAIL}>`,
     to: email,
     subject: "Your Sydney Marathon OTP Code",
     text: `Your OTP code is: ${otp}`,
