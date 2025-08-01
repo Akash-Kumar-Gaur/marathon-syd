@@ -1,17 +1,22 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import "./HomeMapbox.css";
+import { useLocation } from "react-router-dom";
+import "./Home.css";
 import MapboxMap from "../components/MapboxMap";
-import StaticMap from "../components/StaticMap";
 import Header from "../components/Header";
 import RewardPopup from "../components/RewardPopup";
 import HintModal from "../components/HintModal";
 import GamePopup from "../components/GamePopup";
 import BoostScorePopup from "../components/BoostScorePopup";
+import JigsawTrayPuzzle from "../components/JigsawTrayPuzzle";
+import FlipCardsGame from "../components/FlipCardsGame";
+import MarathonQuizGame from "../components/MarathonQuizGame";
+import { Toaster, toast } from "react-hot-toast";
 import { useUser } from "../context/UserContext";
 import { useDrawer } from "../context/DrawerContext";
 import { treasureData } from "../data/treasureData";
 import { normalizeTreasureId } from "../utils/dataValidation";
+import treasureImage from "../assets/images/treasureIcon.png";
+import staticMap from "../assets/images/staticMap.png";
 
 const Home = () => {
   const location = useLocation();
@@ -75,13 +80,10 @@ const Home = () => {
   const [showBoostPopup, setShowBoostPopup] = useState(false);
   const [selectedGame, setSelectedGame] = useState(null);
   const [permissionsChecked, setPermissionsChecked] = useState(false);
-  const [isRequestingPermissions, setIsRequestingPermissions] = useState(false);
   const [showHintBalloon, setShowHintBalloon] = useState(false);
   const [isSavingTreasure, setIsSavingTreasure] = useState(false);
   const permissionInitRef = useRef(false);
   const { isDrawerOpen } = useDrawer();
-
-
 
   // Update treasures to filter out already collected ones
   useEffect(() => {
@@ -129,11 +131,6 @@ const Home = () => {
       setTreasures(allTreasures);
     }
   }, [userData]);
-
-  // iOS detection function
-  const isIOS = () => {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  };
 
   // Check permissions and initialize popup on mount
   useEffect(() => {
@@ -284,10 +281,6 @@ const Home = () => {
     setRewardData(treasure.treasureData);
   };
 
-  const toggleMapMode = () => {
-    setIsLiveMap(!isLiveMap);
-  };
-
   const toggleView = (view) => {
     setActiveView(view);
   };
@@ -384,19 +377,6 @@ const Home = () => {
     },
     [userData]
   );
-
-  const handleGrantPermission = async () => {
-    setIsRequestingPermissions(true);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      stream.getTracks().forEach((track) => track.stop());
-      console.log("Camera permission granted");
-      setIsRequestingPermissions(false);
-    } catch (error) {
-      console.error("Error requesting camera permission:", error);
-      setIsRequestingPermissions(false);
-    }
-  };
 
   // Prepare markers for Mapbox
   const mapMarkers = [

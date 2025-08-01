@@ -39,26 +39,32 @@ const NavigationLogger = () => {
 
 // Loading component
 const LoadingScreen = () => (
-  <div style={{
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100vh',
-    backgroundColor: '#f0f8ff'
-  }}>
-    <div style={{
-      textAlign: 'center',
-      color: '#081F2D'
-    }}>
-      <div style={{
-        width: '40px',
-        height: '40px',
-        border: '4px solid #e3f2fd',
-        borderTop: '4px solid #1976d2',
-        borderRadius: '50%',
-        animation: 'spin 1s linear infinite',
-        margin: '0 auto 16px'
-      }}></div>
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "100vh",
+      backgroundColor: "#f0f8ff",
+    }}
+  >
+    <div
+      style={{
+        textAlign: "center",
+        color: "#081F2D",
+      }}
+    >
+      <div
+        style={{
+          width: "40px",
+          height: "40px",
+          border: "4px solid #e3f2fd",
+          borderTop: "4px solid #1976d2",
+          borderRadius: "50%",
+          animation: "spin 1s linear infinite",
+          margin: "0 auto 16px",
+        }}
+      ></div>
       <p>Loading...</p>
     </div>
   </div>
@@ -90,9 +96,7 @@ const AppContent = () => {
           {isRouteEnabled("/hunt") && (
             <Route path="/hunt" element={<LearnToHunt />} />
           )}
-          {isRouteEnabled("/home") && (
-            <Route path="/home" element={<Home />} />
-          )}
+          {isRouteEnabled("/home") && <Route path="/home" element={<Home />} />}
           {isRouteEnabled("/photobooth") && (
             <Route path="/photobooth" element={<PhotoBooth />} />
           )}

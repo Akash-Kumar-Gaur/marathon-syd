@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useRef,
-} from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { db } from "../services/firebase";
 import {
   doc,
@@ -15,10 +9,10 @@ import {
   getDocs,
   getDoc,
 } from "firebase/firestore";
-import { 
-  validateUserData, 
-  sanitizeUserData, 
-  getDefaultUserData 
+import {
+  validateUserData,
+  sanitizeUserData,
+  getDefaultUserData,
 } from "../utils/dataValidation";
 
 const UserContext = createContext();
@@ -51,7 +45,7 @@ export const UserProvider = ({ children }) => {
       try {
         const storedDocId = localStorage.getItem("userDocId");
         const storedUserData = localStorage.getItem("userData");
-        
+
         if (storedDocId && storedUserData) {
           // Try to validate stored data
           try {
@@ -70,7 +64,9 @@ export const UserProvider = ({ children }) => {
                 setIsLoggedIn(true);
               }
             } else {
-              console.log("Stored data validation failed, clearing localStorage");
+              console.log(
+                "Stored data validation failed, clearing localStorage"
+              );
               clearLocalStorage();
             }
           } catch (parseError) {
@@ -106,14 +102,14 @@ export const UserProvider = ({ children }) => {
       if (userDoc.exists()) {
         const firebaseData = userDoc.data();
         console.log("Firebase data loaded:", firebaseData);
-        
+
         if (validateUserData(firebaseData)) {
           const updatedUserData = sanitizeUserData(firebaseData);
-          
+
           // Update localStorage with fresh data
           localStorage.setItem("userData", JSON.stringify(updatedUserData));
           localStorage.setItem("userDocId", docId);
-          
+
           return updatedUserData;
         } else {
           console.error("Invalid user data from Firebase:", firebaseData);
@@ -144,7 +140,7 @@ export const UserProvider = ({ children }) => {
           localStorage.setItem("userDocId", userDoc.id);
 
           const updatedUserData = sanitizeUserData(firebaseData);
-          
+
           console.log("Updated user data from Firebase:", updatedUserData);
           setUserData(updatedUserData);
           localStorage.setItem("userData", JSON.stringify(updatedUserData));
@@ -166,7 +162,10 @@ export const UserProvider = ({ children }) => {
   const updateUserData = (newUserData) => {
     // Validate incoming data
     if (!validateUserData(newUserData)) {
-      console.error("Invalid user data provided to updateUserData:", newUserData);
+      console.error(
+        "Invalid user data provided to updateUserData:",
+        newUserData
+      );
       return;
     }
 
@@ -178,10 +177,10 @@ export const UserProvider = ({ children }) => {
     }
 
     console.log("Updating user data:", cleanUserData);
-    
+
     setUserData(cleanUserData);
     setIsLoggedIn(true);
-    
+
     // Update localStorage
     try {
       localStorage.setItem("userData", JSON.stringify(cleanUserData));
@@ -224,7 +223,7 @@ export const UserProvider = ({ children }) => {
         challengeScores: newChallengeScores,
         totalBoosterScore: newTotalBoosterScore,
       };
-      
+
       // Update localStorage
       try {
         localStorage.setItem("userData", JSON.stringify(newData));
@@ -259,7 +258,7 @@ export const UserProvider = ({ children }) => {
       console.error("Cannot set userDocId: invalid document ID");
       return;
     }
-    
+
     setUserDocId(docId);
     try {
       localStorage.setItem("userDocId", docId);

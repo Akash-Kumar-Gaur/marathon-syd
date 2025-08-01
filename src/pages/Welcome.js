@@ -265,7 +265,7 @@ const Welcome = () => {
         "No existing user found, creating new user for email:",
         formData.email
       );
-      
+
       const newUserData = {
         ...formData,
         avatar: selectedAvatar,
@@ -340,13 +340,13 @@ const Welcome = () => {
         setIsVerifying(false);
         return;
       }
-      
+
       const userData = userSnap.data();
       if (userData.otp === otp) {
         // Mark user as verified
-        await updateDoc(doc(db, "users", userDocId), { 
+        await updateDoc(doc(db, "users", userDocId), {
           verified: true,
-          verifiedAt: new Date()
+          verifiedAt: new Date(),
         });
 
         // Load fresh data from Firebase and update context
@@ -357,7 +357,7 @@ const Welcome = () => {
           setIsVerifying(false);
           return;
         }
-        
+
         setShowFirstReward(true);
       } else {
         alert("Invalid OTP. Please try again.");
