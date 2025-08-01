@@ -81,6 +81,7 @@ function TreasureDetailCard({ onBack, treasure }) {
         height: "100%",
         padding: "16px",
         marginBottom: 32,
+        background: "#e6f4fa", // Light blue background
       }}
     >
       <button
@@ -135,7 +136,7 @@ function TreasureDetailCard({ onBack, treasure }) {
             background: "#fff",
             borderRadius: 18,
             boxShadow: "0px 3.11px 12px 0px #00000030",
-            padding: "16px",
+            padding: "0",
             width: "100%",
             maxWidth: 340,
             margin: "0 4px",
@@ -143,170 +144,180 @@ function TreasureDetailCard({ onBack, treasure }) {
             minHeight: 0,
             display: "flex",
             flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
+            overflow: "hidden",
           }}
         >
+          {/* Card Header */}
           <div
             style={{
-              fontWeight: 800,
-              fontSize: 18,
-              color: "#081F2D",
-              marginBottom: 8,
-              letterSpacing: 1,
-              textAlign: "center",
-            }}
-          >
-            {treasure?.treasure || "Treasure"}
-          </div>
-          <div
-            style={{
-              fontWeight: 600,
-              fontSize: 14,
-              color: "#1693f6",
-              marginBottom: 16,
-              textAlign: "center",
-            }}
-          >
-            {treasure?.offer || "Special offer available"}
-          </div>
-          <img
-            src={headphones}
-            alt="Headphones"
-            style={{
-              width: "80%",
-              maxWidth: 120,
-              margin: "8px auto 10px auto",
-              display: "block",
-            }}
-          />
-          <div
-            style={{
-              textAlign: "left",
-              fontWeight: 700,
-              fontSize: 11,
-              color: "#081F2D",
-              marginBottom: 2,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-start",
-              width: "100%",
-            }}
-          >
-            CODE
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: 8,
-              width: "100%",
+              background: "#f8f9fa",
+              padding: "16px",
+              borderBottom: "1px solid #e9ecef",
             }}
           >
             <div
               style={{
-                flex: 1,
-                border: "1.5px dashed #1693f6",
-                borderRadius: 8,
-                padding: "7px 6px",
-                fontWeight: 600,
-                fontSize: 12,
+                fontWeight: 800,
+                fontSize: 18,
                 color: "#081F2D",
-                background: "#f7fbfd",
-                letterSpacing: 1,
+                textAlign: "center",
+                letterSpacing: 0.5,
               }}
             >
-              {treasure?.uniqueRedemption || "No code available"}
+              {treasure?.treasure || "Treasure"}
             </div>
-            <button
-              onClick={handleCopy}
-              style={{
-                marginLeft: 6,
-                background: "#1693f6",
-                color: "#fff",
-                border: "none",
-                borderRadius: 8,
-                fontWeight: 700,
-                fontSize: 12,
-                padding: "7px 12px",
-                cursor: "pointer",
-              }}
-            >
-              COPY
-            </button>
           </div>
-          <div style={{ textAlign: "left", marginBottom: 7 }}>
+
+          {/* Card Content */}
+          <div style={{ padding: "16px" }}>
+            {/* Offer Description */}
             <div
               style={{
-                fontWeight: 700,
-                fontSize: 12,
+                fontWeight: 400,
+                fontSize: 14,
                 color: "#081F2D",
-                marginBottom: 2,
-                marginTop: 24,
-              }}
-            >
-              How to Avail :
-            </div>
-            <div
-              style={{
-                color: "#22313F",
-                fontSize: 11,
-                margin: 0,
-                marginBottom: 0,
+                marginBottom: 24,
+                textAlign: "center",
                 lineHeight: 1.4,
               }}
             >
-              {treasure?.howToRedeem || "Show code to staff to redeem"}
+              {treasure?.offer || "Special offer available"}
             </div>
-          </div>
-          <div style={{ textAlign: "left", marginBottom: 10 }}>
-            <div
-              style={{
-                fontWeight: 700,
-                fontSize: 12,
-                color: "#081F2D",
-                marginBottom: 2,
-                marginTop: 24,
-              }}
-            >
-              Terms and Conditions:
+
+            {/* Redemption Code Section - Only show if code exists and is not NaN */}
+            {treasure?.uniqueRedemption &&
+            treasure.uniqueRedemption !== "NaN" ? (
+              <div style={{ marginBottom: 24 }}>
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 11,
+                    color: "#081F2D",
+                    marginBottom: 8,
+                    textAlign: "left",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  UNIQUE REDEMPTION CODE
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  <div
+                    style={{
+                      flex: 1,
+                      border: "2px dashed #1693f6",
+                      borderRadius: 8,
+                      padding: "12px 8px",
+                      fontWeight: 600,
+                      fontSize: 14,
+                      color: "#081F2D",
+                      background: "#f7fbfd",
+                      letterSpacing: 1,
+                      textAlign: "center",
+                    }}
+                  >
+                    {treasure.uniqueRedemption}
+                  </div>
+                  <button
+                    onClick={handleCopy}
+                    style={{
+                      background: "#1693f6",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 8,
+                      fontWeight: 700,
+                      fontSize: 12,
+                      padding: "12px 16px",
+                      cursor: "pointer",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    COPY
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {/* Redemption Instructions - Only show if howToRedeem exists and is not NaN */}
+            {/* {treasure?.howToRedeem && treasure.howToRedeem !== "NaN" && ( */}
+            <div style={{ marginBottom: 24, textAlign: "left" }}>
+              <div
+                style={{
+                  fontWeight: 700,
+                  fontSize: 14,
+                  color: "#081F2D",
+                  marginBottom: 8,
+                }}
+              >
+                Redemption instructions:
+              </div>
+              <div
+                style={{
+                  color: "#081F2D",
+                  fontSize: 13,
+                  lineHeight: 1.5,
+                }}
+              >
+                {treasure.howToRedeem}
+              </div>
             </div>
-            <ol
-              style={{
-                color: "#22313F",
-                fontSize: 11,
-                margin: 0,
-                paddingLeft: 16,
-                listStyle: "decimal",
-                // marginLeft: 12,
-              }}
-            >
-              <li>Offer valid for first-time users only.</li>
-              <li>One free product per verified account.</li>
-              <li>
-                Company reserves the right to modify or cancel the offer
-                anytime.
-              </li>
-            </ol>
+            {/* )} */}
+
+            {/* Opening Hours - Only show if openingHours exists and is not NaN */}
+            {treasure?.openingHours && treasure.openingHours !== "NaN" && (
+              <div style={{ marginBottom: 24, textAlign: "left" }}>
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 14,
+                    color: "#081F2D",
+                    marginBottom: 8,
+                  }}
+                >
+                  Opening hours
+                </div>
+                <div
+                  style={{
+                    color: "#081F2D",
+                    fontSize: 13,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {treasure.openingHours}
+                </div>
+              </div>
+            )}
+
+            {/* Terms and Conditions - Only show if terms exists and is not NaN */}
+            {/* {treasure?.terms && treasure.terms !== "NaN" && ( */}
+            <div style={{ textAlign: "left" }}>
+              <div
+                style={{
+                  fontWeight: 700,
+                  fontSize: 14,
+                  color: "#081F2D",
+                  marginBottom: 8,
+                }}
+              >
+                Terms and Conditions:
+              </div>
+              <div
+                style={{
+                  color: "#081F2D",
+                  fontSize: 13,
+                  lineHeight: 1.5,
+                }}
+              >
+                {treasure.terms}
+              </div>
+            </div>
+            {/* )} */}
           </div>
-          <button
-            style={{
-              width: "100%",
-              padding: "10px 0",
-              background: "#0096db",
-              color: "#fff",
-              border: "none",
-              borderRadius: 10,
-              fontWeight: 700,
-              fontSize: 13,
-              letterSpacing: 1,
-              marginTop: 4,
-              cursor: "pointer",
-              boxShadow: "0px 3.11px 3.11px 0px #00000040",
-            }}
-          >
-            REDEEM NOW
-          </button>
         </div>
       </div>
     </div>
