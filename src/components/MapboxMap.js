@@ -33,6 +33,8 @@ const MapboxMap = ({
   });
 
   const [popupInfo, setPopupInfo] = useState(null);
+  const [mapError, setMapError] = useState(null);
+  const [isMapLoading, setIsMapLoading] = useState(true);
 
   const onMove = useCallback(
     (evt) => {
@@ -68,6 +70,22 @@ const MapboxMap = ({
       style={style}
       mapStyle="mapbox://styles/mapbox/light-v11"
       mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
+      onLoad={() => {
+        setIsMapLoading(false);
+        setMapError(null);
+        console.log("Map loaded successfully");
+      }}
+      onError={(error) => {
+        console.error("Mapbox error:", error);
+        setMapError(error);
+        setIsMapLoading(false);
+      }}
+      // iOS-specific optimizations
+      attributionControl={false}
+      preserveDrawingBuffer={false}
+      antialias={false}
+      maxZoom={18}
+      minZoom={3}
     >
       {/* NavigationControl removed to hide default Mapbox controls */}
 
@@ -113,6 +131,79 @@ const MapboxMap = ({
             console.log("Route found:", routeData);
           }}
         />
+      )}
+
+      {/* Loading overlay */}
+      {isMapLoading && (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div style={{ textAlign: "center" }}>
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                border: "4px solid #f3f3f3",
+                borderTop: "4px solid #3498db",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite",
+                margin: "0 auto 10px",
+              }}
+            ></div>
+            <p>Loading map...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error overlay */}
+      {mapError && (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            <h3>Map Loading Error</h3>
+            <p>
+              Unable to load the map. Please check your internet connection and
+              try again.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                padding: "10px 20px",
+                backgroundColor: "#3498db",
+                color: "white",
+                border: "none",
+                borderRadius: "5px",
+                cursor: "pointer",
+                marginTop: "10px",
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
       )}
     </Map>
   );

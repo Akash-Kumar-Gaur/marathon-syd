@@ -683,12 +683,13 @@ const Header = () => {
                         style={{
                           width: "100%",
                           cursor: isClickable ? "pointer" : "default",
+                          maxHeight: 106,
                         }}
                         onClick={() =>
                           isClickable && handleChallengeClick(challenge)
                         }
                       >
-                        <div
+                        {/* <div
                           style={{
                             background: "#fff",
                             fontWeight: 700,
@@ -704,10 +705,9 @@ const Header = () => {
                           }}
                         >
                           {challenge.name}
-                        </div>
+                        </div> */}
                         <div
                           style={{
-                            background: "#fff",
                             width: "100%",
                             display: "flex",
                             alignItems: "center",
@@ -716,8 +716,19 @@ const Header = () => {
                             borderRadius: 10,
                             padding: " 0 6px 10px 6px",
                             boxShadow: "0px 3.11px 3.11px 0px #00000040",
+                            background: "#fff",
+                            fontWeight: 700,
+                            fontSize: 10,
+                            color: "#081F2D",
+                            textAlign: "center",
+                            height: "-webkit-fill-available",
+                            fontWeight: "bold",
+                            width: "100%",
+                            borderRadius: 10,
+                            padding: "10px 6px",
                           }}
                         >
+                          {challenge.name}
                           <img
                             src={challenge.img}
                             alt={challenge.alt}

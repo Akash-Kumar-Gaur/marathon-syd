@@ -132,3 +132,21 @@
 .mapboxgl-ctrl-group button:hover {
   background-color: #f0f0f0;
 }
+
+/* Loading animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* iOS-specific optimizations */
+@media screen and (-webkit-min-device-pixel-ratio: 2) {
+  .mapboxgl-map {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+}
