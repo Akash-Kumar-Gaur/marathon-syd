@@ -186,7 +186,7 @@ const Welcome = () => {
 
   const handleSendOtp = async () => {
     if (!isFormValid()) {
-      alert("Please fill in all required fields.");
+      // Form validation error - let the UI handle it
       return;
     }
 
@@ -234,7 +234,6 @@ const Welcome = () => {
             const updatedUserData = await loadUserFromFirebase(formData.email);
             if (!updatedUserData) {
               console.error("Failed to load user data from Firebase");
-              alert("Error loading user data. Please try again.");
               setIsSubmitting(false);
               return;
             }
@@ -269,7 +268,6 @@ const Welcome = () => {
               return;
             } catch (otpError) {
               console.error("Error sending OTP to existing user:", otpError);
-              alert("Error sending OTP. Please try again.");
               setIsSubmitting(false);
               return;
             }
@@ -277,7 +275,6 @@ const Welcome = () => {
         }
       } catch (queryError) {
         console.error("Error checking for existing users:", queryError);
-        alert("Error checking for existing users. Please try again.");
         setIsSubmitting(false);
         return;
       }
@@ -326,13 +323,11 @@ const Welcome = () => {
         } catch (deleteError) {
           console.error("Error deleting user after OTP failure:", deleteError);
         }
-        alert("Error sending OTP. Please try again.");
         setIsSubmitting(false);
         return;
       }
     } catch (error) {
       console.error("Error creating user or sending OTP:", error);
-      alert("Error creating user. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -356,17 +351,16 @@ const Welcome = () => {
       console.log("OTP email resent:", result.data);
       setResendTimer(30);
 
-      // Show success message
-      alert("OTP has been resent to your email.");
+      // Success is handled by timer reset - no alert needed
     } catch (error) {
       console.error("Error resending OTP:", error);
-      alert("Error resending OTP. Please try again.");
+      // Error is handled silently - user can try again
     }
   };
 
   const handleVerifyOtp = async () => {
     if (!userDocId) {
-      alert("User not found. Please try again.");
+      // User not found - let the UI handle it
       return;
     }
 
@@ -380,7 +374,6 @@ const Welcome = () => {
     try {
       const userSnap = await getDoc(doc(db, "users", userDocId));
       if (!userSnap.exists()) {
-        alert("User not found. Please try again.");
         setIsVerifying(false);
         return;
       }
@@ -397,18 +390,17 @@ const Welcome = () => {
         const updatedUserData = await loadUserFromFirebase(formData.email);
         if (!updatedUserData) {
           console.error("Failed to load verified user data from Firebase");
-          alert("Error loading user data. Please try again.");
           setIsVerifying(false);
           return;
         }
 
         setShowFirstReward(true);
       } else {
-        alert("Invalid OTP. Please try again.");
+        // Invalid OTP - let the UI handle it
       }
     } catch (error) {
       console.error("Error verifying OTP:", error);
-      alert("Verification failed. Please try again.");
+      // Verification failed - let the UI handle it
     } finally {
       setIsVerifying(false);
     }
@@ -446,7 +438,6 @@ const Welcome = () => {
           const updatedUserData = await loadUserFromFirebase(formData.email);
           if (!updatedUserData) {
             console.error("Failed to load existing user data from Firebase");
-            alert("Error loading user data. Please try again.");
             return;
           }
 
@@ -486,7 +477,7 @@ const Welcome = () => {
       navigate("/hunt");
     } catch (error) {
       console.error("Error during guest login:", error);
-      alert("Error during guest login. Please try again.");
+      // Error during guest login - let the UI handle it
     }
   };
 
