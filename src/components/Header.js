@@ -343,8 +343,11 @@ const Header = () => {
 
   const handleEmailClick = () => {
     if (userData.verified === false) {
-      // Navigate to welcome page with OTP state
-      navigate("/welcome", { state: { showOTP: true } });
+      // Close drawer first, then navigate to welcome page with OTP state
+      handleDrawerClose();
+      setTimeout(() => {
+        navigate("/welcome", { state: { showOTP: true } });
+      }, 300); // Wait for drawer close animation to complete
     }
   };
 
@@ -595,6 +598,17 @@ const Header = () => {
                   }}
                 >
                   {userData.email || "alex.johnson@example.com"}
+                  {userData.verified === false && (
+                    <span
+                      style={{
+                        marginLeft: "8px",
+                        fontSize: "12px",
+                        opacity: 0.8,
+                      }}
+                    >
+                      (Guest)
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
