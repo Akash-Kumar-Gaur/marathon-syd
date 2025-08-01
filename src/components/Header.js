@@ -946,6 +946,7 @@ const Header = () => {
               style={{
                 margin: 24,
                 marginTop: "auto",
+                marginBottom: 16,
                 background: "#0096db",
                 color: "#fff",
                 fontWeight: 700,
@@ -979,7 +980,7 @@ const Header = () => {
                   fontSize: 14,
                   border: "none",
                   borderRadius: 0,
-                  height: 48,
+                  // height: 48,
                   // textDecoration: "underline",
                   letterSpacing: 0.5,
                   display: "flex",
@@ -1007,7 +1008,7 @@ const Header = () => {
                   fontSize: 18,
                   border: "1px solid #000000",
                   borderRadius: 14,
-                  height: 54,
+                  height: 48,
                   boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                   letterSpacing: 1,
                 }}
