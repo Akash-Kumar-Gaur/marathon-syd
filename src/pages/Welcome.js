@@ -67,7 +67,8 @@ const StyledMenuItem = styled(MenuItem)({
 const Welcome = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { updateUserData, setUserDocumentId, loadUserFromFirebase } = useUser();
+  const { userData, updateUserData, setUserDocumentId, loadUserFromFirebase } =
+    useUser();
   const [showAvatarSelection, setShowAvatarSelection] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
@@ -87,6 +88,27 @@ const Welcome = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isNewUser, setIsNewUser] = useState(true);
   const [isVerifying, setIsVerifying] = useState(false);
+
+  // Handle navigation state for direct OTP access
+  useEffect(() => {
+    if (location.state?.showOTP) {
+      // If navigating from header with showOTP state, show OTP directly
+      setShowOTP(true);
+      setShowForm(true);
+      // Pre-fill form with existing user data if available
+      if (userData && userData.email) {
+        setFormData((prev) => ({
+          ...prev,
+          name: userData.name || "",
+          email: userData.email || "",
+          country: userData.country || "",
+          postcode: userData.postcode || "",
+          avatar: userData.avatar || "",
+        }));
+        setSelectedAvatar(userData.avatar || null);
+      }
+    }
+  }, [location.state, userData]);
 
   // Avatar options - using actual avatar images
   const avatarOptions = [

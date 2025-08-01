@@ -277,8 +277,8 @@ const Home = () => {
       selectedTreasure?.id === fullTreasure?.id ? null : fullTreasure
     );
     // Show reward popup when treasure is clicked
-    setIsRewardPopupOpen(true);
-    setRewardData(treasure.treasureData);
+    setIsRewardPopupOpen(false);
+    // setRewardData(treasure.treasureData);
   };
 
   const toggleView = (view) => {

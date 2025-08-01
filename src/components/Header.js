@@ -341,6 +341,13 @@ const Header = () => {
   const [showFAQModal, setShowFAQModal] = useState(false);
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
 
+  const handleEmailClick = () => {
+    if (userData.verified === false) {
+      // Navigate to welcome page with OTP state
+      navigate("/welcome", { state: { showOTP: true } });
+    }
+  };
+
   // Log navigation state changes
   useEffect(() => {
     console.log("Header - Current location:", location.pathname);
@@ -573,6 +580,7 @@ const Header = () => {
                 </div>
                 <div
                   className="drawer-email"
+                  onClick={handleEmailClick}
                   style={{
                     color: userData.verified === false ? "#ff4444" : "#6D6D6D",
                     fontWeight: 500,
@@ -581,20 +589,12 @@ const Header = () => {
                     whiteSpace: "normal",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
+                    cursor: userData.verified === false ? "pointer" : "default",
+                    textDecoration:
+                      userData.verified === false ? "underline" : "none",
                   }}
                 >
                   {userData.email || "alex.johnson@example.com"}
-                  {userData.verified === false && (
-                    <span
-                      style={{
-                        marginLeft: "8px",
-                        fontSize: "12px",
-                        opacity: 0.8,
-                      }}
-                    >
-                      (Guest)
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
