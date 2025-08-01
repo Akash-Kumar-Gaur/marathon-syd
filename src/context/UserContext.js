@@ -46,37 +46,86 @@ export const UserProvider = ({ children }) => {
         const storedDocId = localStorage.getItem("userDocId");
         const storedUserData = localStorage.getItem("userData");
 
-        if (storedDocId && storedUserData) {
-          // Try to validate stored data
-          try {
-            const parsedData = JSON.parse(storedUserData);
-            if (validateUserData(parsedData)) {
-              // Load fresh data from Firebase to ensure consistency
+        if (storedDocId && storedDocId.trim() !== "") {
+          if (storedUserData) {
+            // Both docId and userData exist - validate and refresh from Firebase
+            try {
+              const parsedData = JSON.parse(storedUserData);
+              if (validateUserData(parsedData)) {
+                // Load fresh data from Firebase to ensure consistency
+                const freshData = await loadUserFromFirebaseById(storedDocId);
+                if (freshData) {
+                  console.log("Successfully loaded fresh data from Firebase");
+                  setUserData(freshData);
+                  setIsLoggedIn(true);
+                  setUserDocId(storedDocId);
+                } else {
+                  console.log(
+                    "Failed to load from Firebase, using stored data"
+                  );
+                  setUserData(parsedData);
+                  setIsLoggedIn(true);
+                }
+              } else {
+                console.log(
+                  "Stored data validation failed, attempting to reload from Firebase"
+                );
+                // Try to reload from Firebase even if stored data is invalid
+                const freshData = await loadUserFromFirebaseById(storedDocId);
+                if (freshData) {
+                  console.log(
+                    "Successfully reloaded data from Firebase after validation failure"
+                  );
+                  setUserData(freshData);
+                  setIsLoggedIn(true);
+                  setUserDocId(storedDocId);
+                } else {
+                  console.log("No valid data found in Firebase, logging out");
+                  clearUserData();
+                }
+              }
+            } catch (parseError) {
+              console.error("Error parsing stored user data:", parseError);
+              // Try to reload from Firebase even if parsing failed
               const freshData = await loadUserFromFirebaseById(storedDocId);
               if (freshData) {
-                console.log("Successfully loaded fresh data from Firebase");
+                console.log(
+                  "Successfully reloaded data from Firebase after parse error"
+                );
                 setUserData(freshData);
                 setIsLoggedIn(true);
                 setUserDocId(storedDocId);
               } else {
-                console.log("Failed to load from Firebase, using stored data");
-                setUserData(parsedData);
-                setIsLoggedIn(true);
+                console.log("No valid data found in Firebase, logging out");
+                clearUserData();
               }
-            } else {
-              console.log(
-                "Stored data validation failed, clearing localStorage"
-              );
-              clearLocalStorage();
             }
-          } catch (parseError) {
-            console.error("Error parsing stored user data:", parseError);
-            clearLocalStorage();
+          } else {
+            // Only docId exists but no userData - try to reload from Firebase
+            console.log(
+              "userData missing from localStorage, attempting to reload from Firebase"
+            );
+            const freshData = await loadUserFromFirebaseById(storedDocId);
+            if (freshData) {
+              console.log("Successfully reloaded userData from Firebase");
+              setUserData(freshData);
+              setIsLoggedIn(true);
+              setUserDocId(storedDocId);
+            } else {
+              console.log("No valid data found in Firebase, logging out");
+              clearUserData();
+            }
           }
+        } else {
+          // No docId or empty docId - user is not logged in, clear everything
+          console.log(
+            "No userDocId found or empty userDocId, logging out user"
+          );
+          clearUserData();
         }
       } catch (error) {
         console.error("Error initializing user data:", error);
-        clearLocalStorage();
+        clearUserData();
       } finally {
         setIsLoading(false);
       }
@@ -272,6 +321,15 @@ export const UserProvider = ({ children }) => {
     setIsLoggedIn(false);
     setUserDocId(null);
     clearLocalStorage();
+
+    // Redirect to welcome page if not already there
+    if (
+      window.location.pathname !== "/welcome" &&
+      window.location.pathname !== "/"
+    ) {
+      console.log("Redirecting to welcome page after logout");
+      window.location.href = "/welcome";
+    }
   };
 
   const value = {

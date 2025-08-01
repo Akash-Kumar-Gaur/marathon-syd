@@ -69,7 +69,7 @@ const MapboxMap = ({
       mapStyle="mapbox://styles/mapbox/light-v11"
       mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
     >
-      <NavigationControl position="top-right" />
+      {/* NavigationControl removed to hide default Mapbox controls */}
 
       {markers.map((marker, index) => (
         <Marker

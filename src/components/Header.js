@@ -462,6 +462,7 @@ const Header = () => {
     // Implement sign out functionality
     console.log("Signing out");
     localStorage.removeItem("userData");
+    localStorage.removeItem("userDocId");
     setIsDrawerOpen(false);
     navigate("/");
   };

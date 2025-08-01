@@ -92,6 +92,9 @@ const Welcome = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isNewUser, setIsNewUser] = useState(true);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [postcodeError, setPostcodeError] = useState("");
+  const [isPostcodeValid, setIsPostcodeValid] = useState(true);
 
   // Handle navigation state for direct OTP access
   useEffect(() => {
@@ -169,6 +172,12 @@ const Welcome = () => {
       ...prev,
       [name]: value,
     }));
+
+    // Clear postcode error when user types (validation will happen on submit)
+    if (name === "postcode") {
+      setPostcodeError("");
+      setIsPostcodeValid(true); // Reset validation state
+    }
   };
 
   const handleSelectChange = (e, field) => {
@@ -176,6 +185,99 @@ const Welcome = () => {
       ...prev,
       [field]: e.target.value,
     }));
+
+    // Clear postcode error when country changes (validation will happen on submit)
+    if (field === "country" && formData.postcode.trim()) {
+      setPostcodeError("");
+      setIsPostcodeValid(true); // Reset validation state
+    }
+  };
+
+  // Country code mapping for API
+  const getCountryCode = (country) => {
+    const countryCodeMap = {
+      australia: "au",
+      canada: "ca",
+      india: "in",
+      uk: "gb",
+      usa: "us",
+      germany: "de",
+      france: "fr",
+      italy: "it",
+      spain: "es",
+      netherlands: "nl",
+      belgium: "be",
+      switzerland: "ch",
+      austria: "at",
+      denmark: "dk",
+      norway: "no",
+      sweden: "se",
+      finland: "fi",
+      poland: "pl",
+      "czech-republic": "cz",
+      hungary: "hu",
+      slovakia: "sk",
+      slovenia: "si",
+      croatia: "hr",
+      serbia: "rs",
+      bulgaria: "bg",
+      romania: "ro",
+      greece: "gr",
+      portugal: "pt",
+      ireland: "ie",
+      japan: "jp",
+      "south-korea": "kr",
+      china: "cn",
+      brazil: "br",
+      argentina: "ar",
+      chile: "cl",
+      mexico: "mx",
+      "new-zealand": "nz",
+      "south-africa": "za",
+      egypt: "eg",
+      morocco: "ma",
+      tunisia: "tn",
+      algeria: "dz",
+      turkey: "tr",
+      ukraine: "ua",
+      russia: "ru",
+      kazakhstan: "kz",
+      belarus: "by",
+      moldova: "md",
+      latvia: "lv",
+      lithuania: "lt",
+      estonia: "ee",
+      iceland: "is",
+      malta: "mt",
+      luxembourg: "lu",
+      monaco: "mc",
+      liechtenstein: "li",
+      andorra: "ad",
+      "san-marino": "sm",
+      "vatican-city": "va",
+    };
+    return countryCodeMap[country] || null;
+  };
+
+  // Postcode validation using free API
+  const validatePostcode = async (postcode, country) => {
+    if (!postcode || !country) return false;
+
+    const countryCode = getCountryCode(country);
+    if (!countryCode) {
+      // If no country code mapping, accept any non-empty postcode
+      return postcode.trim().length > 0;
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.zippopotam.us/${countryCode}/${postcode.trim()}`
+      );
+      return response.ok; // true = valid, false = invalid
+    } catch (error) {
+      console.error("Error validating postcode:", error);
+      return false;
+    }
   };
 
   // Form validation function
@@ -192,6 +294,19 @@ const Welcome = () => {
     if (!isFormValid()) {
       // Form validation error - let the UI handle it
       return;
+    }
+
+    // Validate postcode on submit
+    if (formData.country && formData.postcode.trim()) {
+      const isValid = await validatePostcode(
+        formData.postcode,
+        formData.country
+      );
+      setIsPostcodeValid(isValid);
+      if (!isValid) {
+        setPostcodeError(`Invalid postcode for ${formData.country}`);
+        return;
+      }
     }
 
     // Prevent double submission
@@ -339,6 +454,13 @@ const Welcome = () => {
       return;
     }
 
+    // Prevent double submission
+    if (isResending) {
+      return;
+    }
+
+    setIsResending(true);
+
     try {
       console.log("Resending OTP to email:", formData.email);
 
@@ -356,6 +478,8 @@ const Welcome = () => {
     } catch (error) {
       console.error("Error resending OTP:", error);
       // Error is handled silently - user can try again
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -538,15 +662,19 @@ const Welcome = () => {
               Resend in 00:{String(resendTimer).padStart(2, "0")} sec
             </button>
           ) : (
-            <button className="resend-button" onClick={handleResendOtp}>
-              Resend OTP
+            <button
+              className="resend-button"
+              onClick={handleResendOtp}
+              disabled={isResending}
+            >
+              {isResending ? "SENDING..." : "Resend OTP"}
             </button>
           )}
         </div>
         <button
           className="verify-button"
           onClick={handleVerifyOtp}
-          disabled={isVerifying}
+          disabled={isVerifying || otp.length !== 6}
         >
           {isVerifying ? "VERIFYING..." : "VERIFY"}
         </button>
@@ -1188,17 +1316,33 @@ const Welcome = () => {
                         placeholder="Your postcode"
                         value={formData.postcode}
                         onChange={handleInputChange}
+                        style={{
+                          border: postcodeError ? "2px solid red" : "none",
+                          borderRadius: "12px",
+                          padding: "12px 16px",
+                          fontSize: "1rem",
+                          width: "100%",
+                          height: "50px",
+                          background: "#edf2f7",
+                          color: "#1a202c",
+                          fontFamily:
+                            '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                          boxSizing: "border-box",
+                        }}
                       />
                     </div>
                     <button
                       type="button"
                       className="send-otp-button"
                       onClick={handleSendOtp}
-                      disabled={!isFormValid() || isSubmitting}
+                      disabled={!isFormValid() || isSubmitting || postcodeError}
                       style={{
-                        opacity: !isFormValid() || isSubmitting ? 0.6 : 1,
+                        opacity:
+                          !isFormValid() || isSubmitting || postcodeError
+                            ? 0.6
+                            : 1,
                         cursor:
-                          !isFormValid() || isSubmitting
+                          !isFormValid() || isSubmitting || postcodeError
                             ? "not-allowed"
                             : "pointer",
                       }}

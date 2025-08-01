@@ -578,25 +578,23 @@ const Home = () => {
         </div>
 
         {/* Camera View */}
-        <div
-          className={`camera-container ${
-            activeView === "camera" ? "active" : ""
-          }`}
-        >
-          <iframe
-            src="https://akashgaur.8thwall.app/markers/"
-            title="Camera View"
-            className="camera-webview"
-            allow="camera; microphone; autoplay; encrypted-media; fullscreen; gyroscope; accelerometer; magnetometer"
-            allowfullscreen
-            webkitallowfullscreen="true"
-            mozallowfullscreen="true"
-            style={{
-              visibility:
-                isHintModalOpen || isDrawerOpen ? "hidden" : "visible",
-            }}
-          />
-        </div>
+        {activeView === "camera" && (
+          <div className="camera-container active">
+            <iframe
+              src="https://akashgaur.8thwall.app/markers/"
+              title="Camera View"
+              className="camera-webview"
+              allow="camera; microphone; autoplay; encrypted-media; fullscreen; gyroscope; accelerometer; magnetometer"
+              allowfullscreen
+              webkitallowfullscreen="true"
+              mozallowfullscreen="true"
+              style={{
+                visibility:
+                  isHintModalOpen || isDrawerOpen ? "hidden" : "visible",
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Bottom Action Buttons */}
