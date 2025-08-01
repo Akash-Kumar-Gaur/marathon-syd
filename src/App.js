@@ -16,7 +16,7 @@ import PhotoBooth from "./pages/PhotoBooth";
 import FindMyRoute from "./pages/FindMyRoute";
 import Wayfinder from "./pages/WayfinderMapbox";
 import { DrawerProvider } from "./context/DrawerContext";
-import { UserProvider } from "./context/UserContext";
+import { UserProvider, useUser } from "./context/UserContext";
 import { getFlowConfig, isRouteEnabled } from "./config/flowConfig";
 import "./services/firebase";
 
@@ -37,46 +37,85 @@ const NavigationLogger = () => {
   return null;
 };
 
-function App() {
-  const flowConfig = getFlowConfig();
+// Loading component
+const LoadingScreen = () => (
+  <div style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh',
+    backgroundColor: '#f0f8ff'
+  }}>
+    <div style={{
+      textAlign: 'center',
+      color: '#081F2D'
+    }}>
+      <div style={{
+        width: '40px',
+        height: '40px',
+        border: '4px solid #e3f2fd',
+        borderTop: '4px solid #1976d2',
+        borderRadius: '50%',
+        animation: 'spin 1s linear infinite',
+        margin: '0 auto 16px'
+      }}></div>
+      <p>Loading...</p>
+    </div>
+  </div>
+);
 
+// App content with user context
+const AppContent = () => {
+  const { isLoading } = useUser();
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  const flowConfig = getFlowConfig();
   console.log("App initialized with flow:", flowConfig.type);
 
   return (
+    <div className="App">
+      <Router>
+        <NavigationLogger />
+        <Routes>
+          {/* Splash screen is always available */}
+          <Route path="/" element={<SplashScreen />} />
+
+          {/* Conditionally render routes based on flow configuration */}
+          {isRouteEnabled("/welcome") && (
+            <Route path="/welcome" element={<Welcome />} />
+          )}
+          {isRouteEnabled("/hunt") && (
+            <Route path="/hunt" element={<LearnToHunt />} />
+          )}
+          {isRouteEnabled("/home") && (
+            <Route path="/home" element={<Home />} />
+          )}
+          {isRouteEnabled("/photobooth") && (
+            <Route path="/photobooth" element={<PhotoBooth />} />
+          )}
+          {isRouteEnabled("/find-my-route") && (
+            <Route path="/find-my-route" element={<FindMyRoute />} />
+          )}
+          {isRouteEnabled("/find-my-route") && (
+            <Route path="/wayfinder" element={<Wayfinder />} />
+          )}
+
+          {/* Fallback route */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </div>
+  );
+};
+
+function App() {
+  return (
     <UserProvider>
       <DrawerProvider>
-        <div className="App">
-          <Router>
-            <NavigationLogger />
-            <Routes>
-              {/* Splash screen is always available */}
-              <Route path="/" element={<SplashScreen />} />
-
-              {/* Conditionally render routes based on flow configuration */}
-              {isRouteEnabled("/welcome") && (
-                <Route path="/welcome" element={<Welcome />} />
-              )}
-              {isRouteEnabled("/hunt") && (
-                <Route path="/hunt" element={<LearnToHunt />} />
-              )}
-              {isRouteEnabled("/home") && (
-                <Route path="/home" element={<Home />} />
-              )}
-              {isRouteEnabled("/photobooth") && (
-                <Route path="/photobooth" element={<PhotoBooth />} />
-              )}
-              {isRouteEnabled("/find-my-route") && (
-                <Route path="/find-my-route" element={<FindMyRoute />} />
-              )}
-              {isRouteEnabled("/find-my-route") && (
-                <Route path="/wayfinder" element={<Wayfinder />} />
-              )}
-
-              {/* Fallback route */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Router>
-        </div>
+        <AppContent />
       </DrawerProvider>
     </UserProvider>
   );

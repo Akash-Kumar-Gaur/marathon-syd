@@ -13,7 +13,13 @@ import {
   query,
   where,
   getDocs,
+  getDoc,
 } from "firebase/firestore";
+import { 
+  validateUserData, 
+  sanitizeUserData, 
+  getDefaultUserData 
+} from "../utils/dataValidation";
 
 const UserContext = createContext();
 
@@ -26,21 +32,10 @@ export const useUser = () => {
 };
 
 export const UserProvider = ({ children }) => {
-  const [userData, setUserData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    avatar: "",
-    country: "",
-    postcode: "",
-    verified: false,
-    loginMethod: "",
-    challengeScores: {},
-    totalBoosterScore: 0,
-  });
+  const [userData, setUserData] = useState(getDefaultUserData());
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [userDocId, setUserDocId] = useState(() => {
-    // Try to get userDocId from localStorage on initialization
     try {
       const stored = localStorage.getItem("userDocId");
       return stored || null;
@@ -50,21 +45,89 @@ export const UserProvider = ({ children }) => {
     }
   });
 
-  // Load user data from localStorage on mount (for persistence)
+  // Initialize user data - Firebase is the source of truth
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("userData");
-      if (stored) {
-        const parsedData = JSON.parse(stored);
-        setUserData(parsedData);
-        setIsLoggedIn(true);
+    const initializeUserData = async () => {
+      try {
+        const storedDocId = localStorage.getItem("userDocId");
+        const storedUserData = localStorage.getItem("userData");
+        
+        if (storedDocId && storedUserData) {
+          // Try to validate stored data
+          try {
+            const parsedData = JSON.parse(storedUserData);
+            if (validateUserData(parsedData)) {
+              // Load fresh data from Firebase to ensure consistency
+              const freshData = await loadUserFromFirebaseById(storedDocId);
+              if (freshData) {
+                console.log("Successfully loaded fresh data from Firebase");
+                setUserData(freshData);
+                setIsLoggedIn(true);
+                setUserDocId(storedDocId);
+              } else {
+                console.log("Failed to load from Firebase, using stored data");
+                setUserData(parsedData);
+                setIsLoggedIn(true);
+              }
+            } else {
+              console.log("Stored data validation failed, clearing localStorage");
+              clearLocalStorage();
+            }
+          } catch (parseError) {
+            console.error("Error parsing stored user data:", parseError);
+            clearLocalStorage();
+          }
+        }
+      } catch (error) {
+        console.error("Error initializing user data:", error);
+        clearLocalStorage();
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error loading user data:", error);
-    }
+    };
+
+    initializeUserData();
   }, []);
 
-  // Simple function to load user data from Firebase (called during login)
+  // Helper function to clear localStorage
+  const clearLocalStorage = () => {
+    try {
+      localStorage.removeItem("userData");
+      localStorage.removeItem("userDocId");
+    } catch (error) {
+      console.error("Error clearing localStorage:", error);
+    }
+  };
+
+  // Load user data from Firebase by document ID
+  const loadUserFromFirebaseById = async (docId) => {
+    try {
+      const userDoc = await getDoc(doc(db, "users", docId));
+      if (userDoc.exists()) {
+        const firebaseData = userDoc.data();
+        console.log("Firebase data loaded:", firebaseData);
+        
+        if (validateUserData(firebaseData)) {
+          const updatedUserData = sanitizeUserData(firebaseData);
+          
+          // Update localStorage with fresh data
+          localStorage.setItem("userData", JSON.stringify(updatedUserData));
+          localStorage.setItem("userDocId", docId);
+          
+          return updatedUserData;
+        } else {
+          console.error("Invalid user data from Firebase:", firebaseData);
+          return null;
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error("Error loading user from Firebase by ID:", error);
+      return null;
+    }
+  };
+
+  // Load user data from Firebase by email (for login)
   const loadUserFromFirebase = async (email) => {
     try {
       const usersRef = collection(db, "users");
@@ -74,23 +137,24 @@ export const UserProvider = ({ children }) => {
       if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
         const firebaseData = userDoc.data();
-        console.log("Firebase data:", firebaseData);
+        console.log("Firebase data loaded by email:", firebaseData);
 
-        setUserDocId(userDoc.id);
-        localStorage.setItem("userDocId", userDoc.id);
+        if (validateUserData(firebaseData)) {
+          setUserDocId(userDoc.id);
+          localStorage.setItem("userDocId", userDoc.id);
 
-        // Update user data with Firebase data (Firebase data takes precedence)
-        const updatedUserData = {
-          ...firebaseData,
-          challengeScores: firebaseData.challengeScores || {},
-          totalBoosterScore: firebaseData.totalBoosterScore || 0,
-        };
-        console.log("Updated user data:", updatedUserData);
+          const updatedUserData = sanitizeUserData(firebaseData);
+          
+          console.log("Updated user data from Firebase:", updatedUserData);
+          setUserData(updatedUserData);
+          localStorage.setItem("userData", JSON.stringify(updatedUserData));
+          setIsLoggedIn(true);
 
-        setUserData(updatedUserData);
-        localStorage.setItem("userData", JSON.stringify(updatedUserData));
-
-        return updatedUserData;
+          return updatedUserData;
+        } else {
+          console.error("Invalid user data from Firebase:", firebaseData);
+          return null;
+        }
       }
       return null;
     } catch (error) {
@@ -100,26 +164,32 @@ export const UserProvider = ({ children }) => {
   };
 
   const updateUserData = (newUserData) => {
-    // Ensure we're using the correct field name
-    const cleanUserData = { ...newUserData };
+    // Validate incoming data
+    if (!validateUserData(newUserData)) {
+      console.error("Invalid user data provided to updateUserData:", newUserData);
+      return;
+    }
+
+    // Clean and validate the data
+    const cleanUserData = sanitizeUserData(newUserData);
     if (cleanUserData.isVerified !== undefined) {
       cleanUserData.verified = cleanUserData.isVerified;
       delete cleanUserData.isVerified;
     }
 
-    // Ensure challengeScores and totalBoosterScore are always present
-    if (!cleanUserData.challengeScores) {
-      cleanUserData.challengeScores = {};
-    }
-    if (cleanUserData.totalBoosterScore === undefined) {
-      cleanUserData.totalBoosterScore = 0;
-    }
-
+    console.log("Updating user data:", cleanUserData);
+    
     setUserData(cleanUserData);
     setIsLoggedIn(true);
-    localStorage.setItem("userData", JSON.stringify(cleanUserData));
+    
+    // Update localStorage
+    try {
+      localStorage.setItem("userData", JSON.stringify(cleanUserData));
+    } catch (error) {
+      console.error("Error saving to localStorage:", error);
+    }
 
-    // Also save to Firebase if we have a document ID
+    // Save to Firebase if we have a document ID
     if (userDocId) {
       console.log("Saving user data to Firebase with userDocId:", userDocId);
       updateDoc(doc(db, "users", userDocId), cleanUserData)
@@ -128,6 +198,8 @@ export const UserProvider = ({ children }) => {
         })
         .catch((error) => {
           console.error("Error saving user data to Firebase:", error);
+          // Don't update local state if Firebase save fails
+          // This prevents data corruption
         });
     } else {
       console.log("No userDocId available, skipping Firebase save");
@@ -135,8 +207,13 @@ export const UserProvider = ({ children }) => {
   };
 
   const addBoosterScore = async (points, challengeName) => {
+    if (!userDocId) {
+      console.error("Cannot add booster score: no userDocId");
+      return;
+    }
+
     setUserData((prev) => {
-      const currentChallengeScore = 0;
+      const currentChallengeScore = prev.challengeScores?.[challengeName] || 0;
       const newChallengeScores = {
         ...prev.challengeScores,
         [challengeName]: currentChallengeScore + points,
@@ -147,21 +224,27 @@ export const UserProvider = ({ children }) => {
         challengeScores: newChallengeScores,
         totalBoosterScore: newTotalBoosterScore,
       };
-      localStorage.setItem("userData", JSON.stringify(newData));
-
-      // Also save to Firebase if we have a document ID
-      if (userDocId) {
-        updateDoc(doc(db, "users", userDocId), {
-          challengeScores: newChallengeScores,
-          totalBoosterScore: newTotalBoosterScore,
-        })
-          .then(() => {
-            console.log("Scores saved to Firebase successfully");
-          })
-          .catch((error) => {
-            console.error("Error saving scores to Firebase:", error);
-          });
+      
+      // Update localStorage
+      try {
+        localStorage.setItem("userData", JSON.stringify(newData));
+      } catch (error) {
+        console.error("Error saving to localStorage:", error);
       }
+
+      // Save to Firebase
+      updateDoc(doc(db, "users", userDocId), {
+        challengeScores: newChallengeScores,
+        totalBoosterScore: newTotalBoosterScore,
+      })
+        .then(() => {
+          console.log("Scores saved to Firebase successfully");
+        })
+        .catch((error) => {
+          console.error("Error saving scores to Firebase:", error);
+          // Revert local state if Firebase save fails
+          setUserData(prev);
+        });
 
       return newData;
     });
@@ -172,37 +255,37 @@ export const UserProvider = ({ children }) => {
   };
 
   const setUserDocumentId = (docId) => {
+    if (!docId) {
+      console.error("Cannot set userDocId: invalid document ID");
+      return;
+    }
+    
     setUserDocId(docId);
-    localStorage.setItem("userDocId", docId);
+    try {
+      localStorage.setItem("userDocId", docId);
+    } catch (error) {
+      console.error("Error saving userDocId to localStorage:", error);
+    }
   };
 
   const clearUserData = () => {
-    setUserData({
-      name: "",
-      email: "",
-      phone: "",
-      country: "",
-      postcode: "",
-      verified: false,
-      loginMethod: "",
-      challengeScores: {},
-      totalBoosterScore: 0,
-    });
+    setUserData(getDefaultUserData());
     setIsLoggedIn(false);
     setUserDocId(null);
-    localStorage.removeItem("userData");
-    localStorage.removeItem("userDocId");
+    clearLocalStorage();
   };
 
   const value = {
     userData,
     isLoggedIn,
+    isLoading,
     updateUserData,
     clearUserData,
     addBoosterScore,
     getChallengeScore,
     setUserDocumentId,
     loadUserFromFirebase,
+    loadUserFromFirebaseById,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

@@ -211,13 +211,10 @@ const Welcome = () => {
             // Load fresh data from Firebase
             const updatedUserData = await loadUserFromFirebase(formData.email);
             if (!updatedUserData) {
-              // Fallback to form data if Firebase load failed
-              updateUserData({
-                ...formData,
-                avatar: selectedAvatar,
-                verified: true,
-                loginMethod: "existing_user",
-              });
+              console.error("Failed to load user data from Firebase");
+              alert("Error loading user data. Please try again.");
+              setIsSubmitting(false);
+              return;
             }
 
             setIsSubmitting(false);
@@ -258,24 +255,29 @@ const Welcome = () => {
         }
       } catch (queryError) {
         console.error("Error checking for existing users:", queryError);
-
-        // Don't proceed with user creation if there's any error checking for duplicates
-        // This prevents creating duplicate users when we can't verify if one already exists
         alert("Error checking for existing users. Please try again.");
         setIsSubmitting(false);
         return;
       }
 
-      // 2. Create user in Firestore
+      // 2. Create user in Firestore with proper data structure
       console.log(
         "No existing user found, creating new user for email:",
         formData.email
       );
-      const userRef = await addDoc(collection(db, "users"), {
+      
+      const newUserData = {
         ...formData,
+        avatar: selectedAvatar,
         createdAt: new Date(),
         verified: false,
-      });
+        loginMethod: "otp",
+        challengeScores: {},
+        totalBoosterScore: 0,
+        collectedTreasures: [],
+      };
+
+      const userRef = await addDoc(collection(db, "users"), newUserData);
       setUserDocumentId(userRef.id);
       setUserDocId(userRef.id);
       console.log("Set userDocId for new user:", userRef.id);
@@ -308,7 +310,6 @@ const Welcome = () => {
       }
     } catch (error) {
       console.error("Error creating user or sending OTP:", error);
-      // Don't show OTP UI if user creation failed
       alert("Error creating user. Please try again.");
       setIsSubmitting(false);
     }
@@ -339,22 +340,24 @@ const Welcome = () => {
         setIsVerifying(false);
         return;
       }
+      
       const userData = userSnap.data();
       if (userData.otp === otp) {
         // Mark user as verified
-        await updateDoc(doc(db, "users", userDocId), { verified: true });
+        await updateDoc(doc(db, "users", userDocId), { 
+          verified: true,
+          verifiedAt: new Date()
+        });
 
         // Load fresh data from Firebase and update context
         const updatedUserData = await loadUserFromFirebase(formData.email);
         if (!updatedUserData) {
-          // Fallback to form data if Firebase load failed
-          updateUserData({
-            ...formData,
-            avatar: selectedAvatar,
-            verified: true,
-            loginMethod: "otp",
-          });
+          console.error("Failed to load verified user data from Firebase");
+          alert("Error loading user data. Please try again.");
+          setIsVerifying(false);
+          return;
         }
+        
         setShowFirstReward(true);
       } else {
         alert("Invalid OTP. Please try again.");
@@ -391,20 +394,16 @@ const Welcome = () => {
         console.log("Using existing guest user with ID:", userDocId);
 
         // Check if user is verified
-        if (existingUser.verified) {
+        if (existingUser.data().verified) {
           // Existing verified user - redirect to home
           setUserDocumentId(userDocId);
 
           // Load fresh data from Firebase
           const updatedUserData = await loadUserFromFirebase(formData.email);
           if (!updatedUserData) {
-            // Fallback to form data if Firebase load failed
-            updateUserData({
-              ...formData,
-              avatar: selectedAvatar,
-              verified: true,
-              loginMethod: "guest",
-            });
+            console.error("Failed to load existing user data from Firebase");
+            alert("Error loading user data. Please try again.");
+            return;
           }
 
           // Redirect existing users directly to home page
@@ -413,8 +412,8 @@ const Welcome = () => {
           return;
         }
       } else {
-        // Create new guest user in Firestore
-        const userRef = await addDoc(collection(db, "users"), {
+        // Create new guest user in Firestore with proper data structure
+        const newGuestData = {
           ...formData,
           avatar: selectedAvatar,
           verified: false,
@@ -422,43 +421,28 @@ const Welcome = () => {
           createdAt: new Date(),
           challengeScores: {},
           totalBoosterScore: 0,
-        });
+          collectedTreasures: [],
+        };
+
+        const userRef = await addDoc(collection(db, "users"), newGuestData);
         userDocId = userRef.id;
-        console.log("Guest user created in Firestore with ID:", userDocId);
+        console.log("Created new guest user with ID:", userDocId);
       }
 
+      // Set user document ID and update user data
       setUserDocumentId(userDocId);
-
-      // Load fresh data from Firebase and update context
-      const updatedUserData = await loadUserFromFirebase(formData.email);
-      if (!updatedUserData) {
-        // Fallback to form data if Firebase load failed
-        updateUserData({
-          ...formData,
-          avatar: selectedAvatar,
-          verified: false,
-          loginMethod: "guest",
-          challengeScores: {},
-          totalBoosterScore: 0,
-        });
-      }
-
-      // Show first reward popup for new users only
-      setShowFirstReward(true);
-    } catch (error) {
-      console.error("Error creating guest user:", error);
-
-      // Fallback to localStorage only if Firebase fails
       updateUserData({
         ...formData,
         avatar: selectedAvatar,
         verified: false,
         loginMethod: "guest",
-        challengeScores: {},
-        totalBoosterScore: 0,
       });
 
-      setShowFirstReward(true);
+      // Navigate to hunt page for new users
+      navigate("/hunt");
+    } catch (error) {
+      console.error("Error during guest login:", error);
+      alert("Error during guest login. Please try again.");
     }
   };
 

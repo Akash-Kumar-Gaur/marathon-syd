@@ -1,22 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useLocation } from "react-router-dom";
-import "./Home.css";
-import Header from "../components/Header";
+import { useLocation, useNavigate } from "react-router-dom";
+import "./HomeMapbox.css";
 import MapboxMap from "../components/MapboxMap";
-import { Toaster, toast } from "react-hot-toast";
-import HintModal from "../components/HintModal";
+import StaticMap from "../components/StaticMap";
+import Header from "../components/Header";
 import RewardPopup from "../components/RewardPopup";
-import BoostScorePopup from "../components/BoostScorePopup";
+import HintModal from "../components/HintModal";
 import GamePopup from "../components/GamePopup";
-import JigsawTrayPuzzle from "../components/JigsawTrayPuzzle";
-import FlipCardsGame from "../components/FlipCardsGame";
-import MarathonQuizGame from "../components/MarathonQuizGame";
-import coinsIcon from "../assets/images/coins.svg";
-import treasureImage from "../assets/images/treasureIcon.png";
-import staticMap from "../assets/images/staticMap.png";
-import { useDrawer } from "../context/DrawerContext";
+import BoostScorePopup from "../components/BoostScorePopup";
 import { useUser } from "../context/UserContext";
+import { useDrawer } from "../context/DrawerContext";
 import { treasureData } from "../data/treasureData";
+import { normalizeTreasureId } from "../utils/dataValidation";
 
 const Home = () => {
   const location = useLocation();
@@ -86,20 +81,7 @@ const Home = () => {
   const permissionInitRef = useRef(false);
   const { isDrawerOpen } = useDrawer();
 
-  // Helper function to normalize treasure IDs
-  const normalizeTreasureId = (id) => {
-    // If it's already a string with "treasure_" prefix, return as-is
-    if (typeof id === "string" && id.startsWith("treasure_")) {
-      return id;
-    }
-    // If it's a number or string number, convert to "treasure_X" format
-    const numId = parseInt(id);
-    if (!isNaN(numId)) {
-      return `treasure_${numId}`;
-    }
-    // Fallback to string
-    return String(id);
-  };
+
 
   // Update treasures to filter out already collected ones
   useEffect(() => {
