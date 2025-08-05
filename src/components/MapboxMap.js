@@ -188,6 +188,24 @@ const MapboxMap = ({
               Unable to load the map. Please check your internet connection and
               try again.
             </p>
+            <div
+              style={{
+                backgroundColor: "#f8f9fa",
+                border: "1px solid #dee2e6",
+                borderRadius: "5px",
+                padding: "10px",
+                margin: "10px 0",
+                fontSize: "12px",
+                fontFamily: "monospace",
+                textAlign: "left",
+                maxHeight: "100px",
+                overflow: "auto",
+              }}
+            >
+              <strong>Error Details:</strong>
+              <br />
+              {mapError?.message || mapError?.toString() || "Unknown error"}
+            </div>
             <button
               onClick={() => window.location.reload()}
               style={{

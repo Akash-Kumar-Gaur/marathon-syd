@@ -14,7 +14,7 @@
 
 .hint-modal {
   background: url("../assets/images/hintBG.png") no-repeat center center;
-  background-size: contain;
+  background-size: cover;
   width: 100%;
   max-width: 340px;
   text-align: center;
@@ -34,8 +34,8 @@
 }
 
 .hint-icon {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   margin: 0 auto 8px;
 }
 
@@ -52,4 +52,5 @@
   margin: 0;
   text-align: center;
   width: 80%;
+  margin-bottom: 5px;
 }

@@ -201,7 +201,7 @@ const Home = () => {
   useEffect(() => {
     const handleMessage = (event) => {
       // Only accept messages from our trusted domain
-      if (event.origin !== "https://akashgaur.8thwall.app") return;
+      if (event.origin !== "https://nxtinteractive.8thwall.app") return;
 
       // Check if the message is about image target detection
       if (event.data && event.data.type === "imageTargetDetected") {
@@ -229,21 +229,6 @@ const Home = () => {
         };
 
         setRewardData(demoRewardData);
-
-        // Show toast notification
-        toast(`Found target: ${targetName}`, {
-          duration: 3000,
-          position: "bottom-center",
-          style: {
-            background: "#081F2D",
-            color: "#fff",
-            borderRadius: "16px",
-            padding: "16px",
-            maxWidth: "90%",
-            textAlign: "center",
-            marginBottom: "120px",
-          },
-        });
 
         // Show reward popup after 3 seconds
         setTimeout(() => {
@@ -276,11 +261,8 @@ const Home = () => {
     setSelectedTreasure(
       selectedTreasure?.id === fullTreasure?.id ? null : fullTreasure
     );
-    // Show reward popup when treasure is clicked
-    setTimeout(() => {
-      setIsRewardPopupOpen(true);
-      setRewardData(treasure.treasureData);
-    }, 6000);
+    // hide reward popup when treasure is clicked
+    setIsRewardPopupOpen(false);
   };
 
   const toggleView = (view) => {
@@ -583,7 +565,7 @@ const Home = () => {
         {activeView === "camera" && (
           <div className="camera-container active">
             <iframe
-              src="https://akashgaur.8thwall.app/markers/"
+              src="https://nxtinteractive.8thwall.app/sydney-treasure-hunt/"
               title="Camera View"
               className="camera-webview"
               allow="camera; microphone; autoplay; encrypted-media; fullscreen; gyroscope; accelerometer; magnetometer"
