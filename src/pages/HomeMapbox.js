@@ -208,10 +208,14 @@ const Home = () => {
         const { targetName } = event.data;
         console.log("🎯 Image Target Detected:", targetName);
 
+        const treasure = treasureData.find((t) => t.id === targetName);
+
+        console.log("🎯 Treasure:", treasure);
+
         // Example reward data - this should be dynamic based on targetName
         const demoRewardData = {
           id: "treasure_1",
-          name: "THEECA",
+          name: treasure.name,
           hint: "Walk east from Taylor Square along Burton Street and scan the entryway of the chic corner spot marked by arched glass doors to claim your drink treasure.\n",
           offer:
             "Marathon finishers get their first drink free. Everyone else: Happy Hour prices – Wine $12, Cocktails/Spritzes $10, Beer $8, Mocktail $10. \nSofts Snacks: Olives, fries, tiramisu, cheese board.",
@@ -224,8 +228,7 @@ const Home = () => {
             latitude: -33.87838566944955,
             longitude: 151.21454047745578,
           },
-          image:
-            "https://firebasestorage.googleapis.com/v0/b/sydney-marathon-2025.firebasestorage.app/o/TREASURE%20HUNT%20IMAGES%2FTHEECA.png?alt=media&token=763e8c02-ec0e-43a4-be32-8dfe9bd0290b",
+          image: treasure.image,
         };
 
         setRewardData(demoRewardData);

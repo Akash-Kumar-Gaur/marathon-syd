@@ -21,7 +21,7 @@ import { useUser } from "../context/UserContext";
 import { treasureData } from "../data/treasureData";
 import FAQModal from "./FAQModal";
 import LeaderboardModal from "./LeaderboardModal";
-import { leaderboardData } from "../data/leaderboardData";
+// Removed static leaderboard data import - now using Firebase data
 
 const avatarMap = {
   1: avatar1,
@@ -368,10 +368,6 @@ const Header = () => {
 
   const handleTrophy = () => {
     // setShowLeaderboardModal(true);
-  };
-
-  const handleNotifications = () => {
-    console.log("Notifications clicked");
   };
 
   const handleMenu = () => {
@@ -1035,8 +1031,6 @@ const Header = () => {
       <LeaderboardModal
         isOpen={showLeaderboardModal}
         onClose={() => setShowLeaderboardModal(false)}
-        userData={userData}
-        leaderboardData={leaderboardData}
       />
     </>
   );

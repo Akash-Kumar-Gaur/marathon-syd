@@ -1,6 +1,14 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+import {
+  getFirestore,
+  connectFirestoreEmulator,
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+} from "firebase/firestore";
 import {
   getFunctions,
   httpsCallable,
@@ -82,6 +90,88 @@ export const safeFirebaseOperation = async (
     } else {
       throw new Error(`Operation failed: ${error.message}`);
     }
+  }
+};
+
+// Leaderboard functions
+export const fetchLeaderboardData = async () => {
+  try {
+    console.log("Fetching leaderboard data from Firebase...");
+
+    // Get all users from Firebase
+    const usersRef = collection(db, "users");
+    const snapshot = await getDocs(usersRef);
+
+    if (snapshot.empty) {
+      console.log("No users found in Firebase");
+      return [];
+    }
+
+    // Calculate scores and create leaderboard entries
+    const leaderboardEntries = [];
+    snapshot.forEach((doc) => {
+      const userData = doc.data();
+
+      // Only include verified users in leaderboard
+      if (!userData.verified) {
+        return;
+      }
+
+      // Calculate total score: (treasures * 10) + totalBoosterScore
+      const treasureScore = (userData.collectedTreasures?.length || 0) * 10;
+      const boosterScore = userData.totalBoosterScore || 0;
+      const totalScore = treasureScore + boosterScore;
+
+      // Only include users with score > 0
+      if (totalScore > 0) {
+        leaderboardEntries.push({
+          id: doc.id,
+          name: userData.name || "Anonymous",
+          points: totalScore,
+          treasureCount: userData.collectedTreasures?.length || 0,
+          boosterScore: boosterScore,
+          avatarId: userData.avatar?.id || 1,
+          avatarImage: userData.avatar?.image,
+        });
+      }
+    });
+
+    // Sort by points (descending) and assign positions
+    leaderboardEntries.sort((a, b) => b.points - a.points);
+
+    // Add positions and limit to top 25
+    const topEntries = leaderboardEntries.slice(0, 25).map((entry, index) => ({
+      ...entry,
+      position: index + 1,
+    }));
+
+    console.log(`Leaderboard data fetched: ${topEntries.length} entries`);
+    return topEntries;
+  } catch (error) {
+    console.error("Error fetching leaderboard data:", error);
+    throw error;
+  }
+};
+
+// Calculate user's total score
+export const calculateUserScore = (userData) => {
+  if (!userData) return 0;
+
+  const treasureScore = (userData.collectedTreasures?.length || 0) * 10;
+  const boosterScore = userData.totalBoosterScore || 0;
+  return treasureScore + boosterScore;
+};
+
+// Get user's rank in leaderboard
+export const getUserRank = async (userId, userScore) => {
+  try {
+    const leaderboardData = await fetchLeaderboardData();
+    const userRank =
+      leaderboardData.findIndex((entry) => entry.id === userId) + 1;
+    return userRank > 0 ? userRank : null; // null if user not in top 25
+  } catch (error) {
+    console.error("Error getting user rank:", error);
+    return null;
   }
 };
 
