@@ -8,19 +8,19 @@ const FirstRewardPopup = ({ isOpen, onClose, onCollect, rewardData }) => {
     <div className="first-reward-overlay" onClick={onClose}>
       <div className="first-reward-modal" onClick={(e) => e.stopPropagation()}>
         <div className="first-reward-header">
-          <h2 className="first-reward-title">{rewardData.title}</h2>
+          <h2 className="first-reward-title">{rewardData.name}</h2>
         </div>
         <div className="first-reward-image-container">
           <img
             src={rewardData.image}
-            alt={rewardData.title}
+            alt={rewardData.name}
             className="first-reward-image"
           />
         </div>
 
         <div className="first-reward-content">
           <div className="first-reward-description">
-            <p>{rewardData.description}</p>
+            <p>{rewardData.offer}</p>
           </div>
         </div>
 

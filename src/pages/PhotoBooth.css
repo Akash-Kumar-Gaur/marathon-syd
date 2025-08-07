@@ -3,7 +3,7 @@
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   background: #000;
   display: flex;
   flex-direction: column;
@@ -511,7 +511,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  min-height: 100vh;
+  min-height: 100dvh;
   background: #e8f4f8;
   padding: 32px 0 0 0;
 }

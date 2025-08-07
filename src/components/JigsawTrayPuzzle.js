@@ -227,35 +227,7 @@ const JigsawTrayPuzzle = ({ onClose }) => {
             ))}
           </div>
           {/* Tray, Submit, or Solved! */}
-          {solved ? (
-            <div
-              style={{
-                width: GRID_SIZE * PIECE_SIZE,
-                height: PIECE_SIZE + 16,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 32,
-                fontWeight: 700,
-                color: "#1693f6",
-                animation: "bounce 0.7s",
-                background: "rgba(255,255,255,0.85)",
-                borderRadius: 16,
-                margin: "0 auto",
-              }}
-            >
-              Solved!
-              <style>{`
-                @keyframes bounce {
-                  0% { transform: scale(1); }
-                  30% { transform: scale(1.2); }
-                  50% { transform: scale(0.95); }
-                  70% { transform: scale(1.05); }
-                  100% { transform: scale(1); }
-                }
-              `}</style>
-            </div>
-          ) : submitted ? (
+          {submitted ? (
             <div
               style={{
                 width: GRID_SIZE * PIECE_SIZE,

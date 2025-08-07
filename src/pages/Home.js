@@ -143,58 +143,58 @@ const Home = () => {
   //   return () => clearTimeout(simulationTimer);
   // }, []); // Only run once on mount
 
-  // Original postMessage handler
-  useEffect(() => {
-    const handleMessage = (event) => {
-      // Only accept messages from our trusted domain
-      if (event.origin !== "https://akashgaur.8thwall.app") return;
+  // Original postMessage handler - DISABLED (using HomeMapbox.js instead)
+  // useEffect(() => {
+  //   const handleMessage = (event) => {
+  //     // Only accept messages from our trusted domain
+  //     if (event.origin !== "https://akashgaur.8thwall.app") return;
 
-      // Check if the message is about image target detection
-      if (event.data && event.data.type === "imageTargetDetected") {
-        const { targetName } = event.data;
-        console.log("🎯 Image Target Detected:", targetName);
+  //     // Check if the message is about image target detection
+  //     if (event.data && event.data.type === "imageTargetDetected") {
+  //       const { targetName } = event.data;
+  //       console.log("🎯 Image Target Detected:", targetName);
 
-        // Example reward data - this should be dynamic based on targetName
-        const demoRewardData = {
-          headerText: "Open Run Pro 2",
-          pointsIcon: coinsIcon,
-          points: "+20 Points",
-          productImage: treasureImage,
-          title: "OPEN RUN PRO 2",
-          subtitle: "NEW FLAGSHIP MODEL\nRedefining The Sound Of Sports",
-          gameType: "flip", // Change to 'flip' or 'quiz' to test other games
-        };
+  //       // Example reward data - this should be dynamic based on targetName
+  //       const demoRewardData = {
+  //         headerText: "Open Run Pro 2",
+  //         pointsIcon: coinsIcon,
+  //         points: "+20 Points",
+  //         productImage: treasureImage,
+  //         title: "OPEN RUN PRO 2",
+  //         subtitle: "NEW FLAGSHIP MODEL\nRedefining The Sound Of Sports",
+  //         gameType: "flip", // Change to 'flip' or 'quiz' to test other games
+  //       };
 
-        setRewardData(demoRewardData);
+  //       setRewardData(demoRewardData);
 
-        // Show toast notification
-        toast(`Found target: ${targetName}`, {
-          duration: 3000,
-          position: "bottom-center",
-          style: {
-            background: "#081F2D",
-            color: "#fff",
-            borderRadius: "16px",
-            padding: "16px",
-            maxWidth: "90%",
-            textAlign: "center",
-            marginBottom: "120px",
-          },
-        });
+  //       // Show toast notification
+  //       toast(`Found target: ${targetName}`, {
+  //         duration: 3000,
+  //         position: "bottom-center",
+  //         style: {
+  //           background: "#081F2D",
+  //           color: "#fff",
+  //           borderRadius: "16px",
+  //           padding: "16px",
+  //           maxWidth: "90%",
+  //           textAlign: "center",
+  //           marginBottom: "120px",
+  //         },
+  //       });
 
-        // Show reward popup after 3 seconds
-        setTimeout(() => {
-          setIsRewardPopupOpen(true);
-        }, 3000);
-      }
-    };
+  //       // Show reward popup after 3 seconds
+  //       setTimeout(() => {
+  //         setIsRewardPopupOpen(true);
+  //       }, 3000);
+  //     }
+  //   };
 
-    window.addEventListener("message", handleMessage);
+  //   window.addEventListener("message", handleMessage);
 
-    return () => {
-      window.removeEventListener("message", handleMessage);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener("message", handleMessage);
+  //   };
+  // }, []);
 
   // Handler for BoostScorePopup play
   const handleBoostPlay = () => {

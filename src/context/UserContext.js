@@ -316,6 +316,52 @@ export const UserProvider = ({ children }) => {
     }
   };
 
+  const addCollectedTreasure = async (treasureId) => {
+    if (!userDocId) {
+      console.error("Cannot add collected treasure: no userDocId");
+      return;
+    }
+
+    setUserData((prev) => {
+      // Check if treasure is already collected
+      if (prev.collectedTreasures?.includes(treasureId)) {
+        console.log(`Treasure ${treasureId} already collected`);
+        return prev;
+      }
+
+      const newCollectedTreasures = [
+        ...(prev.collectedTreasures || []),
+        treasureId,
+      ];
+      const newData = {
+        ...prev,
+        collectedTreasures: newCollectedTreasures,
+      };
+
+      // Update localStorage
+      try {
+        localStorage.setItem("userData", JSON.stringify(newData));
+      } catch (error) {
+        console.error("Error saving to localStorage:", error);
+      }
+
+      // Save to Firebase
+      updateDoc(doc(db, "users", userDocId), {
+        collectedTreasures: newCollectedTreasures,
+      })
+        .then(() => {
+          console.log("Collected treasure saved to Firebase successfully");
+        })
+        .catch((error) => {
+          console.error("Error saving collected treasure to Firebase:", error);
+          // Revert local state if Firebase save fails
+          setUserData(prev);
+        });
+
+      return newData;
+    });
+  };
+
   const clearUserData = () => {
     setUserData(getDefaultUserData());
     setIsLoggedIn(false);
@@ -344,6 +390,7 @@ export const UserProvider = ({ children }) => {
     setUserDocumentId,
     loadUserFromFirebase,
     loadUserFromFirebaseById,
+    addCollectedTreasure,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

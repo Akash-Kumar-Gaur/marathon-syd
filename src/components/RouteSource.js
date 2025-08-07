@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Source, Layer } from "react-map-gl/mapbox";
+import { fetchCachedRoute } from "../services/firebase";
 
 const RouteSource = ({ start, end, onRouteFound }) => {
   const [routeData, setRouteData] = useState(null);
@@ -15,27 +16,16 @@ const RouteSource = ({ start, end, onRouteFound }) => {
     const fetchRoute = async () => {
       setLoading(true);
       try {
-        // Use Mapbox Directions API to get walking route
-        const response = await fetch(
-          `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${MAPBOX_ACCESS_TOKEN}`
-        );
+        // Use cached route fetching
+        const route = await fetchCachedRoute(start, end, MAPBOX_ACCESS_TOKEN);
 
-        const data = await response.json();
+        setRouteData(route);
 
-        if (data.routes && data.routes.length > 0) {
-          const route = data.routes[0];
-          setRouteData({
-            geometry: route.geometry,
-            distance: route.distance / 1000, // Convert to kilometers
-            duration: route.duration / 60, // Convert to minutes
+        if (onRouteFound) {
+          onRouteFound({
+            distance: route.distance,
+            duration: route.duration,
           });
-
-          if (onRouteFound) {
-            onRouteFound({
-              distance: route.distance / 1000,
-              duration: route.duration / 60,
-            });
-          }
         }
       } catch (error) {
         console.error("Error fetching route:", error);

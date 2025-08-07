@@ -10,68 +10,31 @@ import BoostScorePopup from "../components/BoostScorePopup";
 import JigsawTrayPuzzle from "../components/JigsawTrayPuzzle";
 import FlipCardsGame from "../components/FlipCardsGame";
 import MarathonQuizGame from "../components/MarathonQuizGame";
-import { Toaster, toast } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { useUser } from "../context/UserContext";
 import { useDrawer } from "../context/DrawerContext";
-import { treasureData } from "../data/treasureData";
+import { getTreasureData } from "../utils/treasureDataSelector";
 import { normalizeTreasureId } from "../utils/dataValidation";
 import treasureImage from "../assets/images/treasureIcon.png";
-import staticMap from "../assets/images/staticMap.png";
+import { getCachedDistance } from "../services/firebase";
 
 const Home = () => {
   const location = useLocation();
   const { userData, updateUserData } = useUser();
 
-  // Calculate distance between two points using Haversine formula
+  // Calculate distance between two points using cached version
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Radius of the Earth in kilometers
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) *
-        Math.cos(lat2 * (Math.PI / 180)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distance in kilometers
+    return getCachedDistance([lon1, lat1], [lon2, lat2]);
   };
 
   const [center, setCenter] = useState([151.2093, -33.8688]); // Note: Mapbox uses [lng, lat] format
 
-  // Convert treasure data to the format expected by the component
-  const [treasures, setTreasures] = useState(() => {
-    // Use the same logic as findNearbyTreasures for initial selection
-    const initialCenter = [151.2093, -33.8688]; // Default center
-    const nearbyTreasures = treasureData
-      .map((treasure, index) => ({
-        id: treasure.id,
-        position: [
-          treasure.coordinates.longitude,
-          treasure.coordinates.latitude,
-        ],
-        found: false,
-        title: treasure.name,
-        description: treasure.offer,
-        hint: treasure.hint,
-        address: treasure.address,
-        openingHours: treasure.hours,
-        uniqueRedemption: treasure.code,
-        image: treasure.image,
-        distance: calculateDistance(
-          initialCenter[1], // lat
-          initialCenter[0], // lng
-          treasure.coordinates.latitude,
-          treasure.coordinates.longitude
-        ),
-      }))
-      .sort((a, b) => a.distance - b.distance) // Sort by distance
-      .slice(0, 10); // Take the 10 closest
+  // State for current treasure data
+  const [currentTreasureData, setCurrentTreasureData] = useState([]);
 
-    return nearbyTreasures;
-  });
+  // Convert treasure data to the format expected by the component
+  const [treasures, setTreasures] = useState([]);
   const [userPosition] = useState([151.2093, -33.8688]);
-  const [isLiveMap, setIsLiveMap] = useState(true);
   const [activeView, setActiveView] = useState("map");
   const [selectedTreasure, setSelectedTreasure] = useState(null);
   const [isHintModalOpen, setIsHintModalOpen] = useState(false);
@@ -85,9 +48,41 @@ const Home = () => {
   const permissionInitRef = useRef(false);
   const { isDrawerOpen } = useDrawer();
 
+  // Load treasure data based on current time
+  useEffect(() => {
+    const loadTreasureData = async () => {
+      try {
+        const treasureDataResult = await getTreasureData();
+        setCurrentTreasureData(treasureDataResult);
+        console.log(
+          "Loaded treasure data:",
+          treasureDataResult.length,
+          "treasures"
+        );
+      } catch (error) {
+        console.error("Failed to load treasure data:", error);
+        // Fallback to empty array
+        setCurrentTreasureData([]);
+      }
+    };
+
+    loadTreasureData();
+
+    // Set up periodic refresh every 5 minutes to check for race day transition
+    const refreshInterval = setInterval(() => {
+      loadTreasureData();
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(refreshInterval);
+  }, []);
+
   // Update treasures to filter out already collected ones
   useEffect(() => {
-    if (userData && userData.collectedTreasures) {
+    if (
+      userData &&
+      userData.collectedTreasures &&
+      currentTreasureData.length > 0
+    ) {
       console.log(
         "Filtering treasures based on collected:",
         userData.collectedTreasures
@@ -95,9 +90,9 @@ const Home = () => {
 
       // Get all treasures and filter out collected ones
       const initialCenter = [151.2093, -33.8688]; // Default center
-      const allTreasures = treasureData
+      const allTreasures = currentTreasureData
         .map((treasure, index) => ({
-          id: index + 1,
+          id: treasure.id,
           position: [
             treasure.coordinates.longitude,
             treasure.coordinates.latitude,
@@ -130,7 +125,7 @@ const Home = () => {
       console.log("Filtered treasures count:", allTreasures.length);
       setTreasures(allTreasures);
     }
-  }, [userData]);
+  }, [userData, currentTreasureData]);
 
   // Check permissions and initialize popup on mount
   useEffect(() => {
@@ -199,6 +194,10 @@ const Home = () => {
 
   // Original postMessage handler
   useEffect(() => {
+    let isProcessing = false; // Prevent multiple simultaneous processing
+    let lastProcessedTarget = null; // Track last processed target
+    let lastProcessedTime = 0; // Track last processed time
+
     const handleMessage = (event) => {
       // Only accept messages from our trusted domain
       if (event.origin !== "https://nxtinteractive.8thwall.app") return;
@@ -206,37 +205,54 @@ const Home = () => {
       // Check if the message is about image target detection
       if (event.data && event.data.type === "imageTargetDetected") {
         const { targetName } = event.data;
+        const currentTime = Date.now();
+
+        // Prevent multiple simultaneous processing
+        if (isProcessing) {
+          console.log("🎯 Already processing image target, ignoring duplicate");
+          return;
+        }
+
+        // Prevent duplicate processing of same target within 10 seconds
+        if (
+          lastProcessedTarget === targetName &&
+          currentTime - lastProcessedTime < 10000
+        ) {
+          console.log(
+            "🎯 Same target detected recently, ignoring:",
+            targetName
+          );
+          return;
+        }
+
+        isProcessing = true;
+        lastProcessedTarget = targetName;
+        lastProcessedTime = currentTime;
+
         console.log("🎯 Image Target Detected:", targetName);
 
-        const treasure = treasureData.find((t) => t.id === targetName);
+        const treasure =
+          currentTreasureData.find((t) => t.name === targetName) || false;
 
-        console.log("🎯 Treasure:", treasure);
+        if (treasure) {
+          setRewardData(treasure);
 
-        // Example reward data - this should be dynamic based on targetName
-        const demoRewardData = {
-          id: "treasure_1",
-          name: treasure.name,
-          hint: "Walk east from Taylor Square along Burton Street and scan the entryway of the chic corner spot marked by arched glass doors to claim your drink treasure.\n",
-          offer:
-            "Marathon finishers get their first drink free. Everyone else: Happy Hour prices – Wine $12, Cocktails/Spritzes $10, Beer $8, Mocktail $10. \nSofts Snacks: Olives, fries, tiramisu, cheese board.",
-          address: "1 Burton Street, Darlinghurst NSW 2010",
-          hours: "7:30am – 5:00pm",
-          redeem: "Must show code to staff/server to redeem",
-          terms: NaN,
-          code: "TCSSYDMARA25",
-          coordinates: {
-            latitude: -33.87838566944955,
-            longitude: 151.21454047745578,
-          },
-          image: treasure.image,
-        };
-
-        setRewardData(demoRewardData);
-
-        // Show reward popup after 3 seconds
-        setTimeout(() => {
-          setIsRewardPopupOpen(true);
-        }, 3000);
+          // Show reward popup after 5 seconds
+          setTimeout(() => {
+            setIsRewardPopupOpen(true);
+            isProcessing = false; // Reset flag after processing
+          }, 5000);
+        } else {
+          toast("Treasure not found", {
+            style: {
+              borderRadius: "8px",
+              background: "#fffbe6",
+              color: "#081F2D",
+              fontWeight: "bold",
+            },
+          });
+          isProcessing = false; // Reset flag after processing
+        }
       }
     };
 
@@ -245,7 +261,7 @@ const Home = () => {
     return () => {
       window.removeEventListener("message", handleMessage);
     };
-  }, []);
+  }, [currentTreasureData]); // Add currentTreasureData as dependency
 
   // Handler for BoostScorePopup play
   const handleBoostPlay = () => {
@@ -291,7 +307,12 @@ const Home = () => {
       userData?.collectedTreasures?.length
     );
 
-    const nearbyTreasures = treasureData
+    if (!currentTreasureData || currentTreasureData.length === 0) {
+      console.log("No treasure data available");
+      return [];
+    }
+
+    const nearbyTreasures = currentTreasureData
       .map((treasure, index) => ({
         id: treasure.id,
         position: [
@@ -350,19 +371,19 @@ const Home = () => {
 
       // Set new timeout for finding nearby treasures
       debouncedMapMove.current = setTimeout(() => {
-        // Only update treasures if userData is available
-        if (userData) {
+        // Only update treasures if userData and treasure data are available
+        if (userData && currentTreasureData.length > 0) {
           console.log("Map move - userData available, updating treasures");
           const nearbyTreasures = findNearbyTreasures(newCenter);
           setTreasures(nearbyTreasures);
         } else {
           console.log(
-            "Map move - userData not available, skipping treasure update"
+            "Map move - userData or treasure data not available, skipping treasure update"
           );
         }
       }, 500); // 500ms delay
     },
-    [userData]
+    [userData, currentTreasureData]
   );
 
   // Prepare markers for Mapbox
@@ -411,6 +432,8 @@ const Home = () => {
         data={rewardData}
         isSavingTreasure={isSavingTreasure}
         onCollect={() => {
+          setIsRewardPopupOpen(false);
+          return;
           console.log("onCollect called with rewardData:", rewardData);
 
           // Set saving state to keep popup open
@@ -434,6 +457,14 @@ const Home = () => {
               setIsSavingTreasure(false);
               setSelectedTreasure(null);
               setIsRewardPopupOpen(false);
+              toast("Treasure already collected!", {
+                style: {
+                  borderRadius: "8px",
+                  background: "#fffbe6",
+                  color: "#081F2D",
+                  fontWeight: "bold",
+                },
+              });
             } else {
               const updatedCollectedTreasures = [
                 ...currentCollectedTreasures,
@@ -539,29 +570,16 @@ const Home = () => {
         <div
           className={`map-container ${activeView === "map" ? "active" : ""}`}
         >
-          {isLiveMap ? (
-            <MapboxMap
-              center={center}
-              zoom={15}
-              markers={mapMarkers}
-              onMarkerClick={handleTreasureClick}
-              onMapMove={handleMapMove}
-              showRoute={!!selectedTreasure}
-              routeStart={selectedTreasure ? userPosition : null}
-              routeEnd={selectedTreasure ? selectedTreasure.position : null}
-            />
-          ) : (
-            <img
-              src={staticMap}
-              alt="Static Map"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                borderRadius: 16,
-              }}
-            />
-          )}
+          <MapboxMap
+            center={center}
+            zoom={15}
+            markers={mapMarkers}
+            onMarkerClick={handleTreasureClick}
+            onMapMove={handleMapMove}
+            showRoute={!!selectedTreasure}
+            routeStart={selectedTreasure ? userPosition : null}
+            routeEnd={selectedTreasure ? selectedTreasure.position : null}
+          />
         </div>
 
         {/* Camera View */}

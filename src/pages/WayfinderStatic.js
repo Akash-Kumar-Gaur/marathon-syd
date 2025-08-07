@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import StaticMap from "../components/StaticMap";
 import "./Wayfinder.css";
 import Header from "../components/Header";
+import { getCachedDistance } from "../services/firebase";
 
 // BIB Registry (simplified version of what we discussed)
 const BIB_REGISTRY = {
@@ -129,19 +130,9 @@ const Wayfinder = () => {
     }
   };
 
-  // Calculate distance between two coordinates
+  // Calculate distance between two coordinates (using cached version)
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Radius of the Earth in kilometers
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distance in kilometers
+    return getCachedDistance([lon1, lat1], [lon2, lat2]);
   };
 
   const handleConfirm = () => {
@@ -482,7 +473,7 @@ const Wayfinder = () => {
                   );
                 return Math.round(distance * 12);
               })()}{" "}
-              min walk) {routeDistance ? "(route)" : "(direct)"}
+              min walk)
             </div>
             {showDirections && (
               <div className="route-status">

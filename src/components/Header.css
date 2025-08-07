@@ -122,7 +122,7 @@
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   background: rgba(0, 0, 0, 0.4);
   z-index: 5000;
   display: flex;
@@ -134,7 +134,7 @@
   background: #fff;
   width: 350px;
   max-width: 80vw;
-  height: 100vh;
+  height: 100dvh;
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
   position: relative;
   display: flex;

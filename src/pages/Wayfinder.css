@@ -1,5 +1,5 @@
 .wayfinder-screen {
-  height: 100vh;
+  height: 100dvh;
   background-color: #081f2d;
   position: relative;
   overflow: hidden;
@@ -29,7 +29,7 @@
   right: 0;
   bottom: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   background-color: #f0f0f0;
   z-index: 1;
   overflow: hidden;

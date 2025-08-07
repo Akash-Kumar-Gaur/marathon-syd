@@ -175,4 +175,185 @@ export const getUserRank = async (userId, userScore) => {
   }
 };
 
+// Route and Distance Caching Service
+class RouteCache {
+  constructor() {
+    this.cache = new Map();
+    this.maxCacheSize = 100; // Maximum number of cached routes
+    this.cacheExpiry = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+  }
+
+  // Generate cache key from start and end coordinates
+  generateKey(start, end) {
+    // Round coordinates to 4 decimal places to group nearby locations
+    const roundedStart = [
+      Math.round(start[0] * 10000) / 10000,
+      Math.round(start[1] * 10000) / 10000,
+    ];
+    const roundedEnd = [
+      Math.round(end[0] * 10000) / 10000,
+      Math.round(end[1] * 10000) / 10000,
+    ];
+    return `${roundedStart[0]},${roundedStart[1]}-${roundedEnd[0]},${roundedEnd[1]}`;
+  }
+
+  // Get cached route data
+  get(start, end) {
+    const key = this.generateKey(start, end);
+    const cached = this.cache.get(key);
+
+    if (cached && Date.now() - cached.timestamp < this.cacheExpiry) {
+      console.log("Route cache hit:", key);
+      return cached.data;
+    }
+
+    if (cached) {
+      // Remove expired cache entry
+      this.cache.delete(key);
+    }
+
+    return null;
+  }
+
+  // Set cached route data
+  set(start, end, data) {
+    const key = this.generateKey(start, end);
+
+    // Remove oldest entries if cache is full
+    if (this.cache.size >= this.maxCacheSize) {
+      const oldestKey = this.cache.keys().next().value;
+      this.cache.delete(oldestKey);
+    }
+
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+    });
+
+    console.log("Route cached:", key);
+  }
+
+  // Clear all cached data
+  clear() {
+    this.cache.clear();
+    console.log("Route cache cleared");
+  }
+
+  // Get cache statistics
+  getStats() {
+    const now = Date.now();
+    let validEntries = 0;
+    let expiredEntries = 0;
+
+    this.cache.forEach((value) => {
+      if (now - value.timestamp < this.cacheExpiry) {
+        validEntries++;
+      } else {
+        expiredEntries++;
+      }
+    });
+
+    return {
+      total: this.cache.size,
+      valid: validEntries,
+      expired: expiredEntries,
+    };
+  }
+}
+
+// Global route cache instance
+export const routeCache = new RouteCache();
+
+// Debug function to log cache statistics
+export const logCacheStats = () => {
+  const stats = routeCache.getStats();
+  console.log("Route Cache Stats:", stats);
+  return stats;
+};
+
+// Function to clear cache (useful for testing)
+export const clearRouteCache = () => {
+  routeCache.clear();
+  console.log("Route cache cleared");
+};
+
+// Cached route fetching function
+export const fetchCachedRoute = async (start, end, accessToken) => {
+  // Check cache first
+  const cachedRoute = routeCache.get(start, end);
+  if (cachedRoute) {
+    return cachedRoute;
+  }
+
+  try {
+    console.log("Fetching new route from API...");
+
+    // Fetch from Mapbox API
+    const response = await fetch(
+      `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${accessToken}`
+    );
+
+    const data = await response.json();
+
+    if (data.routes && data.routes.length > 0) {
+      const route = data.routes[0];
+      const routeData = {
+        geometry: route.geometry,
+        distance: route.distance / 1000, // Convert to kilometers
+        duration: route.duration / 60, // Convert to minutes
+      };
+
+      // Cache the result
+      routeCache.set(start, end, routeData);
+
+      return routeData;
+    }
+
+    throw new Error("No routes found");
+  } catch (error) {
+    console.error("Error fetching route:", error);
+
+    // Fallback to straight line calculation
+    const fallbackRoute = {
+      geometry: {
+        type: "LineString",
+        coordinates: [start, end],
+      },
+      distance: calculateDirectDistance(start, end),
+      duration: null,
+    };
+
+    // Cache the fallback result too
+    routeCache.set(start, end, fallbackRoute);
+
+    return fallbackRoute;
+  }
+};
+
+// Calculate direct distance between two points (Haversine formula)
+export const calculateDirectDistance = (start, end) => {
+  const R = 6371; // Radius of the Earth in kilometers
+  const dLat = ((end[1] - start[1]) * Math.PI) / 180;
+  const dLon = ((end[0] - start[0]) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((start[1] * Math.PI) / 180) *
+      Math.cos((end[1] * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in kilometers
+};
+
+// Cached distance calculation
+export const getCachedDistance = (start, end) => {
+  const cachedRoute = routeCache.get(start, end);
+  if (cachedRoute) {
+    return cachedRoute.distance;
+  }
+
+  // If no cached route, calculate direct distance
+  return calculateDirectDistance(start, end);
+};
+
 export { app, analytics, db, functions, httpsCallable };

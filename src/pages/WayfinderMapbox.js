@@ -5,8 +5,8 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import "./Wayfinder.css";
 import Header from "../components/Header";
 import RouteSource from "../components/RouteSource";
+import { getCachedDistance } from "../services/firebase";
 
-// You'll need to get a free Mapbox access token from https://account.mapbox.com/
 const MAPBOX_ACCESS_TOKEN =
   "pk.eyJ1IjoiYWs0NWhoaCIsImEiOiJjbWQ4Z3JxNHowMDNtMndxeGFudDVjdnExIn0.nuEfmn0U6SbyiFI_T_rnTg"; // Replace with your token
 
@@ -159,19 +159,9 @@ const Wayfinder = () => {
     }
   };
 
-  // Calculate distance between two coordinates
+  // Calculate distance between two coordinates (using cached version)
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Radius of the Earth in kilometers
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distance in kilometers
+    return getCachedDistance([lon1, lat1], [lon2, lat2]);
   };
 
   const handleConfirm = () => {
@@ -635,7 +625,7 @@ const Wayfinder = () => {
                   );
                 return Math.round(currentDistance * 12);
               })()}{" "}
-              min walk) {routeDistance ? "(cached route)" : "(direct)"}
+              min walk)
             </div>
             {showDirections && (
               <div className="route-status">

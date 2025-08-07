@@ -1,6 +1,6 @@
 .learn-screen {
   position: relative;
-  min-height: 100vh;
+  min-height: 100dvh;
   overflow: hidden;
 }
 
@@ -22,7 +22,7 @@
 .learn-overlay {
   position: relative;
   z-index: 2;
-  min-height: 100vh;
+  min-height: 100dvh;
   background: rgba(8, 31, 45, 0.85);
   display: flex;
   flex-direction: column;
@@ -202,7 +202,7 @@
 
 .tutorial-screen {
   position: relative;
-  height: 100vh;
+  height: 100dvh;
   width: 100%;
   display: flex;
   flex-direction: column;

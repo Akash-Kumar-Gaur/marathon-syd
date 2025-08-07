@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Header.css";
 import logo from "../assets/images/syd-tcs-logo.png";
@@ -14,11 +14,12 @@ import puzzleTile from "../assets/images/puzzleTile.png";
 import matchTile from "../assets/images/matchTile.png";
 import trivia from "../assets/images/trivia.png";
 // import mascot from "../assets/images/mascot.png";
-import headphones from "../assets/images/headphones.svg";
-import shokzLogo from "../assets/images/shokz.png";
+// import headphones from "../assets/images/headphones.svg";
+// import shokzLogo from "../assets/images/shokz.png";
 import { useDrawer } from "../context/DrawerContext";
 import { useUser } from "../context/UserContext";
-import { treasureData } from "../data/treasureData";
+import { firstRewardConfig } from "../data/firstRewardConfig";
+
 import FAQModal from "./FAQModal";
 import LeaderboardModal from "./LeaderboardModal";
 // Removed static leaderboard data import - now using Firebase data
@@ -70,7 +71,9 @@ function TreasureDetailCard({ onBack, treasure }) {
       navigator.clipboard.writeText(treasure.code);
     }
   };
-  console.log("treasure", treasure);
+  if (process.env.NODE_ENV === "development") {
+    console.log("treasure", treasure);
+  }
   return (
     <div
       style={{
@@ -340,6 +343,32 @@ const Header = () => {
   const [selectedTreasure, setSelectedTreasure] = useState(null);
   const [showFAQModal, setShowFAQModal] = useState(false);
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
+  const [dataMode, setDataMode] = useState("loading");
+  const [currentTreasureData, setCurrentTreasureData] = useState([]);
+
+  // Load all treasure data (both race day and race week)
+  useEffect(() => {
+    const loadAllTreasureData = async () => {
+      try {
+        // Import both datasets
+        const { raceDayData } = await import("../raceDay.js");
+        const { raceWeekData } = await import("../raceWeek.js");
+
+        // Combine both datasets
+        const allTreasureData = [...raceDayData, ...raceWeekData];
+        setCurrentTreasureData(allTreasureData);
+
+        // Set data mode to show we have all data
+        setDataMode("all");
+      } catch (error) {
+        console.error("Failed to load treasure data:", error);
+        setDataMode("race-week"); // Default to race week
+        setCurrentTreasureData([]); // Empty array as fallback
+      }
+    };
+
+    loadAllTreasureData();
+  }, []);
 
   const handleEmailClick = () => {
     if (userData.verified === false) {
@@ -351,23 +380,25 @@ const Header = () => {
     }
   };
 
-  // Log navigation state changes
+  // Log navigation state changes (development only)
   useEffect(() => {
-    console.log("Header - Current location:", location.pathname);
-    console.log("Header - Location state:", location.state);
-    console.log("Header - Full location object:", location);
+    if (process.env.NODE_ENV === "development") {
+      console.log("Header - Current location:", location.pathname);
+      console.log("Header - Location state:", location.state);
+      console.log("Header - Full location object:", location);
+    }
   }, [location]);
 
   const handleHelp = () => {
     // Close drawer first, then show FAQ modal
     handleDrawerClose();
     setTimeout(() => {
-      // setShowFAQModal(true);
+      setShowFAQModal(true);
     }, 300); // Wait for drawer close animation to complete
   };
 
   const handleTrophy = () => {
-    // setShowLeaderboardModal(true);
+    setShowLeaderboardModal(true);
   };
 
   const handleMenu = () => {
@@ -394,10 +425,14 @@ const Header = () => {
     const targetRoute = backRoutes[location.pathname];
 
     if (targetRoute) {
-      console.log("Navigating to explicit route:", targetRoute);
+      if (process.env.NODE_ENV === "development") {
+        console.log("Navigating to explicit route:", targetRoute);
+      }
       navigate(targetRoute, { replace: true });
     } else {
-      console.log("No explicit route found, trying navigate(-1)");
+      if (process.env.NODE_ENV === "development") {
+        console.log("No explicit route found, trying navigate(-1)");
+      }
       // Fallback to navigate(-1) with a check
       const currentPath = location.pathname;
       navigate(-1);
@@ -405,7 +440,9 @@ const Header = () => {
       // Check if navigation actually happened after a short delay
       setTimeout(() => {
         if (window.location.pathname === currentPath) {
-          console.log("navigate(-1) didn't work, falling back to root");
+          if (process.env.NODE_ENV === "development") {
+            console.log("navigate(-1) didn't work, falling back to root");
+          }
           navigate("/", { replace: true });
         }
       }, 100);
@@ -427,7 +464,9 @@ const Header = () => {
           gameType = "quiz";
           break;
         default:
-          console.log("Unknown challenge:", challenge.name);
+          if (process.env.NODE_ENV === "development") {
+            console.log("Unknown challenge:", challenge.name);
+          }
           return;
       }
 
@@ -456,7 +495,9 @@ const Header = () => {
 
   const handleSignOut = () => {
     // Implement sign out functionality
-    console.log("Signing out");
+    if (process.env.NODE_ENV === "development") {
+      console.log("Signing out");
+    }
     localStorage.removeItem("userData");
     localStorage.removeItem("userDocId");
     setIsDrawerOpen(false);
@@ -469,22 +510,46 @@ const Header = () => {
       ? avatarMap[userData.selectedAvatar.id]
       : avatar5;
 
-  // Get unlocked treasures from user data (if available)
-  const unlockedTreasures = userData?.unlockedTreasures || [];
-
   // For now, let's unlock some treasures based on user progress
   // In a real app, this would be based on user achievements, location, etc.
   // Prepare treasure data with unlocked status from userData
-  const treasures = treasureData.map((treasure, i) => ({
-    index: i,
-    unlocked: userData?.collectedTreasures?.includes(treasure.id) || false,
-    name: treasure.name,
-  }));
+  const treasures = React.useMemo(() => {
+    const treasureList = [];
+
+    // Add first reward if user has collected it
+    if (userData?.collectedTreasures?.includes("first-reward")) {
+      treasureList.push({
+        index: -1, // Special index for first reward
+        unlocked: true,
+        name: "Lime Bike",
+        isFirstReward: true,
+      });
+    }
+
+    // Add regular treasures
+    if (currentTreasureData.length > 0) {
+      currentTreasureData.forEach((treasure, i) => {
+        treasureList.push({
+          index: i,
+          unlocked:
+            userData?.collectedTreasures?.includes(treasure.id) || false,
+          name: treasure.name,
+          isFirstReward: false,
+        });
+      });
+    }
+
+    return treasureList;
+  }, [currentTreasureData, userData?.collectedTreasures]);
+
   // Sort unlocked treasures to the start
-  const sortedTreasures = [
-    ...treasures.filter((t) => t.unlocked),
-    ...treasures.filter((t) => !t.unlocked),
-  ];
+  const sortedTreasures = useMemo(
+    () => [
+      ...treasures.filter((t) => t.unlocked),
+      ...treasures.filter((t) => !t.unlocked),
+    ],
+    [treasures]
+  );
 
   return (
     <>
@@ -515,6 +580,26 @@ const Header = () => {
         <div className="header-actions">
           {isHomePage ? (
             <>
+              {/* Data mode indicator */}
+              {/* {dataMode !== "loading" && (
+                <div
+                  className="data-mode-indicator"
+                  style={{
+                    fontSize: "10px",
+                    padding: "2px 6px",
+                    borderRadius: "4px",
+                    backgroundColor:
+                      dataMode === "race-day" ? "#ff6b6b" : 
+                      dataMode === "race-week" ? "#4ecdc4" : "#9b59b6",
+                    color: "white",
+                    fontWeight: "600",
+                    marginRight: "8px",
+                  }}
+                                  >
+                    {dataMode === "race-day" ? "RACE DAY" : 
+                     dataMode === "race-week" ? "RACE WEEK" : "ALL"}
+                  </div>
+              )} */}
               <button className="icon-button" onClick={handleTrophy}>
                 <i className="fas fa-trophy"></i>
               </button>
@@ -672,7 +757,7 @@ const Header = () => {
                   {CHALLENGES.map((challenge) => {
                     const earnedPoints =
                       userData?.challengeScores?.[challenge.name] || 0;
-                    const isClickable = earnedPoints === 0;
+                    const isClickable = true;
                     return (
                       <div
                         key={challenge.name}
@@ -938,7 +1023,11 @@ const Header = () => {
                   >
                     <TreasureDetailCard
                       onBack={() => setSelectedTreasure(null)}
-                      treasure={treasureData[selectedTreasure]}
+                      treasure={
+                        selectedTreasure === -1
+                          ? firstRewardConfig
+                          : currentTreasureData[selectedTreasure] || {}
+                      }
                     />
                   </div>
                 ))}

@@ -73,6 +73,7 @@ const Welcome = () => {
     setUserDocumentId,
     loadUserFromFirebase,
     userDocId,
+    addCollectedTreasure,
   } = useUser();
   const [showAvatarSelection, setShowAvatarSelection] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -606,30 +607,35 @@ const Welcome = () => {
     }
   };
 
-  const handleCollectReward = () => {
-    localStorage.setItem(
-      "collectedRewards",
-      JSON.stringify({
-        ...firstRewardConfig,
-        collectedAt: new Date().toISOString(),
-        id: "first-reward",
-      })
-    );
+  const handleCollectReward = async () => {
+    try {
+      // Add the first reward to user's collected treasures
+      await addCollectedTreasure("first-reward");
 
-    // Close the popup and navigate based on user type
-    setShowFirstReward(false);
-    if (isNewUser) {
-      navigate("/hunt");
-    } else {
-      navigate("/home");
+      // Close the popup and navigate based on user type
+      setShowFirstReward(false);
+      if (isNewUser) {
+        navigate("/hunt");
+      } else {
+        navigate("/home");
+      }
+
+      setTimeout(() => {
+        console.log(
+          "Welcome - History length after navigate:",
+          window.history.length
+        );
+      }, 100);
+    } catch (error) {
+      console.error("Error collecting first reward:", error);
+      // Still navigate even if there's an error
+      setShowFirstReward(false);
+      if (isNewUser) {
+        navigate("/hunt");
+      } else {
+        navigate("/home");
+      }
     }
-
-    setTimeout(() => {
-      console.log(
-        "Welcome - History length after navigate:",
-        window.history.length
-      );
-    }, 100);
   };
 
   const renderOTPVerification = () => {
@@ -1386,9 +1392,9 @@ const Welcome = () => {
               Unlock Instant Wins. And Rise To The Top Of The Leaderboard For
               Your Chance To Win $1,000.
             </p>
-            <div className="terms-link">
+            {/* <div className="terms-link">
               <a href="#terms">T&Cs Apply.</a>
-            </div>
+            </div> */}
           </div>
           <button className="start-button" onClick={handleStart}>
             START
