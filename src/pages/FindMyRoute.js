@@ -53,17 +53,18 @@ const FindMyRoute = () => {
             <div className="form-welcome">
               <h1>Find My Route</h1>
               <p>
-                Enter your Bib Number to get your personalized walking route.
+                Enter your Confirmation Number to get your personalized walking
+                route.
               </p>
             </div>
             <form onSubmit={handleSubmit} className="registration-form">
               <div className="form-group">
-                <label>BIB Number</label>
+                <label>Confirmation Number</label>
                 <input
                   type="text"
                   value={bibNumber}
                   onChange={handleInputChange}
-                  placeholder="Enter your BIB number"
+                  placeholder="Enter your Confirmation Number"
                   disabled={isLoading}
                 />
               </div>

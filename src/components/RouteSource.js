@@ -2,7 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Source, Layer } from "react-map-gl/mapbox";
 import { fetchCachedRoute } from "../services/firebase";
 
-const RouteSource = ({ start, end, onRouteFound }) => {
+const RouteSource = ({
+  start,
+  end,
+  onRouteFound,
+  isDebug = false,
+  sourceId = "route",
+}) => {
   const [routeData, setRouteData] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -52,7 +58,7 @@ const RouteSource = ({ start, end, onRouteFound }) => {
 
   return (
     <Source
-      id="route"
+      id={sourceId}
       type="geojson"
       data={{
         type: "Feature",
@@ -61,13 +67,13 @@ const RouteSource = ({ start, end, onRouteFound }) => {
       }}
     >
       <Layer
-        id="route-layer"
+        id={`${sourceId}-layer`}
         type="line"
         paint={{
-          "line-color": "#007cbf",
-          "line-width": 4,
-          "line-opacity": 0.8,
-          "line-dasharray": [2, 1], // Creates dotted line effect
+          "line-color": isDebug ? "#ff6b35" : "#007cbf", // Orange for debug, blue for main route
+          "line-width": isDebug ? 2 : 4, // Thinner for debug route
+          "line-opacity": isDebug ? 0.4 : 0.8, // More transparent for debug
+          "line-dasharray": isDebug ? [8, 4] : [2, 1], // Different dash pattern for debug
         }}
       />
     </Source>

@@ -20,6 +20,7 @@ const BIB_REGISTRY = {
       secondary: { id: "CN-G2", name: "Miller St Walk", closureTime: "08:00" },
     },
     assemblyCoordinates: [151.2102639, -33.8312477], // St Leonards Park coordinates - Mapbox uses [lng, lat]
+    routeStartCoordinates: [151.2035, -33.825], // Crows Nest Metro Station coordinates
   },
   1002: {
     assemblyPoint: "Red Assembly Entry 1",
@@ -29,6 +30,7 @@ const BIB_REGISTRY = {
       secondary: { id: "NS-R2", name: "Mount St Path", closureTime: "07:45" },
     },
     assemblyCoordinates: [151.2102639, -33.8312477], // St Leonards Park coordinates
+    routeStartCoordinates: [151.20741, -33.84115], // North Sydney Station coordinates
   },
   1003: {
     assemblyPoint: "Orange Assembly Entry",
@@ -38,6 +40,7 @@ const BIB_REGISTRY = {
       secondary: { id: "VC-O2", name: "Berry St Path", closureTime: "07:15" },
     },
     assemblyCoordinates: [151.2102639, -33.8312477], // St Leonards Park coordinates
+    routeStartCoordinates: [151.209, -33.835], // Victoria Cross Metro Station coordinates
   },
 };
 
@@ -63,12 +66,12 @@ const Wayfinder = () => {
   const bibNumber = location.state?.bibNumber;
 
   const [viewState, setViewState] = useState({
-    longitude: 151.20741,
-    latitude: -33.84115,
+    longitude: 151.2095,
+    latitude: -33.829,
     zoom: 15,
   });
 
-  const [userLocation, setUserLocation] = useState([151.20741, -33.84115]); // North Sydney coordinates - Mapbox uses [lng, lat]
+  const [userLocation, setUserLocation] = useState([151.2095, -33.829]); // Simulated user location within 400m of assembly - Mapbox uses [lng, lat]
   const [customLocation, setCustomLocation] = useState("");
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
@@ -83,11 +86,13 @@ const Wayfinder = () => {
   const [showDirections, setShowDirections] = useState(false);
 
   const [routeDistance, setRouteDistance] = useState(null);
-  const [originalStartLocation, setOriginalStartLocation] = useState(null);
-  const [cachedRoute, setCachedRoute] = useState(null);
   const [lastRouteUpdate, setLastRouteUpdate] = useState(0);
   const [routeStartLocation, setRouteStartLocation] = useState(null);
   const [routeEndLocation, setRouteEndLocation] = useState(null);
+  const [currentRouteLeg, setCurrentRouteLeg] = useState(null); // 'to-route-start' or 'to-assembly'
+  const [showRouteSwitchNotification, setShowRouteSwitchNotification] =
+    useState(false);
+  const [showDebugRoute, setShowDebugRoute] = useState(false); // Debug: show original route from start to assembly
 
   useEffect(() => {
     if (bibNumber) {
@@ -103,16 +108,16 @@ const Wayfinder = () => {
       console.log("Checkbox checked - getting current location");
       getCurrentLocation();
     } else {
-      console.log("Checkbox unchecked - using default North Sydney location");
-      // Always reset to North Sydney when not using current location
-      setUserLocation([151.20741, -33.84115]);
+      console.log("Checkbox unchecked - using default simulated location");
+      // Always reset to simulated location when not using current location
+      setUserLocation([151.2095, -33.829]);
       // Reset loading state when unchecking current location
       setIsLoadingLocation(false);
       // Center map on default location
       setViewState((prev) => ({
         ...prev,
-        longitude: 151.20741,
-        latitude: -33.84115,
+        longitude: 151.2095,
+        latitude: -33.829,
       }));
     }
   }, [useCurrentLocation]);
@@ -144,17 +149,17 @@ const Wayfinder = () => {
         },
         (error) => {
           console.error("Error getting location:", error);
-          console.log("Falling back to default North Sydney location");
-          // Reset to North Sydney if geolocation fails
-          setUserLocation([151.20741, -33.84115]);
+          console.log("Falling back to default simulated location");
+          // Reset to simulated location if geolocation fails
+          setUserLocation([151.2095, -33.829]);
           setIsLoadingLocation(false);
         }
       );
     } else {
       console.log(
-        "Geolocation not supported, using default North Sydney location"
+        "Geolocation not supported, using default simulated location"
       );
-      setUserLocation([151.20741, -33.84115]);
+      setUserLocation([151.2095, -33.829]);
       setIsLoadingLocation(false);
     }
   };
@@ -178,104 +183,21 @@ const Wayfinder = () => {
         "(with default coordinates)"
       );
     } else if (!useCurrentLocation) {
-      console.log("Using default North Sydney location");
+      console.log("Using default simulated location near route start");
     }
 
-    // Store the original starting location for route calculation
-    setOriginalStartLocation([...userLocation]);
     setLocationConfirmed(true);
   };
 
-  // Continuous location tracking to update map marker - works when using current location
-  useEffect(() => {
-    let watchId;
+  // Continuous location tracking - disabled for simulation
+  // useEffect(() => {
+  //   // Location tracking code removed for simulation
+  // }, [useCurrentLocation, locationConfirmed, showDirections, bibData, currentRouteLeg]);
 
-    if (useCurrentLocation && locationConfirmed) {
-      console.log("Starting continuous location tracking for map updates");
-      watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          const currentLat = position.coords.latitude;
-          const currentLon = position.coords.longitude;
-          const newLocation = [currentLon, currentLat];
-
-          // Update user location on map
-          setUserLocation(newLocation);
-
-          // Check if route should be updated (throttled)
-          if (showDirections && shouldUpdateRoute(newLocation)) {
-            console.log("Updating route due to significant movement");
-            setRouteStartLocation(newLocation);
-            setRouteEndLocation(bibData.assemblyCoordinates);
-            setLastRouteUpdate(Date.now());
-          }
-
-          console.log("Updated user location on map:", currentLat, currentLon);
-        },
-        (error) => {
-          console.error("Error updating location on map:", error);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 30000,
-        }
-      );
-    }
-
-    return () => {
-      if (watchId) {
-        console.log("Stopping continuous location tracking");
-        navigator.geolocation.clearWatch(watchId);
-      }
-    };
-  }, [useCurrentLocation, locationConfirmed, showDirections, bibData]);
-
-  // Track user location to detect arrival - works for both current and default location
-  useEffect(() => {
-    let watchId;
-    if (locationConfirmed && bibData && !hasArrived) {
-      console.log("Starting location tracking for arrival detection");
-      watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          const currentLat = position.coords.latitude;
-          const currentLon = position.coords.longitude;
-          const distance = calculateDistance(
-            currentLat,
-            currentLon,
-            bibData.assemblyCoordinates[1], // lat
-            bibData.assemblyCoordinates[0] // lng
-          );
-
-          console.log(
-            "Current distance to assembly:",
-            distance.toFixed(3),
-            "km"
-          );
-
-          // If within 50 meters (0.05 km) of assembly point
-          if (distance <= 0.05) {
-            console.log("Arrived at assembly point!");
-            setHasArrived(true);
-          }
-        },
-        (error) => {
-          console.error("Error tracking location:", error);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 30000,
-        }
-      );
-    }
-
-    return () => {
-      if (watchId) {
-        console.log("Stopping location tracking");
-        navigator.geolocation.clearWatch(watchId);
-      }
-    };
-  }, [locationConfirmed, bibData, hasArrived]);
+  // Track user location to detect arrival - disabled for simulation
+  // useEffect(() => {
+  //   // Arrival tracking code removed for simulation
+  // }, [locationConfirmed, bibData, hasArrived]);
 
   const handleArrivalDone = () => {
     setHasArrived(false);
@@ -283,24 +205,54 @@ const Wayfinder = () => {
     // navigate("/");
   };
 
-  // Function to check if route should be updated (throttled)
-  const shouldUpdateRoute = (currentLocation) => {
-    if (!routeStartLocation) return true;
+  // New function to handle smart routing based on user distance from assembly
+  const handleSmartRouting = () => {
+    if (!bibData || !userLocation) return;
 
-    const now = Date.now();
-    const timeSinceLastUpdate = now - lastRouteUpdate;
-
-    // Only update route every 30 seconds or if user moved significantly (>200m)
-    if (timeSinceLastUpdate < 30000) return false;
-
-    const distanceFromLastUpdate = calculateDistance(
-      currentLocation[1],
-      currentLocation[0],
-      routeStartLocation[1],
-      routeStartLocation[0]
+    // Calculate distance from user to assembly coordinates
+    const distanceToAssembly = calculateDistance(
+      userLocation[1], // lat
+      userLocation[0], // lng
+      bibData.assemblyCoordinates[1], // assembly lat
+      bibData.assemblyCoordinates[0] // assembly lng
     );
 
-    return distanceFromLastUpdate > 0.2; // 200 meters - more conservative
+    // Calculate distance from user to route start coordinates
+    const distanceToRouteStart = calculateDistance(
+      userLocation[1], // lat
+      userLocation[0], // lng
+      bibData.routeStartCoordinates[1], // route start lat
+      bibData.routeStartCoordinates[0] // route start lng
+    );
+
+    console.log("Distance to assembly:", distanceToAssembly.toFixed(3), "km");
+    console.log(
+      "Distance to route start:",
+      distanceToRouteStart.toFixed(3),
+      "km"
+    );
+
+    // If user is within 400m (0.4 km) of assembly coordinates
+    if (distanceToAssembly <= 0.4) {
+      console.log(
+        "User is within 400m of assembly - showing route directly to assembly"
+      );
+      // Show route from user location directly to assembly
+      setRouteStartLocation(userLocation);
+      setRouteEndLocation(bibData.assemblyCoordinates);
+      setCurrentRouteLeg("to-assembly");
+    } else {
+      console.log(
+        "User is far from assembly - showing route to assembly via route start"
+      );
+      // Show route from user location to route start point first
+      // This will guide users to their assigned route start point
+      setRouteStartLocation(userLocation);
+      setRouteEndLocation(bibData.routeStartCoordinates);
+      setCurrentRouteLeg("to-route-start");
+    }
+
+    setLastRouteUpdate(Date.now());
   };
 
   const handleDirectionsClick = () => {
@@ -333,10 +285,63 @@ const Wayfinder = () => {
         zoom: zoom,
       }));
 
-      // Set initial route locations when first showing directions
-      setRouteStartLocation(userLocation);
-      setRouteEndLocation(bibData.assemblyCoordinates);
-      setLastRouteUpdate(Date.now());
+      // Use smart routing logic instead of simple route
+      handleSmartRouting();
+
+      // For simulation: Check routing logic based on distance to assembly
+      if (bibData) {
+        const distanceToAssembly = calculateDistance(
+          userLocation[1], // lat
+          userLocation[0], // lng
+          bibData.assemblyCoordinates[1], // assembly lat
+          bibData.assemblyCoordinates[0] // assembly lng
+        );
+
+        const distanceToRouteStart = calculateDistance(
+          userLocation[1], // lat
+          userLocation[0], // lng
+          bibData.routeStartCoordinates[1], // route start lat
+          bibData.routeStartCoordinates[0] // route start lng
+        );
+
+        console.log(
+          "Simulation check - Distance to assembly:",
+          distanceToAssembly.toFixed(3),
+          "km"
+        );
+        console.log(
+          "Simulation check - Distance to route start:",
+          distanceToRouteStart.toFixed(3),
+          "km"
+        );
+
+        // Check if user is within 400m of assembly
+        if (distanceToAssembly <= 0.4) {
+          console.log(
+            "Simulation: User is within 400m of assembly - showing route directly to assembly"
+          );
+          // Route should be: User → Assembly (direct route)
+          setRouteStartLocation(userLocation);
+          setRouteEndLocation(bibData.assemblyCoordinates);
+          setCurrentRouteLeg("to-assembly");
+          setLastRouteUpdate(Date.now());
+
+          // Cache verification - this route should be cached
+          console.log(
+            "Route cache key:",
+            `${userLocation[0]},${userLocation[1]}-${bibData.assemblyCoordinates[0]},${bibData.assemblyCoordinates[1]}`
+          );
+        } else {
+          console.log(
+            "Simulation: User is far from assembly - showing route to assembly via route start"
+          );
+          // Route should be: User → Route Start
+          setRouteStartLocation(userLocation);
+          setRouteEndLocation(bibData.routeStartCoordinates);
+          setCurrentRouteLeg("to-route-start");
+          setLastRouteUpdate(Date.now());
+        }
+      }
 
       console.log("Map centered to show both start and end points");
     } else {
@@ -344,6 +349,7 @@ const Wayfinder = () => {
       setRouteDistance(null);
       setRouteStartLocation(null);
       setRouteEndLocation(null);
+      setCurrentRouteLeg(null);
     }
   };
 
@@ -468,6 +474,32 @@ const Wayfinder = () => {
             </div>
           </Marker>
 
+          {/* Route Start Point Marker - show after location confirmation */}
+          {bibData && locationConfirmed && (
+            <Marker
+              longitude={bibData.routeStartCoordinates[0]}
+              latitude={bibData.routeStartCoordinates[1]}
+              anchor="bottom"
+            >
+              <div className="route-start-marker">
+                <div className="route-start-icon"></div>
+              </div>
+              <Popup
+                anchor="top"
+                longitude={bibData.routeStartCoordinates[0]}
+                latitude={bibData.routeStartCoordinates[1]}
+              >
+                <div>
+                  <strong>Route Start Point</strong>
+                  <br />
+                  {bibData.startingPoint}
+                  <br />
+                  Route: {selectedRoute?.name}
+                </div>
+              </Popup>
+            </Marker>
+          )}
+
           {/* Assembly Point Marker - show after location confirmation */}
           {bibData && locationConfirmed && (
             <Marker
@@ -499,6 +531,7 @@ const Wayfinder = () => {
             routeStartLocation &&
             routeEndLocation && (
               <RouteSource
+                sourceId="main-route"
                 start={routeStartLocation}
                 end={routeEndLocation}
                 onRouteFound={(routeData) => {
@@ -509,6 +542,19 @@ const Wayfinder = () => {
                 }}
               />
             )}
+
+          {/* Debug Route - show original route from start to assembly */}
+          {bibData && locationConfirmed && showDirections && showDebugRoute && (
+            <RouteSource
+              sourceId="debug-route"
+              start={bibData.routeStartCoordinates}
+              end={bibData.assemblyCoordinates}
+              isDebug={true}
+              onRouteFound={(routeData) => {
+                console.log("Debug route found:", routeData);
+              }}
+            />
+          )}
         </Map>
       </div>
 
@@ -598,6 +644,24 @@ const Wayfinder = () => {
           </div>
 
           <div className="assembly-details">
+            {/* Current Destination Indicator */}
+            {showDirections && currentRouteLeg && (
+              <div className="destination-indicator">
+                <i
+                  className={`fas ${
+                    currentRouteLeg === "to-route-start"
+                      ? "fa-map-marker-alt"
+                      : "fa-flag-checkered"
+                  }`}
+                ></i>
+                <span>
+                  {currentRouteLeg === "to-route-start"
+                    ? `Heading to: ${bibData.startingPoint}`
+                    : `Heading to: ${bibData.assemblyPoint}`}
+                </span>
+              </div>
+            )}
+
             <div className="distance-info">
               Distance:{" "}
               {(() => {
@@ -654,6 +718,16 @@ const Wayfinder = () => {
               <i className="fas fa-play"></i>
               START
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Route Switch Notification */}
+      {showRouteSwitchNotification && (
+        <div className="route-switch-notification">
+          <div className="notification-content">
+            <i className="fas fa-route"></i>
+            <span>Route updated! Now heading to assembly point.</span>
           </div>
         </div>
       )}
