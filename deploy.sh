@@ -2,6 +2,10 @@
 
 echo "🚀 Starting deployment of both entry points from deploy-version branch..."
 
+# Clean up any existing build directories
+echo "🧹 Cleaning up build directories..."
+rm -rf build build-bib
+
 # Build default version
 echo "📦 Building default version..."
 REACT_APP_FLOW_TYPE=default npm run build
