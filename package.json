@@ -35,6 +35,9 @@
     "build": "react-scripts build",
     "build:default": "cp .env.default .env && react-scripts build",
     "build:bib": "cp .env.bib .env && react-scripts build",
+    "deploy": "./deploy.sh",
+    "deploy:default": "REACT_APP_FLOW_TYPE=default npm run build && firebase deploy --only hosting:default",
+    "deploy:bib": "REACT_APP_FLOW_TYPE=bib_route npm run build && mv build build-bib && firebase deploy --only hosting:bib-route",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

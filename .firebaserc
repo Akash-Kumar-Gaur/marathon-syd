@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "sydney-marathon-2025"
-  }
+  },
+  "targets": {
+    "sydney-marathon-2025": {
+      "hosting": {
+        "default": [
+          "sydney-marathon-2025"
+        ],
+        "bib-route": [
+          "bib-route-sydney-marathon-2025"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
