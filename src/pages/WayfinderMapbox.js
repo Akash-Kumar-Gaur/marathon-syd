@@ -44,9 +44,14 @@ const BIB_REGISTRY = {
   },
 };
 
+// Ultra-fast BIB lookup function
+const getBibData = (bibNumber) => {
+  return BIB_REGISTRY[bibNumber];
+};
+
 // Route selection logic
 const getSelectedRoute = (bibNumber) => {
-  const data = BIB_REGISTRY[bibNumber];
+  const data = getBibData(bibNumber);
   if (!data) return null;
 
   // Simple odd/even logic for route selection
@@ -96,7 +101,7 @@ const Wayfinder = () => {
 
   useEffect(() => {
     if (bibNumber) {
-      const data = BIB_REGISTRY[bibNumber];
+      const data = getBibData(bibNumber);
       const route = getSelectedRoute(bibNumber);
       setBibData(data);
       setSelectedRoute(route);
