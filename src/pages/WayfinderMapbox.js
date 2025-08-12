@@ -122,14 +122,6 @@ const Wayfinder = () => {
   const [isStartingPointCollapsed, setIsStartingPointCollapsed] =
     useState(true);
 
-  // Simulation state for testing different scenarios
-  const [showSimulationUI, setShowSimulationUI] = useState(false);
-  const [simulatedDistanceToAssembly, setSimulatedDistanceToAssembly] =
-    useState(0.424);
-  const [simulatedDistanceToRouteStart, setSimulatedDistanceToRouteStart] =
-    useState(0.0);
-  const [simulatedRoutesClosed, setSimulatedRoutesClosed] = useState(false);
-
   useEffect(() => {
     if (bibNumber) {
       const data = getBibData(bibNumber);
@@ -539,6 +531,8 @@ const Wayfinder = () => {
           mapStyle="mapbox://styles/mapbox/light-v11"
           mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
         >
+          <NavigationControl position="top-right" />
+
           {/* User Location Marker */}
           <Marker
             longitude={userLocation[0]}
@@ -1024,149 +1018,6 @@ const Wayfinder = () => {
           </div>
         </div>
       )}
-
-      {/* Floating Simulation UI for Testing */}
-      {showSimulationUI && (
-        <div className="simulation-ui">
-          <div className="simulation-header">
-            <i className="fas fa-cog"></i>
-            <span>Route Simulation</span>
-            <button
-              className="simulation-close"
-              onClick={() => setShowSimulationUI(false)}
-            >
-              ×
-            </button>
-          </div>
-
-          <div className="simulation-content">
-            <div className="simulation-section">
-              <label>Distance to Assembly (km):</label>
-              <input
-                type="range"
-                min="0"
-                max="2"
-                step="0.001"
-                value={simulatedDistanceToAssembly}
-                onChange={(e) =>
-                  setSimulatedDistanceToAssembly(parseFloat(e.target.value))
-                }
-              />
-              <span>{simulatedDistanceToAssembly.toFixed(3)} km</span>
-            </div>
-
-            <div className="simulation-section">
-              <label>Distance to Route Start (km):</label>
-              <input
-                type="range"
-                min="0"
-                max="2"
-                step="0.001"
-                value={simulatedDistanceToRouteStart}
-                onChange={(e) =>
-                  setSimulatedDistanceToRouteStart(parseFloat(e.target.value))
-                }
-              />
-              <span>{simulatedDistanceToRouteStart.toFixed(3)} km</span>
-            </div>
-
-            <div className="simulation-section">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={simulatedRoutesClosed}
-                  onChange={(e) => setSimulatedRoutesClosed(e.target.checked)}
-                />
-                Routes Closed
-              </label>
-            </div>
-
-            <div className="simulation-scenarios">
-              <h4>Quick Test Scenarios:</h4>
-              <div className="scenario-buttons">
-                <button
-                  onClick={() => {
-                    setSimulatedDistanceToAssembly(0.3);
-                    setSimulatedDistanceToRouteStart(0.8);
-                    setSimulatedRoutesClosed(false);
-                  }}
-                >
-                  Within 400m of Assembly
-                </button>
-                <button
-                  onClick={() => {
-                    setSimulatedDistanceToAssembly(0.8);
-                    setSimulatedDistanceToRouteStart(0.03);
-                    setSimulatedRoutesClosed(false);
-                  }}
-                >
-                  At Starting Point
-                </button>
-                <button
-                  onClick={() => {
-                    setSimulatedDistanceToAssembly(1.2);
-                    setSimulatedDistanceToRouteStart(0.6);
-                    setSimulatedRoutesClosed(false);
-                  }}
-                >
-                  Far from Both
-                </button>
-                <button
-                  onClick={() => {
-                    setSimulatedDistanceToAssembly(0.424);
-                    setSimulatedDistanceToRouteStart(0.0);
-                    setSimulatedRoutesClosed(false);
-                  }}
-                >
-                  Your Current Case
-                </button>
-                <button
-                  onClick={() => {
-                    setSimulatedDistanceToAssembly(0.8);
-                    setSimulatedDistanceToRouteStart(0.5);
-                    setSimulatedRoutesClosed(true);
-                  }}
-                >
-                  All Routes Closed
-                </button>
-              </div>
-            </div>
-
-            <div className="simulation-info">
-              <h4>Current Simulation:</h4>
-              <p>
-                <strong>Distance to Assembly:</strong>{" "}
-                {simulatedDistanceToAssembly.toFixed(3)} km
-              </p>
-              <p>
-                <strong>Distance to Route Start:</strong>{" "}
-                {simulatedDistanceToRouteStart.toFixed(3)} km
-              </p>
-              <p>
-                <strong>Routes Closed:</strong>{" "}
-                {simulatedRoutesClosed ? "Yes" : "No"}
-              </p>
-              <p>
-                <strong>Routing Decision:</strong>{" "}
-                {simulatedDistanceToAssembly <= 0.4
-                  ? "Route directly to assembly"
-                  : simulatedDistanceToRouteStart <= 0.05
-                  ? "Route directly to assembly (at starting point)"
-                  : "Route to starting point first"}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Simulation Toggle Button */}
-      <button
-        className="simulation-toggle"
-        onClick={() => setShowSimulationUI(!showSimulationUI)}
-        title="Toggle Route Simulation UI"
-      >
-        <i className="fas fa-cog"></i>
-      </button>
     </div>
   );
 };
