@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Map, Marker, Popup, NavigationControl } from "react-map-gl/mapbox";
+import { Map, Marker, Popup } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "./Wayfinder.css";
 import Header from "../components/Header";
@@ -531,8 +531,6 @@ const Wayfinder = () => {
           mapStyle="mapbox://styles/mapbox/light-v11"
           mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
         >
-          <NavigationControl position="top-right" />
-
           {/* User Location Marker */}
           <Marker
             longitude={userLocation[0]}
@@ -744,15 +742,12 @@ const Wayfinder = () => {
                     setIsRouteStatusCollapsed(!isRouteStatusCollapsed)
                   }
                 >
+                  <span>Route Information</span>
                   <i
                     className={`fas fa-chevron-${
                       isRouteStatusCollapsed ? "down" : "up"
                     }`}
                   ></i>
-                  <span>Route Information</span>
-                  <button className="collapse-toggle">
-                    {isRouteStatusCollapsed ? "Show" : "Hide"}
-                  </button>
                 </div>
 
                 {!isRouteStatusCollapsed && (
