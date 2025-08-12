@@ -5,7 +5,7 @@ import bibFormBg from "../assets/images/bibForm.png";
 import Header from "../components/Header";
 
 const FindMyRoute = () => {
-  const [bibNumber, setBibNumber] = useState("");
+  const [bibNumber, setBibNumber] = useState("36584605");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 

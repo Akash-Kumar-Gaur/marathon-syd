@@ -32,6 +32,7 @@ export const isCurrentlyInClosurePeriod = (
   closureTimeStart,
   closureTimeEnd
 ) => {
+  return true;
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
