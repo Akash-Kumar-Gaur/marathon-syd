@@ -349,24 +349,6 @@ const Wayfinder = () => {
     }
   };
 
-  if (!bibNumber || !bibData) {
-    return (
-      <div className="wayfinder-screen">
-        <Header />
-        <div className="error-container">
-          <h2>No BIB Number Found</h2>
-          <p>Please go back and enter your BIB number.</p>
-          <button
-            onClick={() => navigate("/find-my-route")}
-            className="go-back-button"
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="wayfinder-screen">
       <Header />

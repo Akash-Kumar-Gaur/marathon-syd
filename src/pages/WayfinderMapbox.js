@@ -1799,76 +1799,6 @@ const Wayfinder = () => {
               );
             })()}
 
-          {/* Ped Crossing Markers - for testing detour routes */}
-          {bibData &&
-            locationConfirmed &&
-            (() => {
-              const pedCrossing1 = convertToMapboxFormat(
-                bibData["Ped Crossing 1"]
-              );
-              const pedCrossing2 = convertToMapboxFormat(
-                bibData["Ped Crossing 2"]
-              );
-              const pedCrossing3 = convertToMapboxFormat(
-                bibData["Ped Crossing 3"]
-              );
-              const pedCrossing4 = convertToMapboxFormat(
-                bibData["Ped Crossing 4"]
-              );
-
-              if (!pedCrossing1 || !pedCrossing2 || !pedCrossing3) return null;
-
-              return (
-                <>
-                  {/* Ped Crossing 1 Marker */}
-                  <Marker
-                    longitude={pedCrossing1[0]}
-                    latitude={pedCrossing1[1]}
-                    anchor="bottom"
-                  >
-                    <div className="ped-crossing-marker ped-crossing-1">
-                      <div className="ped-crossing-icon">🚸</div>
-                    </div>
-                  </Marker>
-
-                  {/* Ped Crossing 2 Marker */}
-                  <Marker
-                    longitude={pedCrossing2[0]}
-                    latitude={pedCrossing2[1]}
-                    anchor="bottom"
-                  >
-                    <div className="ped-crossing-marker ped-crossing-2">
-                      <div className="ped-crossing-icon">🚸</div>
-                    </div>
-                  </Marker>
-
-                  {/* Ped Crossing 3 Marker */}
-                  <Marker
-                    longitude={pedCrossing3[0]}
-                    latitude={pedCrossing3[1]}
-                    anchor="bottom"
-                  >
-                    <div className="ped-crossing-marker ped-crossing-3">
-                      <div className="ped-crossing-icon">🚸</div>
-                    </div>
-                  </Marker>
-
-                  {/* Ped Crossing 4 Marker - if available */}
-                  {pedCrossing4 && (
-                    <Marker
-                      longitude={pedCrossing4[0]}
-                      latitude={pedCrossing4[1]}
-                      anchor="bottom"
-                    >
-                      <div className="ped-crossing-marker ped-crossing-4">
-                        <div className="ped-crossing-icon">🚸</div>
-                      </div>
-                    </Marker>
-                  )}
-                </>
-              );
-            })()}
-
           {/* Route Control - show path only after directions button clicked */}
           {bibData &&
             locationConfirmed &&
@@ -2005,8 +1935,8 @@ const Wayfinder = () => {
             showDirections &&
             currentRouteLeg &&
             currentRouteLeg !== "to-route-start" &&
-            !selectedRoute.detourInfo &&
-            selectedRoute.detourInfo.type !== "detour" && (
+            (!selectedRoute.detourInfo ||
+              selectedRoute.detourInfo.type !== "detour") && (
               <div className="route-status-info">
                 <div
                   className="section-header"
