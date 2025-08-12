@@ -16,8 +16,8 @@ import JigsawTrayPuzzle from "../components/JigsawTrayPuzzle";
 import FlipCardsGame from "../components/FlipCardsGame";
 import MarathonQuizGame from "../components/MarathonQuizGame";
 import coinsIcon from "../assets/images/coins.svg";
-import treasureImage from "../assets/images/treasure1.png";
-import staticMap from "../assets/images/staticMap.png";
+import treasureImage from "../assets/images/optimized/treasure1.png";
+import staticMap from "../assets/images/optimized/staticMap.png";
 import { useDrawer } from "../context/DrawerContext";
 
 // Fix for default marker icons in react-leaflet

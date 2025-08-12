@@ -15,7 +15,7 @@ import { useUser } from "../context/UserContext";
 import { useDrawer } from "../context/DrawerContext";
 import { getTreasureData } from "../utils/treasureDataSelector";
 import { normalizeTreasureId } from "../utils/dataValidation";
-import treasureImage from "../assets/images/treasureIcon.png";
+import treasureImage from "../assets/images/optimized/treasureIcon.png";
 import { getCachedDistance } from "../services/firebase";
 
 const Home = () => {

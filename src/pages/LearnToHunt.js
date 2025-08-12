@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./LearnToHunt.css";
-import startBg from "../assets/images/startBg.png";
-import slide1 from "../assets/images/slide1.png";
-import slide2 from "../assets/images/slide2.png";
-import slide3 from "../assets/images/slide3.png";
+import startBg from "../assets/images/optimized/startBg.png";
+import slide1 from "../assets/images/optimized/slide1.png";
+import slide2 from "../assets/images/optimized/slide2.png";
+import slide3 from "../assets/images/optimized/slide3.png";
 import Header from "../components/Header";
 
 const slides = [

@@ -8,73 +8,97 @@ if (!fs.existsSync(optimizedDir)) {
   fs.mkdirSync(optimizedDir, { recursive: true });
 }
 
-// List of images to optimize with their target sizes
-const imagesToOptimize = [
-  {
-    input: "src/assets/images/bibForm.png",
-    output: "src/assets/images/optimized/bibForm.png",
-    quality: 80,
-    width: 1200, // Reduce from 16MB
-  },
-  {
-    input: "src/assets/images/formBg.png",
-    output: "src/assets/images/optimized/formBg.png",
-    quality: 80,
-    width: 1200, // Reduce from 17MB
-  },
-  {
-    input: "src/assets/images/slide1.png",
-    output: "src/assets/images/optimized/slide1.png",
-    quality: 85,
-    width: 800, // Reduce from 2.6MB
-  },
-  {
-    input: "src/assets/images/slide2.png",
-    output: "src/assets/images/optimized/slide2.png",
-    quality: 85,
-    width: 800, // Reduce from 1.3MB
-  },
-  {
-    input: "src/assets/images/slide3.png",
-    output: "src/assets/images/optimized/slide3.png",
-    quality: 85,
-    width: 800, // Reduce from 1.1MB
-  },
-  {
-    input: "src/assets/images/startBg.png",
-    output: "src/assets/images/optimized/startBg.png",
-    quality: 80,
-    width: 1200, // Reduce from 2.9MB
-  },
-  {
-    input: "src/assets/images/staticMap.png",
-    output: "src/assets/images/optimized/staticMap.png",
-    quality: 85,
-    width: 1000, // Reduce from 1.5MB
-  },
-  {
-    input: "src/assets/images/troubleOtp.png",
-    output: "src/assets/images/optimized/troubleOtp.png",
-    quality: 85,
-    width: 800, // Reduce from 1.6MB
-  },
-];
+// Function to get all image files from assets directory
+function getAllImageFiles() {
+  const assetsDir = path.join(__dirname, "../src/assets/images");
+  const imageFiles = [];
 
-async function optimizeImage(config) {
   try {
-    const inputPath = path.resolve(__dirname, "..", config.input);
-    const outputPath = path.resolve(__dirname, "..", config.output);
+    const files = fs.readdirSync(assetsDir);
+    files.forEach((file) => {
+      const filePath = path.join(assetsDir, file);
+      const stat = fs.statSync(filePath);
+
+      if (stat.isFile() && /\.(png|jpg|jpeg|webp)$/i.test(file)) {
+        imageFiles.push(file);
+      }
+    });
+  } catch (error) {
+    console.error("Error reading assets directory:", error.message);
+  }
+
+  return imageFiles;
+}
+
+// Function to determine optimal settings for each image
+function getOptimizationSettings(filename, originalSize) {
+  const sizeMB = originalSize / (1024 * 1024);
+
+  // Different optimization strategies based on file size and type
+  if (sizeMB > 5) {
+    // Very large files - aggressive optimization
+    return { quality: 75, width: 1200, format: "png" };
+  } else if (sizeMB > 1) {
+    // Large files - moderate optimization
+    return { quality: 80, width: 1000, format: "png" };
+  } else if (sizeMB > 0.5) {
+    // Medium files - light optimization
+    return { quality: 85, width: 800, format: "png" };
+  } else if (sizeMB > 0.1) {
+    // Small files - minimal optimization
+    return { quality: 90, width: 600, format: "png" };
+  } else {
+    // Very small files - just compress
+    return { quality: 95, width: null, format: "png" };
+  }
+}
+
+// Function to optimize a single image
+async function optimizeImage(filename) {
+  try {
+    const inputPath = path.join(__dirname, "../src/assets/images", filename);
+    const outputPath = path.join(optimizedDir, filename);
 
     // Get original file size
     const originalStats = fs.statSync(inputPath);
     const originalSizeMB = (originalStats.size / (1024 * 1024)).toFixed(2);
 
-    console.log(`Optimizing ${config.input} (${originalSizeMB}MB)...`);
+    console.log(`Optimizing ${filename} (${originalSizeMB}MB)...`);
 
-    await sharp(inputPath)
-      .resize(config.width, null, { withoutEnlargement: true })
-      .png({ quality: config.quality })
-      .toFile(outputPath);
+    // Get optimization settings
+    const settings = getOptimizationSettings(filename, originalStats.size);
+
+    let sharpInstance = sharp(inputPath);
+
+    // Apply resizing if width is specified
+    if (settings.width) {
+      sharpInstance = sharpInstance.resize(settings.width, null, {
+        withoutEnlargement: true,
+      });
+    }
+
+    // Apply format-specific optimization
+    if (settings.format === "png") {
+      sharpInstance = sharpInstance.png({
+        quality: settings.quality,
+        compressionLevel: 9, // Maximum compression
+        adaptiveFiltering: true,
+        palette: true,
+      });
+    } else if (settings.format === "jpg" || settings.format === "jpeg") {
+      sharpInstance = sharpInstance.jpeg({
+        quality: settings.quality,
+        progressive: true,
+        mozjpeg: true,
+      });
+    } else if (settings.format === "webp") {
+      sharpInstance = sharpInstance.webp({
+        quality: settings.quality,
+        effort: 6, // Maximum compression effort
+      });
+    }
+
+    await sharpInstance.toFile(outputPath);
 
     // Get optimized file size
     const optimizedStats = fs.statSync(outputPath);
@@ -85,37 +109,59 @@ async function optimizeImage(config) {
     ).toFixed(1);
 
     console.log(
-      `✅ ${config.input}: ${originalSizeMB}MB → ${optimizedSizeMB}MB (${savings}% reduction)`
+      `✅ ${filename}: ${originalSizeMB}MB → ${optimizedSizeMB}MB (${savings}% reduction)`
     );
 
     return {
+      filename,
       original: originalSizeMB,
       optimized: optimizedSizeMB,
       savings: savings,
+      settings: settings,
     };
   } catch (error) {
-    console.error(`❌ Error optimizing ${config.input}:`, error.message);
+    console.error(`❌ Error optimizing ${filename}:`, error.message);
     return null;
   }
 }
 
+// Main optimization function
 async function optimizeAllImages() {
-  console.log("🚀 Starting image optimization...\n");
+  console.log("🚀 Starting comprehensive image optimization...\n");
+
+  // Get all image files
+  const imageFiles = getAllImageFiles();
+
+  if (imageFiles.length === 0) {
+    console.log("❌ No image files found in assets directory");
+    return;
+  }
+
+  console.log(`📁 Found ${imageFiles.length} images to optimize:\n`);
 
   const results = [];
   let totalOriginalSize = 0;
   let totalOptimizedSize = 0;
 
-  for (const config of imagesToOptimize) {
-    const result = await optimizeImage(config);
+  // Process images in parallel for better performance
+  const optimizationPromises = imageFiles.map((filename) =>
+    optimizeImage(filename)
+  );
+  const optimizationResults = await Promise.all(optimizationPromises);
+
+  // Process results
+  optimizationResults.forEach((result) => {
     if (result) {
       results.push(result);
       totalOriginalSize += parseFloat(result.original);
       totalOptimizedSize += parseFloat(result.optimized);
     }
-  }
+  });
 
+  // Display summary
   console.log("\n📊 Optimization Summary:");
+  console.log("─".repeat(80));
+  console.log(`Total images processed: ${results.length}`);
   console.log(`Total original size: ${totalOriginalSize.toFixed(2)}MB`);
   console.log(`Total optimized size: ${totalOptimizedSize.toFixed(2)}MB`);
   console.log(
@@ -124,10 +170,33 @@ async function optimizeAllImages() {
       100
     ).toFixed(1)}%`
   );
-  console.log(`\n✨ Optimized images saved to: ${optimizedDir}`);
   console.log(
-    "\n💡 To use optimized images, update your import paths to point to the optimized versions."
+    `Average savings per image: ${(
+      results.reduce((sum, r) => sum + parseFloat(r.savings), 0) /
+      results.length
+    ).toFixed(1)}%`
   );
+
+  // Show top performers
+  const topPerformers = results
+    .sort((a, b) => parseFloat(b.savings) - parseFloat(a.savings))
+    .slice(0, 5);
+
+  if (topPerformers.length > 0) {
+    console.log("\n🏆 Top Performance Improvements:");
+    topPerformers.forEach((result, index) => {
+      console.log(
+        `  ${index + 1}. ${result.filename}: ${result.savings}% reduction`
+      );
+    });
+  }
+
+  console.log(`\n✨ Optimized images saved to: ${optimizedDir}`);
+  console.log("\n💡 Next steps:");
+  console.log("  1. Run: npm run update-imports");
+  console.log("  2. Test: npm run build:fast:bib");
+  console.log("  3. Analyze: npm run analyze-bundle");
 }
 
+// Run optimization
 optimizeAllImages().catch(console.error);

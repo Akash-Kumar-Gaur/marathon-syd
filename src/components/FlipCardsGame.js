@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import flipPlace from "../assets/images/flipPlace.png";
-import bottle from "../assets/images/bottle.png";
-import boy from "../assets/images/boy.png";
-import shoe from "../assets/images/shoe.png";
+import flipPlace from "../assets/images/optimized/flipPlace.png";
+import bottle from "../assets/images/optimized/bottle.png";
+import boy from "../assets/images/optimized/boy.png";
+import shoe from "../assets/images/optimized/shoe.png";
 import { useUser } from "../context/UserContext";
 
 // Use images for card faces

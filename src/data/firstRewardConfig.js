@@ -1,4 +1,4 @@
-import limeBikeImage from "../assets/images/limeBike.png";
+import limeBikeImage from "../assets/images/optimized/limeBike.png";
 
 export const firstRewardConfig = {
   id: "first-reward",
