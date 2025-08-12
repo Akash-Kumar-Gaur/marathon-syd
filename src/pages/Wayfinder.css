@@ -546,7 +546,7 @@
 }
 
 .assembly-actions {
-  padding: 16px 24px 24px 24px;
+  padding: 0px 24px 24px 24px;
   display: flex;
   gap: 12px;
 }
@@ -764,6 +764,179 @@
   }
 }
 
+/* Route Status Information Styles */
+.route-status-info {
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin: 16px 16px 0 16px;
+  border: 1px solid #e9ecef;
+  overflow: hidden;
+}
+
+.route-status-info > div:not(.section-header) {
+  padding: 16px;
+}
+
+.route-closed-warning {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #dc3545;
+}
+
+.route-closed-warning i {
+  font-size: 18px;
+  margin-right: 8px;
+}
+
+.route-closed-warning span {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.closure-times {
+  font-size: 12px;
+  color: #6c757d;
+  background: #fff3cd;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ffeaa7;
+}
+
+.route-assignment {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #28a745;
+}
+
+.route-assignment i {
+  font-size: 18px;
+  margin-right: 8px;
+}
+
+.route-assignment span {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.route-details {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.route-details span {
+  background: #d4edda;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #c3e6cb;
+}
+
+/* Route Closed Distance Styles */
+.route-closed-distance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #dc3545;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.route-closed-distance i {
+  font-size: 16px;
+}
+
+/* Safety Route Icon */
+.destination-indicator .fa-shield-alt {
+  color: #ffc107;
+}
+
+/* Disabled Button Styles */
+.direction-button:disabled {
+  background-color: #6c757d !important;
+  color: #ffffff !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+.direction-button:disabled:hover {
+  background-color: #6c757d !important;
+  transform: none !important;
+}
+
+/* Starting Point Guidance Styles */
+.starting-point-guidance {
+  background: #e3f2fd;
+  border-radius: 12px;
+  margin: 16px 16px 0 16px;
+  border: 1px solid #bbdefb;
+  overflow: hidden;
+}
+
+.starting-point-guidance > div:not(.section-header) {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #1976d2;
+}
+
+/* Collapsible Section Styles */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.section-header:hover {
+  background: #e9ecef;
+}
+
+.section-header i {
+  font-size: 14px;
+  color: #6c757d;
+  margin-right: 8px;
+  transition: transform 0.3s ease;
+}
+
+.section-header span {
+  font-weight: 600;
+  font-size: 14px;
+  color: #495057;
+  flex: 1;
+}
+
+.collapse-toggle {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.collapse-toggle:hover {
+  background: #0056b3;
+}
+
+/* Smooth content transitions */
+.route-status-info > div:not(.section-header),
+.starting-point-guidance > div:not(.section-header) {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .location-panel {
@@ -787,7 +960,7 @@
   }
 
   .assembly-actions {
-    padding: 12px 16px 20px 16px;
+    padding: 0px 16px 20px 16px;
     flex-direction: column;
   }
 

@@ -6,62 +6,80 @@ import "./Wayfinder.css";
 import Header from "../components/Header";
 import RouteSource from "../components/RouteSource";
 import { getCachedDistance } from "../services/firebase";
+import { findParticipantByBIB } from "../wayfinder-data-index.js";
+import { isCurrentlyInClosurePeriod } from "../time-utility.js";
 
 const MAPBOX_ACCESS_TOKEN =
   "pk.eyJ1IjoiYWs0NWhoaCIsImEiOiJjbWQ4Z3JxNHowMDNtMndxeGFudDVjdnExIn0.nuEfmn0U6SbyiFI_T_rnTg"; // Replace with your token
 
-// BIB Registry (simplified version of what we discussed)
-const BIB_REGISTRY = {
-  1001: {
-    assemblyPoint: "Green Assembly Entry",
-    startingPoint: "Crows Nest Metro Station",
-    routes: {
-      primary: { id: "CN-G1", name: "Pacific Hwy Path", closureTime: "07:30" },
-      secondary: { id: "CN-G2", name: "Miller St Walk", closureTime: "08:00" },
-    },
-    assemblyCoordinates: [151.2102639, -33.8312477], // St Leonards Park coordinates - Mapbox uses [lng, lat]
-    routeStartCoordinates: [151.2035, -33.825], // Crows Nest Metro Station coordinates
-  },
-  1002: {
-    assemblyPoint: "Red Assembly Entry 1",
-    startingPoint: "North Sydney Station",
-    routes: {
-      primary: { id: "NS-R1", name: "Blue St Walk", closureTime: "07:00" },
-      secondary: { id: "NS-R2", name: "Mount St Path", closureTime: "07:45" },
-    },
-    assemblyCoordinates: [151.2102639, -33.8312477], // St Leonards Park coordinates
-    routeStartCoordinates: [151.20741, -33.84115], // North Sydney Station coordinates
-  },
-  1003: {
-    assemblyPoint: "Orange Assembly Entry",
-    startingPoint: "Victoria Cross Metro Station",
-    routes: {
-      primary: { id: "VC-O1", name: "Denison St Walk", closureTime: "06:30" },
-      secondary: { id: "VC-O2", name: "Berry St Path", closureTime: "07:15" },
-    },
-    assemblyCoordinates: [151.2102639, -33.8312477], // St Leonards Park coordinates
-    routeStartCoordinates: [151.209, -33.835], // Victoria Cross Metro Station coordinates
-  },
+// Utility function to convert coordinates from [lat, lng] to [lng, lat] for Mapbox
+const convertToMapboxFormat = (coordinates) => {
+  if (!coordinates || !Array.isArray(coordinates) || coordinates.length !== 2) {
+    return null;
+  }
+  // Convert from [lat, lng] to [lng, lat] for Mapbox
+  return [coordinates[1], coordinates[0]];
 };
 
-// Ultra-fast BIB lookup function
+// Ultra-fast BIB lookup function using new chunked data
 const getBibData = (bibNumber) => {
-  return BIB_REGISTRY[bibNumber];
+  return findParticipantByBIB(bibNumber);
 };
 
-// Route selection logic
+// Route selection logic - updated for new data structure with 3 Ped Crossing routes
 const getSelectedRoute = (bibNumber) => {
   const data = getBibData(bibNumber);
   if (!data) return null;
 
-  // Simple odd/even logic for route selection
-  const isPrimary = bibNumber % 2 === 0;
-  const route = isPrimary ? data.routes.primary : data.routes.secondary;
+  // Check if any route is currently closed
+  const isCurrentlyClosed = isCurrentlyInClosurePeriod(
+    data.closureTimeStart,
+    data.closureTimeEnd
+  );
 
-  // Add route type to the returned object
+  if (isCurrentlyClosed) {
+    return {
+      id: `AVOID-${bibNumber}`,
+      name: "Route Closed - Avoid Ped Crossings",
+      coordinates: null,
+      closureTime: "CLOSED",
+      isClosed: true,
+      type: "Closed",
+    };
+  }
+
+  // Route assignment based on BIB number modulo 3
+  const routeIndex = parseInt(bibNumber) % 3; // 0, 1, or 2
+
+  let selectedRoute;
+  let routeName;
+
+  switch (routeIndex) {
+    case 0:
+      selectedRoute = data["Ped Crossing 1"];
+      routeName = "Ped Crossing 1 Route";
+      break;
+    case 1:
+      selectedRoute = data["Ped Crossing 2"];
+      routeName = "Ped Crossing 2 Route";
+      break;
+    case 2:
+      selectedRoute = data["Ped Crossing 3"];
+      routeName = "Ped Crossing 3 Route";
+      break;
+    default:
+      selectedRoute = data["Ped Crossing 1"]; // fallback
+      routeName = "Ped Crossing 1 Route";
+  }
+
   return {
-    ...route,
-    type: isPrimary ? "Primary" : "Secondary",
+    id: `PC${routeIndex + 1}-${bibNumber}`,
+    name: routeName,
+    coordinates: convertToMapboxFormat(selectedRoute),
+    closureTime: data.closureTimeStart.split(", ")[routeIndex] || "Unknown",
+    isClosed: false,
+    type: `Ped Crossing ${routeIndex + 1}`,
+    routeIndex: routeIndex,
   };
 };
 
@@ -71,12 +89,12 @@ const Wayfinder = () => {
   const bibNumber = location.state?.bibNumber;
 
   const [viewState, setViewState] = useState({
-    longitude: 151.2095,
-    latitude: -33.829,
+    longitude: 151.2077778,
+    latitude: -33.8358333,
     zoom: 15,
   });
 
-  const [userLocation, setUserLocation] = useState([151.2095, -33.829]); // Simulated user location within 400m of assembly - Mapbox uses [lng, lat]
+  const [userLocation, setUserLocation] = useState([151.2077778, -33.8358333]); // Updated default location - Mapbox uses [lng, lat]
   const [customLocation, setCustomLocation] = useState("");
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
@@ -99,6 +117,11 @@ const Wayfinder = () => {
     useState(false);
   const [showDebugRoute, setShowDebugRoute] = useState(false); // Debug: show original route from start to assembly
 
+  // Collapsible sections state
+  const [isRouteStatusCollapsed, setIsRouteStatusCollapsed] = useState(true);
+  const [isStartingPointCollapsed, setIsStartingPointCollapsed] =
+    useState(true);
+
   useEffect(() => {
     if (bibNumber) {
       const data = getBibData(bibNumber);
@@ -115,14 +138,14 @@ const Wayfinder = () => {
     } else {
       console.log("Checkbox unchecked - using default simulated location");
       // Always reset to simulated location when not using current location
-      setUserLocation([151.2095, -33.829]);
+      setUserLocation([151.2077778, -33.8358333]);
       // Reset loading state when unchecking current location
       setIsLoadingLocation(false);
       // Center map on default location
       setViewState((prev) => ({
         ...prev,
-        longitude: 151.2095,
-        latitude: -33.829,
+        longitude: 151.2077778,
+        latitude: -33.8358333,
       }));
     }
   }, [useCurrentLocation]);
@@ -156,7 +179,7 @@ const Wayfinder = () => {
           console.error("Error getting location:", error);
           console.log("Falling back to default simulated location");
           // Reset to simulated location if geolocation fails
-          setUserLocation([151.2095, -33.829]);
+          setUserLocation([151.2077778, -33.8358333]);
           setIsLoadingLocation(false);
         }
       );
@@ -164,7 +187,7 @@ const Wayfinder = () => {
       console.log(
         "Geolocation not supported, using default simulated location"
       );
-      setUserLocation([151.2095, -33.829]);
+      setUserLocation([151.2077778, -33.8358333]);
       setIsLoadingLocation(false);
     }
   };
@@ -214,20 +237,43 @@ const Wayfinder = () => {
   const handleSmartRouting = () => {
     if (!bibData || !userLocation) return;
 
+    // Check if routes are currently closed
+    if (selectedRoute?.isClosed) {
+      console.log("Routes are currently closed - providing safety guidance");
+      // When routes are closed, guide users to stay away from Ped Crossings
+      // and provide alternative guidance to assembly point
+      setRouteStartLocation(userLocation);
+      setRouteEndLocation(convertToMapboxFormat(bibData.assemblyCoordinates));
+      setCurrentRouteLeg("to-assembly-safety");
+      setLastRouteUpdate(Date.now());
+      return;
+    }
+
+    // Get converted coordinates for Mapbox format
+    const assemblyCoords = convertToMapboxFormat(bibData.assemblyCoordinates);
+    const routeStartCoords = convertToMapboxFormat(
+      bibData.routeStartCoordinates
+    );
+
+    if (!assemblyCoords || !routeStartCoords) {
+      console.error("Invalid coordinates in bibData");
+      return;
+    }
+
     // Calculate distance from user to assembly coordinates
     const distanceToAssembly = calculateDistance(
       userLocation[1], // lat
       userLocation[0], // lng
-      bibData.assemblyCoordinates[1], // assembly lat
-      bibData.assemblyCoordinates[0] // assembly lng
+      assemblyCoords[1], // assembly lat
+      assemblyCoords[0] // assembly lng
     );
 
     // Calculate distance from user to route start coordinates
     const distanceToRouteStart = calculateDistance(
       userLocation[1], // lat
       userLocation[0], // lng
-      bibData.routeStartCoordinates[1], // route start lat
-      bibData.routeStartCoordinates[0] // route start lng
+      routeStartCoords[1], // route start lat
+      routeStartCoords[0] // route start lng
     );
 
     console.log("Distance to assembly:", distanceToAssembly.toFixed(3), "km");
@@ -244,16 +290,31 @@ const Wayfinder = () => {
       );
       // Show route from user location directly to assembly
       setRouteStartLocation(userLocation);
-      setRouteEndLocation(bibData.assemblyCoordinates);
+      setRouteEndLocation(assemblyCoords);
+      setCurrentRouteLeg("to-assembly");
+    } else if (distanceToRouteStart <= 0.05) {
+      // If user is within 50m (0.05 km) of route start, they're essentially at the starting point
+      console.log(
+        `User is at starting point (${distanceToRouteStart.toFixed(
+          3
+        )} km away) - showing route directly to assembly`
+      );
+      // Show route from user location directly to assembly
+      setRouteStartLocation(userLocation);
+      setRouteEndLocation(assemblyCoords);
       setCurrentRouteLeg("to-assembly");
     } else {
       console.log(
-        "User is far from assembly - showing route to assembly via route start"
+        `User is far from both assembly (${distanceToAssembly.toFixed(
+          3
+        )} km) and starting point (${distanceToRouteStart.toFixed(
+          3
+        )} km) - showing route to starting point first`
       );
       // Show route from user location to route start point first
       // This will guide users to their assigned route start point
       setRouteStartLocation(userLocation);
-      setRouteEndLocation(bibData.routeStartCoordinates);
+      setRouteEndLocation(routeStartCoords);
       setCurrentRouteLeg("to-route-start");
     }
 
@@ -265,17 +326,21 @@ const Wayfinder = () => {
     setShowDirections(newShowDirections);
 
     if (newShowDirections) {
+      // Get converted coordinates for Mapbox format
+      const assemblyCoords = convertToMapboxFormat(bibData.assemblyCoordinates);
+
+      if (!assemblyCoords) {
+        console.error("Invalid assembly coordinates in bibData");
+        return;
+      }
+
       // When showing directions, center map to show both points
-      const centerLng = (userLocation[0] + bibData.assemblyCoordinates[0]) / 2;
-      const centerLat = (userLocation[1] + bibData.assemblyCoordinates[1]) / 2;
+      const centerLng = (userLocation[0] + assemblyCoords[0]) / 2;
+      const centerLat = (userLocation[1] + assemblyCoords[1]) / 2;
 
       // Calculate bounds to ensure both points are visible
-      const lngDiff = Math.abs(
-        userLocation[0] - bibData.assemblyCoordinates[0]
-      );
-      const latDiff = Math.abs(
-        userLocation[1] - bibData.assemblyCoordinates[1]
-      );
+      const lngDiff = Math.abs(userLocation[0] - assemblyCoords[0]);
+      const latDiff = Math.abs(userLocation[1] - assemblyCoords[1]);
       const maxDiff = Math.max(lngDiff, latDiff);
 
       // Set zoom level based on distance between points
@@ -298,51 +363,52 @@ const Wayfinder = () => {
         const distanceToAssembly = calculateDistance(
           userLocation[1], // lat
           userLocation[0], // lng
-          bibData.assemblyCoordinates[1], // assembly lat
-          bibData.assemblyCoordinates[0] // assembly lng
+          assemblyCoords[1], // assembly lat
+          assemblyCoords[0] // assembly lng
         );
 
         const distanceToRouteStart = calculateDistance(
           userLocation[1], // lat
           userLocation[0], // lng
-          bibData.routeStartCoordinates[1], // route start lat
-          bibData.routeStartCoordinates[0] // route start lng
-        );
-
-        console.log(
-          "Simulation check - Distance to assembly:",
-          distanceToAssembly.toFixed(3),
-          "km"
-        );
-        console.log(
-          "Simulation check - Distance to route start:",
-          distanceToRouteStart.toFixed(3),
-          "km"
+          convertToMapboxFormat(bibData.routeStartCoordinates)[1], // route start lat
+          convertToMapboxFormat(bibData.routeStartCoordinates)[0] // route start lng
         );
 
         // Check if user is within 400m of assembly
         if (distanceToAssembly <= 0.4) {
-          console.log(
-            "Simulation: User is within 400m of assembly - showing route directly to assembly"
-          );
           // Route should be: User → Assembly (direct route)
           setRouteStartLocation(userLocation);
-          setRouteEndLocation(bibData.assemblyCoordinates);
+          setRouteEndLocation(assemblyCoords);
           setCurrentRouteLeg("to-assembly");
           setLastRouteUpdate(Date.now());
 
           // Cache verification - this route should be cached
           console.log(
             "Route cache key:",
-            `${userLocation[0]},${userLocation[1]}-${bibData.assemblyCoordinates[0]},${bibData.assemblyCoordinates[1]}`
+            `${userLocation[0]},${userLocation[1]}-${assemblyCoords[0]},${assemblyCoords[1]}`
           );
-        } else {
+        } else if (distanceToRouteStart <= 0.05) {
+          // If user is within 50m of route start, they're essentially at the starting point
           console.log(
-            "Simulation: User is far from assembly - showing route to assembly via route start"
+            `User is at starting point (${distanceToRouteStart.toFixed(
+              3
+            )} km away) - showing route directly to assembly`
           );
-          // Route should be: User → Route Start
           setRouteStartLocation(userLocation);
-          setRouteEndLocation(bibData.routeStartCoordinates);
+          setRouteEndLocation(assemblyCoords);
+          setCurrentRouteLeg("to-assembly");
+          setLastRouteUpdate(Date.now());
+        } else {
+          // Route should be: User → Route Start
+          console.log(
+            `User needs to go to starting point first (${distanceToRouteStart.toFixed(
+              3
+            )} km away)`
+          );
+          setRouteStartLocation(userLocation);
+          setRouteEndLocation(
+            convertToMapboxFormat(bibData.routeStartCoordinates)
+          );
           setCurrentRouteLeg("to-route-start");
           setLastRouteUpdate(Date.now());
         }
@@ -480,54 +546,72 @@ const Wayfinder = () => {
           </Marker>
 
           {/* Route Start Point Marker - show after location confirmation */}
-          {bibData && locationConfirmed && (
-            <Marker
-              longitude={bibData.routeStartCoordinates[0]}
-              latitude={bibData.routeStartCoordinates[1]}
-              anchor="bottom"
-            >
-              <div className="route-start-marker">
-                <div className="route-start-icon"></div>
-              </div>
-              <Popup
-                anchor="top"
-                longitude={bibData.routeStartCoordinates[0]}
-                latitude={bibData.routeStartCoordinates[1]}
-              >
-                <div>
-                  <strong>Route Start Point</strong>
-                  <br />
-                  {bibData.startingPoint}
-                  <br />
-                  Route: {selectedRoute?.name}
-                </div>
-              </Popup>
-            </Marker>
-          )}
+          {bibData &&
+            locationConfirmed &&
+            (() => {
+              const routeStartCoords = convertToMapboxFormat(
+                bibData.routeStartCoordinates
+              );
+              if (!routeStartCoords) return null;
+
+              return (
+                <Marker
+                  longitude={routeStartCoords[0]}
+                  latitude={routeStartCoords[1]}
+                  anchor="bottom"
+                >
+                  <div className="route-start-marker">
+                    <div className="route-start-icon"></div>
+                  </div>
+                  <Popup
+                    anchor="top"
+                    longitude={routeStartCoords[0]}
+                    latitude={routeStartCoords[1]}
+                  >
+                    <div>
+                      <strong>Route Start Point</strong>
+                      <br />
+                      {bibData.startingPoint}
+                      <br />
+                      Route: {selectedRoute?.name}
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })()}
 
           {/* Assembly Point Marker - show after location confirmation */}
-          {bibData && locationConfirmed && (
-            <Marker
-              longitude={bibData.assemblyCoordinates[0]}
-              latitude={bibData.assemblyCoordinates[1]}
-              anchor="bottom"
-            >
-              <div className="assembly-point-marker">
-                <div className="assembly-point-icon"></div>
-              </div>
-              <Popup
-                anchor="top"
-                longitude={bibData.assemblyCoordinates[0]}
-                latitude={bibData.assemblyCoordinates[1]}
-              >
-                <div>
-                  <strong>{bibData.assemblyPoint}</strong>
-                  <br />
-                  Route: {selectedRoute?.name}
-                </div>
-              </Popup>
-            </Marker>
-          )}
+          {bibData &&
+            locationConfirmed &&
+            (() => {
+              const assemblyCoords = convertToMapboxFormat(
+                bibData.assemblyCoordinates
+              );
+              if (!assemblyCoords) return null;
+
+              return (
+                <Marker
+                  longitude={assemblyCoords[0]}
+                  latitude={assemblyCoords[1]}
+                  anchor="bottom"
+                >
+                  <div className="assembly-point-marker">
+                    <div className="assembly-point-icon"></div>
+                  </div>
+                  <Popup
+                    anchor="top"
+                    longitude={assemblyCoords[0]}
+                    latitude={assemblyCoords[1]}
+                  >
+                    <div>
+                      <strong>{bibData.assemblyPoint}</strong>
+                      <br />
+                      Route: {selectedRoute?.name}
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })()}
 
           {/* Route Control - show path only after directions button clicked */}
           {bibData &&
@@ -648,6 +732,87 @@ const Wayfinder = () => {
             </div>
           </div>
 
+          {/* Route Status Information - Only show when heading to assembly */}
+          {selectedRoute &&
+            showDirections &&
+            currentRouteLeg &&
+            currentRouteLeg !== "to-route-start" && (
+              <div className="route-status-info">
+                <div
+                  className="section-header"
+                  onClick={() =>
+                    setIsRouteStatusCollapsed(!isRouteStatusCollapsed)
+                  }
+                >
+                  <i
+                    className={`fas fa-chevron-${
+                      isRouteStatusCollapsed ? "down" : "up"
+                    }`}
+                  ></i>
+                  <span>Route Information</span>
+                  <button className="collapse-toggle">
+                    {isRouteStatusCollapsed ? "Show" : "Hide"}
+                  </button>
+                </div>
+
+                {!isRouteStatusCollapsed && (
+                  <>
+                    {selectedRoute.isClosed ? (
+                      <div className="route-closed-warning">
+                        <i className="fas fa-exclamation-triangle"></i>
+                        <span>⚠️ ALL ROUTES CLOSED - Avoid Ped Crossings</span>
+                        <div className="closure-times">
+                          Closure Times: {bibData.closureTimeStart} -{" "}
+                          {bibData.closureTimeEnd}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="route-assignment">
+                        <i className="fas fa-route"></i>
+                        <span>Assigned Route: {selectedRoute.name}</span>
+                        <div className="route-details">
+                          <span>Type: {selectedRoute.type}</span>
+                          <span>Closure: {selectedRoute.closureTime}</span>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+          {/* Starting Point Guidance - Show when heading to starting point */}
+          {showDirections && currentRouteLeg === "to-route-start" && (
+            <div className="starting-point-guidance">
+              <div
+                className="section-header"
+                onClick={() =>
+                  setIsStartingPointCollapsed(!isStartingPointCollapsed)
+                }
+              >
+                <i
+                  className={`fas fa-chevron-${
+                    isStartingPointCollapsed ? "down" : "up"
+                  }`}
+                ></i>
+                <span>Starting Point Guidance</span>
+                <button className="collapse-toggle">
+                  {isStartingPointCollapsed ? "Show" : "Hide"}
+                </button>
+              </div>
+
+              {!isStartingPointCollapsed && (
+                <>
+                  <i className="fas fa-map-marker-alt"></i>
+                  <span>
+                    First, head to your assigned starting point to begin your
+                    route
+                  </span>
+                </>
+              )}
+            </div>
+          )}
+
           <div className="assembly-details">
             {/* Current Destination Indicator */}
             {showDirections && currentRouteLeg && (
@@ -656,65 +821,156 @@ const Wayfinder = () => {
                   className={`fas ${
                     currentRouteLeg === "to-route-start"
                       ? "fa-map-marker-alt"
+                      : currentRouteLeg === "to-assembly-safety"
+                      ? "fa-shield-alt"
                       : "fa-flag-checkered"
                   }`}
                 ></i>
                 <span>
                   {currentRouteLeg === "to-route-start"
                     ? `Heading to: ${bibData.startingPoint}`
+                    : currentRouteLeg === "to-assembly-safety"
+                    ? `Safety Route to: ${bibData.assemblyPoint} (Avoid Ped Crossings)`
                     : `Heading to: ${bibData.assemblyPoint}`}
                 </span>
               </div>
             )}
 
             <div className="distance-info">
-              Distance:{" "}
-              {(() => {
-                // Show current route distance (updates as user moves)
-                const currentDistance =
-                  routeDistance ||
-                  calculateDistance(
-                    userLocation[1], // lat
-                    userLocation[0], // lng
-                    bibData.assemblyCoordinates[1], // lat
-                    bibData.assemblyCoordinates[0] // lng
-                  );
-                return currentDistance.toFixed(1);
-              })()}{" "}
-              km (~
-              {(() => {
-                // Show current route time
-                const currentDistance =
-                  routeDistance ||
-                  calculateDistance(
-                    userLocation[1], // lat
-                    userLocation[0], // lng
-                    bibData.assemblyCoordinates[1], // lat
-                    bibData.assemblyCoordinates[0] // lng
-                  );
-                return Math.round(currentDistance * 12);
-              })()}{" "}
-              min walk)
+              {selectedRoute?.isClosed ? (
+                <div className="route-closed-distance">
+                  <i className="fas fa-ban"></i>
+                  <span>
+                    Routes closed - maintain safe distance from Ped Crossings
+                  </span>
+                </div>
+              ) : showDirections && currentRouteLeg ? (
+                <>
+                  {currentRouteLeg === "to-route-start" ? (
+                    <>
+                      Distance to Starting Point:{" "}
+                      {(() => {
+                        const distanceToStart = calculateDistance(
+                          userLocation[1], // lat
+                          userLocation[0], // lng
+                          convertToMapboxFormat(
+                            bibData.routeStartCoordinates
+                          )[1], // route start lat
+                          convertToMapboxFormat(
+                            bibData.routeStartCoordinates
+                          )[0] // route start lng
+                        );
+                        return distanceToStart.toFixed(1);
+                      })()}{" "}
+                      km (~
+                      {(() => {
+                        const distanceToStart = calculateDistance(
+                          userLocation[1], // lat
+                          userLocation[0], // lng
+                          convertToMapboxFormat(
+                            bibData.routeStartCoordinates
+                          )[1], // route start lat
+                          convertToMapboxFormat(
+                            bibData.routeStartCoordinates
+                          )[0] // route start lng
+                        );
+                        return Math.round(distanceToStart * 12);
+                      })()}{" "}
+                      min walk)
+                    </>
+                  ) : (
+                    <>
+                      Distance to Assembly:{" "}
+                      {(() => {
+                        // Show current route distance (updates as user moves)
+                        const currentDistance =
+                          routeDistance ||
+                          calculateDistance(
+                            userLocation[1], // lat
+                            userLocation[0], // lng
+                            bibData.assemblyCoordinates[1], // lat
+                            bibData.assemblyCoordinates[0] // lng
+                          );
+                        return currentDistance.toFixed(1);
+                      })()}{" "}
+                      km (~
+                      {(() => {
+                        // Show current route time
+                        const currentDistance =
+                          routeDistance ||
+                          calculateDistance(
+                            userLocation[1], // lat
+                            userLocation[0], // lng
+                            bibData.assemblyCoordinates[1], // lat
+                            bibData.assemblyCoordinates[0] // lng
+                          );
+                        return Math.round(currentDistance * 12);
+                      })()}{" "}
+                      min walk)
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  Distance to Assembly:{" "}
+                  {(() => {
+                    // Show current route distance (updates as user moves)
+                    const currentDistance =
+                      routeDistance ||
+                      calculateDistance(
+                        userLocation[1], // lat
+                        userLocation[0], // lng
+                        bibData.assemblyCoordinates[1], // lat
+                        bibData.assemblyCoordinates[0] // lng
+                      );
+                    return currentDistance.toFixed(1);
+                  })()}{" "}
+                  km (~
+                  {(() => {
+                    // Show current route time
+                    const currentDistance =
+                      routeDistance ||
+                      calculateDistance(
+                        userLocation[1], // lat
+                        userLocation[0], // lng
+                        bibData.assemblyCoordinates[1], // lat
+                        bibData.assemblyCoordinates[0] // lng
+                      );
+                    return Math.round(currentDistance * 12);
+                  })()}{" "}
+                  min walk)
+                </>
+              )}
             </div>
-            {showDirections && (
+            {/* {showDirections && (
               <div className="route-status">
                 <i className="fas fa-route"></i>
                 Route displayed on map
               </div>
-            )}
+            )} */}
           </div>
 
           <div className="assembly-actions">
             <button
               className={`direction-button ${showDirections ? "active" : ""}`}
               onClick={handleDirectionsClick}
+              disabled={selectedRoute?.isClosed}
+              title={
+                selectedRoute?.isClosed
+                  ? "Routes are currently closed"
+                  : "Show route directions"
+              }
             >
               <i
                 className={`fas ${
                   showDirections ? "fa-eye-slash" : "fa-directions"
                 }`}
               ></i>
-              {showDirections ? "HIDE ROUTE" : "DIRECTION"}
+              {selectedRoute?.isClosed
+                ? "ROUTES CLOSED"
+                : showDirections
+                ? "HIDE ROUTE"
+                : "DIRECTION"}
             </button>
             <button
               className="start-button"
