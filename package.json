@@ -35,12 +35,15 @@
     "build": "react-scripts build",
     "build:default": "cp .env.default .env && react-scripts build",
     "build:bib": "cp .env.bib .env && react-scripts build",
-    "build:fast": "GENERATE_SOURCEMAP=false react-scripts build",
-    "build:fast:bib": "cp .env.bib .env && GENERATE_SOURCEMAP=false react-scripts build",
+    "build:fast": "GENERATE_SOURCEMAP=false react-app-rewired build",
+    "build:fast:bib": "cp .env.bib .env && GENERATE_SOURCEMAP=false react-app-rewired build",
+    "build:optimized": "GENERATE_SOURCEMAP=false react-app-rewired build",
+    "build:optimized:bib": "cp .env.bib .env && GENERATE_SOURCEMAP=false react-app-rewired build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "optimize-images": "node scripts/optimize-images.js",
-    "update-imports": "node scripts/update-image-imports.js"
+    "update-imports": "node scripts/update-image-imports.js",
+    "analyze-bundle": "node scripts/analyze-bundle.js"
   },
   "eslintConfig": {
     "extends": [
@@ -61,6 +64,9 @@
     ]
   },
   "devDependencies": {
+    "compression-webpack-plugin": "^11.1.0",
+    "customize-cra": "^1.0.0",
+    "react-app-rewired": "^2.2.1",
     "sharp": "^0.34.3"
   }
 }

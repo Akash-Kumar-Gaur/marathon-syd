@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Welcome.css";
-import bibFormBg from "../assets/images/optimized/bibForm.png";
+import bibFormBg from "../assets/images/bibForm.png";
 import Header from "../components/Header";
 
 const FindMyRoute = () => {
