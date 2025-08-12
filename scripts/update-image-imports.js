@@ -1,40 +1,61 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // List of images that have been optimized
 const optimizedImages = [
-  'bibForm.png',
-  'formBg.png', 
-  'slide1.png',
-  'slide2.png',
-  'slide3.png',
-  'startBg.png',
-  'staticMap.png',
-  'troubleOtp.png'
+  "bibForm.png",
+  "formBg.png",
+  "slide1.png",
+  "slide2.png",
+  "slide3.png",
+  "startBg.png",
+  "staticMap.png",
+  "troubleOtp.png",
+  "limeBike.png",
+  "prize.png",
+  "static.png",
+  "puzzle.png",
+  "boost.png",
+  "treasure1.png",
+  "treasureIcon.png",
+  "syd-tcs-logo.png",
+  "hintBG.png",
+  "hintIcon.png",
+  "marker.png",
+  "puzzleTile.png",
+  "matchTile.png",
+  "trivia.png",
+  "mascot.png",
+  "pointsBg.png",
+  "bottle.png",
+  "boy.png",
+  "shoe.png",
+  "shokz.png",
+  "flipPlace.png",
 ];
 
 // Function to update import paths in a file
 function updateFileImports(filePath) {
   try {
-    let content = fs.readFileSync(filePath, 'utf8');
+    let content = fs.readFileSync(filePath, "utf8");
     let hasChanges = false;
-    
-    optimizedImages.forEach(imageName => {
+
+    optimizedImages.forEach((imageName) => {
       const oldImport = `from "../assets/images/${imageName}"`;
       const newImport = `from "../assets/images/optimized/${imageName}"`;
-      
+
       if (content.includes(oldImport)) {
         content = content.replace(oldImport, newImport);
         hasChanges = true;
         console.log(`✅ Updated ${imageName} import in ${filePath}`);
       }
     });
-    
+
     if (hasChanges) {
-      fs.writeFileSync(filePath, content, 'utf8');
+      fs.writeFileSync(filePath, content, "utf8");
       return true;
     }
-    
+
     return false;
   } catch (error) {
     console.error(`❌ Error processing ${filePath}:`, error.message);
@@ -46,29 +67,39 @@ function updateFileImports(filePath) {
 function updateAllFiles(dir) {
   const files = fs.readdirSync(dir);
   let updatedCount = 0;
-  
-  files.forEach(file => {
+
+  files.forEach((file) => {
     const filePath = path.join(dir, file);
     const stat = fs.statSync(filePath);
-    
-    if (stat.isDirectory() && !file.startsWith('.') && file !== 'node_modules' && file !== 'build' && file !== 'scripts') {
+
+    if (
+      stat.isDirectory() &&
+      !file.startsWith(".") &&
+      file !== "node_modules" &&
+      file !== "build" &&
+      file !== "scripts"
+    ) {
       updatedCount += updateAllFiles(filePath);
-    } else if (file.endsWith('.js') || file.endsWith('.jsx')) {
+    } else if (file.endsWith(".js") || file.endsWith(".jsx")) {
       if (updateFileImports(filePath)) {
         updatedCount++;
       }
     }
   });
-  
+
   return updatedCount;
 }
 
 // Main execution
-console.log('🔄 Updating image import paths to use optimized versions...\n');
+console.log("🔄 Updating image import paths to use optimized versions...\n");
+console.log(`📝 Found ${optimizedImages.length} optimized images to update`);
 
-const srcDir = path.join(__dirname, '../src');
+const srcDir = path.join(__dirname, "../src");
 const updatedCount = updateAllFiles(srcDir);
 
 console.log(`\n✨ Updated ${updatedCount} files with optimized image imports!`);
-console.log('\n💡 You can now run a fast build with: npm run build:fast');
-console.log('💡 Or for bib route: npm run build:fast:bib');
+console.log("\n💡 You can now run a fast build with: npm run build:fast");
+console.log("💡 Or for bib route: npm run build:fast:bib");
+console.log(
+  "\n🔍 Note: SVG files (coins.svg, headphones.svg) were not optimized as they are already vector-based."
+);

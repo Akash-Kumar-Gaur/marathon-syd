@@ -1,6 +1,6 @@
 import React from "react";
 import "./HintModal.css";
-import hintIcon from "../assets/images/hintIcon.png";
+import hintIcon from "../assets/images/optimized/hintIcon.png";
 
 const HintModal = ({ isOpen, onClose, hint }) => {
   if (!isOpen) return null;

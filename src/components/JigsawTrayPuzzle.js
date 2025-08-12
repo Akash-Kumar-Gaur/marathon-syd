@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import puzzleImage from "../assets/images/puzzle.png";
+import puzzleImage from "../assets/images/optimized/puzzle.png";
 import { useUser } from "../context/UserContext";
 
 const GRID_SIZE = 3;

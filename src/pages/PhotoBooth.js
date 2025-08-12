@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import "./PhotoBooth.css";
-import prizePng from "../assets/images/prize.png";
+import prizePng from "../assets/images/optimized/prize.png";
 
 const QUOTES = [
   { text: "Striding forward for a better future!", author: "Unknown" },
