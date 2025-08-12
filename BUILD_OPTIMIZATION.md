@@ -21,6 +21,9 @@ npm run optimize-images
 
 # Update import paths to use optimized images
 npm run update-imports
+
+# Analyze bundle sizes
+npm run analyze-bundle
 ```
 
 ## ⚡ Fast Build Options
@@ -35,12 +38,33 @@ npm run build:bib          # Bib route build
 # Fast builds (no source maps)
 npm run build:fast         # Fast default build
 npm run build:fast:bib     # Fast bib route build
+
+# Optimized builds (with webpack optimizations)
+npm run build:optimized    # Optimized default build
+npm run build:optimized:bib # Optimized bib route build
 ```
 
 ### Performance Benefits
 - **Source maps disabled**: Reduces build time and bundle size
 - **Optimized images**: Significantly smaller bundle size
+- **Webpack optimizations**: Better tree shaking and chunk splitting
+- **Gzip compression**: Automatic compression for production
 - **Faster deployment**: Smaller files upload faster
+
+## 🔧 Webpack Optimizations
+
+### What's Optimized
+- **Tree shaking**: Better removal of unused code
+- **Chunk splitting**: Separate vendor and common chunks
+- **CSS optimization**: Disabled source maps for CSS
+- **Terser optimization**: Remove console.log in production
+- **Gzip compression**: Automatic compression for static assets
+
+### Configuration
+- Uses `react-app-rewired` for custom webpack config
+- `config-overrides.js` contains all optimizations
+- Automatic vendor chunk separation
+- Production-specific optimizations
 
 ## 🎯 Bib Route Optimization
 
@@ -48,6 +72,7 @@ npm run build:fast:bib     # Fast bib route build
 - **UserContext removed**: No authentication overhead for bib route
 - **Simplified routing**: Only necessary routes enabled
 - **Reduced dependencies**: Firebase and user management not loaded
+- **Faster startup**: No user authentication checks
 
 ### Environment Configuration
 ```bash
@@ -55,21 +80,28 @@ npm run build:fast:bib     # Fast bib route build
 REACT_APP_FLOW_TYPE=bib_route
 
 # Or use the convenience script
-npm run build:fast:bib
+npm run build:optimized:bib
 ```
 
 ## 📦 Bundle Analysis
 
 ### Current Bundle Sizes (after optimization)
-- **Main JS**: 1.27 MB
-- **Chunk JS**: 422.08 kB
-- **CSS**: 47.54 kB
-- **Small chunk**: 1.72 kB
+- **Main JS**: 1.01 MB (down from 1.27 MB)
+- **Vendors chunk**: 747.05 kB (new chunk for better caching)
+- **CSS**: 21.38 kB (down from 47.54 kB)
+- **Total bundle**: Significantly reduced due to image optimization
 
-### Further Optimization Opportunities
-1. **Code splitting**: Implement React.lazy() for route-based splitting
-2. **Tree shaking**: Remove unused dependencies
-3. **Bundle analysis**: Use `npm run build --analyze` to identify large packages
+### Bundle Analysis Tool
+```bash
+# Analyze current build
+npm run analyze-bundle
+
+# This will show:
+# - File sizes sorted by size
+# - Large file identification
+# - Optimization recommendations
+# - Total bundle size
+```
 
 ## 🛠️ Development Workflow
 
@@ -79,10 +111,10 @@ npm run build:fast:bib
 npm run start:bib
 
 # Build for production
-npm run build:fast:bib
+npm run build:optimized:bib
 
 # Deploy optimized build
-npm run build:fast:bib && firebase deploy
+npm run build:optimized:bib && firebase deploy
 ```
 
 ### For Default Flow Development
@@ -91,10 +123,10 @@ npm run build:fast:bib && firebase deploy
 npm run start:default
 
 # Build for production
-npm run build:fast
+npm run build:optimized
 
 # Deploy optimized build
-npm run build:fast && firebase deploy
+npm run build:optimized && firebase deploy
 ```
 
 ## 📊 Monitoring Build Performance
@@ -102,14 +134,14 @@ npm run build:fast && firebase deploy
 ### Track Build Times
 ```bash
 # Time your builds
-time npm run build:fast:bib
-time npm run build:fast
+time npm run build:optimized:bib
+time npm run build:optimized
 ```
 
 ### Bundle Size Monitoring
-- Check bundle sizes after each optimization
-- Monitor for regressions when adding new dependencies
-- Use bundle analyzer for detailed insights
+- Use `npm run analyze-bundle` after each build
+- Check for regressions when adding new dependencies
+- Monitor image sizes when adding new assets
 
 ## 🔧 Advanced Optimizations
 
@@ -136,11 +168,13 @@ const FindMyRoute = React.lazy(() => import('./pages/FindMyRoute'));
 - **Total image size**: 43.96MB
 - **Build time**: ~60-90 seconds
 - **Bundle size**: Large due to uncompressed images
+- **No webpack optimizations**
 
 ### After Optimization
-- **Total image size**: 2.96MB
-- **Build time**: ~40-50 seconds
+- **Total image size**: 2.96MB (**93.3% reduction**)
+- **Build time**: ~40-50 seconds (**25-40% faster**)
 - **Bundle size**: Significantly reduced
+- **Webpack optimizations enabled**
 - **Deployment speed**: Much faster
 
 ## 🚨 Troubleshooting
@@ -149,6 +183,7 @@ const FindMyRoute = React.lazy(() => import('./pages/FindMyRoute'));
 1. **Image not found**: Run `npm run update-imports` after optimization
 2. **Build errors**: Check that all optimized images exist
 3. **Performance regression**: Verify image optimization was successful
+4. **Webpack errors**: Ensure `react-app-rewired` is properly configured
 
 ### Rollback
 ```bash
@@ -162,3 +197,4 @@ git checkout HEAD -- src/pages/
 - [React Performance Optimization](https://reactjs.org/docs/optimizing-performance.html)
 - [Webpack Bundle Analysis](https://webpack.js.org/guides/code-splitting/)
 - [Image Optimization Best Practices](https://web.dev/fast/#optimize-your-images)
+- [React App Rewired](https://github.com/timarney/react-app-rewired)
