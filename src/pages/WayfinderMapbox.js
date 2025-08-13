@@ -1340,10 +1340,23 @@ const Wayfinder = () => {
   //   // Location tracking code removed for simulation
   // }, [useCurrentLocation, locationConfirmed, showDirections, bibData, currentRouteLeg]);
 
-  // Track user location to detect arrival - disabled for simulation
-  // useEffect(() => {
-  //   // Arrival tracking code removed for simulation
-  // }, [locationConfirmed, bibData, hasArrived]);
+  // Track user location to detect arrival at assembly point
+  useEffect(() => {
+    if (bibData && userLocation && !hasArrived) {
+      const distanceToAssembly = calculateDistance(
+        userLocation[1], // lat
+        userLocation[0], // lng
+        bibData.assemblyCoordinates[1], // lat
+        bibData.assemblyCoordinates[0] // lng
+      );
+
+      // If user is within 100 meters (0.1 km) of assembly point, mark as arrived
+      if (distanceToAssembly <= 0.1) {
+        console.log("🎯 [ARRIVAL] User has arrived at assembly point!");
+        setHasArrived(true);
+      }
+    }
+  }, [userLocation, bibData, hasArrived]);
 
   const handleArrivalDone = () => {
     setHasArrived(false);
@@ -2259,16 +2272,22 @@ const Wayfinder = () => {
           <div className="arrival-modal">
             <div className="arrival-header">
               <div className="arrival-icon">
-                <i className="fas fa-check"></i>
+                <i className="fas fa-stopwatch"></i>
               </div>
-              <h2 className="arrival-title">You've arrived!</h2>
+              <h2 className="arrival-title">Arrival & Start Time Reminder</h2>
             </div>
 
             <div className="arrival-content">
-              <h3 className="arrival-zone">{bibData?.assemblyPoint}</h3>
-              <p className="arrival-description">
-                You're now at your designated marathon starting area.
-              </p>
+              <div className="arrival-timing">
+                <p className="arrival-time">
+                  Please arrive by <strong>{bibData["ARRIVAL Time"]}</strong>.
+                </p>
+                <p className="start-time">
+                  Your Start Chute Time is at{" "}
+                  <strong>{bibData["ENTRY CHUTE TIME"]}</strong>.
+                </p>
+                <p className="arrival-message">Be ready and on time!</p>
+              </div>
             </div>
 
             <button className="arrival-done-button" onClick={handleArrivalDone}>

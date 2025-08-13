@@ -57,7 +57,7 @@ export const raceDayData = [
     id: "treasure_4",
     name: "Jacksons on George",
     hint: "Head to 176 George Street, Sydney, where you can grab Asahi pints, schnitzels, and margaritas any time between 10am and midnight.",
-    offer: "$12 Asahi pints, $20 Schnittys, $16 Margaritas",
+    offer: " $15 Asahi pints, $16 Margaritas, $22 Schnitzels, $15 kids meals",
     address: "176 George Street, Sydney",
     hours: "10:00am \u2013 12:00am",
     redeem: "Must show code to staff/server to redeem",
@@ -68,7 +68,7 @@ export const raceDayData = [
       longitude: 151.2081247478231,
     },
     image:
-      "https://firebasestorage.googleapis.com/v0/b/sydney-marathon-2025.firebasestorage.app/o/TREASURE%20HUNT%20IMAGES%2FJackson-min.png?alt=media&token=fe259df2-f905-4677-8118-94db5c11e148",
+      "https://firebasestorage.googleapis.com/v0/b/sydney-marathon-2025.firebasestorage.app/o/TREASURE%20HUNT%20IMAGES%2FJackson-min.png?alt=media&token=881f2af4-01d2-48ea-a0d9-be59db51272a",
   },
   {
     id: "treasure_5",
@@ -91,7 +91,7 @@ export const raceDayData = [
   {
     id: "treasure_6",
     name: "Chateau Tanunda Sydney Cellar Door",
-    hint: "Old-vine Barossa legends paired with expert pours in a sandstone hideaway.",
+    hint: "Old-vine Barossa legends paired with expert pours in a sandstone hideaway. Don't miss the Cellar Door",
     offer:
       "2-for-1 pricing on all tasting offerings at the Sydney Cellar Door.",
     address: "2 Nurses Walk, The Rocks",
@@ -110,7 +110,7 @@ export const raceDayData = [
   {
     id: "treasure_7",
     name: "XOPP by Golden Century",
-    hint: "Where pipis sizzle and seafood feasts meet Chinatown chic.",
+    hint: "XOPP, where pipis sizzle and seafood feasts meet Chinatown chic.",
     offer: "10% off",
     address: "Level M, 1 Little Pier Street, Haymarket, NSW 2000",
     hours: "Lunch:  12:00pm \u2013 3:00pm\nDinner:  5:30pm \u2013 10:00pm",
@@ -144,7 +144,7 @@ export const raceDayData = [
   {
     id: "treasure_9",
     name: "Mecca Coffee",
-    hint: "Paddington mornings fuelled by craft roasts and community vibes.",
+    hint: "Paddington mornings fuelled by craft roasts and community vibes in Mecca.",
     offer:
       "Buy two coffees, get one free.\nBuy a bag of beans and receive a free coffee.",
     address: "Shop 4, 2\u201316 Glenmore Road, Paddington",
@@ -162,7 +162,7 @@ export const raceDayData = [
   {
     id: "treasure_10",
     name: "Kent St Hotel",
-    hint: "CBD classic where beers run cold and banter runs deep.",
+    hint: "Kent St on Kent St. CBD classic where beers run cold and banter runs deep.",
     offer:
       "$15 \nCarb-up meal special available exclusively to the Sydney Marathon community!",
     address: "347 Kent Street, Sydney, NSW 2000",
@@ -180,7 +180,7 @@ export const raceDayData = [
   {
     id: "treasure_11",
     name: "ITS RECESS",
-    hint: "Stacked sambos, crisp edges, and a break worth biting into.",
+    hint: "It\u2019s time for a break! Stacked sambos, crisp edges, and a break worth biting into.",
     offer: "$15 \nBacon & egg toastie + medium coffee combo.",
     address: "1/389 Bourke Street, Surry Hills",
     hours: "7:00am \u2013 3:00pm",
@@ -268,7 +268,7 @@ export const raceDayData = [
   {
     id: "treasure_16",
     name: "Barrelhouse Cellars",
-    hint: "Spirits flow from the barrel, where craft meets old-world cool.",
+    hint: "Spirits flow from the barrel, where craft meets old-world cool in the Cellar.",
     offer: "Free wine and spirit tasting for the Marathon community.",
     address: "73 George Street, The Rocks, Sydney",
     hours: "10:00am \u2013 6:00pm",
@@ -285,7 +285,7 @@ export const raceDayData = [
   {
     id: "treasure_17",
     name: "Black&White Espresso The Rocks",
-    hint: "Classic bagels, bold Single O brews amid sandstone charm.",
+    hint: "Classic bagels, bold Single O brews amid sandstone charm at Black & White.",
     offer:
       "10% off coffee for marathon runners.\nCoffee & signature Sydney Marathon cookie for only $12.",
     address: "140 George Street, The Rocks, NSW 2000",
@@ -303,7 +303,7 @@ export const raceDayData = [
   {
     id: "treasure_18",
     name: "Black&White Espresso The Strand",
-    hint: "Grab your marathon fuel at George Street\u2019s The Strand \u2014 coffee\u2019s 10% off and the signature Sydney Marathon Cookie just $12.\n",
+    hint: "Grab your marathon fuel at George Street\u2019s Black & White The Strand \u2014 coffee\u2019s 10% off and the signature Sydney Marathon Cookie just $12.",
     offer:
       "10% off coffee for marathon runners.\nCoffee & signature Sydney Marathon cookie for only $12.",
     address: "G18/412\u2013414 George Street, Sydney, NSW 2000",
@@ -321,13 +321,13 @@ export const raceDayData = [
   {
     id: "treasure_19",
     name: "Wild Sage Barangaroo",
-    hint: "Head towards the harbour, where sage advice meets delicious brunch. Look for a cozy spot tucked in at Exchange Place \u2014 perfect for sharing laughs and bottomless sips.",
+    hint: "Head towards the harbour, where sage advice meets delicious brunch. Look for a cozy spot tucked in at Exchange Place. Perfect for sharing laughs and bottomless sips. You're sure to have a wild time!",
     offer:
       "Celebrate your marathon day with three friends and enjoy a free bottomless upgrade (valued at $20pp), featuring 90 minutes of Aperol Spritz, Bellini, sparkling wine, house red wine, house white wine, and a shared menu of pumpkin hummus, baked halloumi, lobster and lamb tacos, fries, and truffle fries \u2014 now with classic margaritas included, all for only $79pp.",
     address: "Exchange Place, 3 Sussex Street, Barangaroo, 2000",
     hours: "8:00am \u2013 3:00pm",
     redeem:
-      "Must show code and finisher medal / proof of participation to staff/server to redeem\n Show a medal to redeem",
+      "Must show code and finisher medal / proof of participation to staff/server to redeem",
     terms:
       "Minimum of 4 guests (One of which must have ran the Marathon)\n \n House Policy applies to all reservation\n \n Available only from 12PM - 1:30PM\n \n 10% Sunday surcharge",
     code: "TCSSYDMARA25",
@@ -358,7 +358,7 @@ export const raceDayData = [
   {
     id: "treasure_21",
     name: "Kinselas",
-    hint: "Feeling thirsty or hungry after your run? Follow the rhythm of Darlinghurst to a historic spot where good times pour all day. ",
+    hint: "Feeling thirsty or hungry after your run? Follow the rhythm of Darlinghurst to a historic spot beginning with K, where good times pour all day.  ",
     offer:
       "$15\nPub classics available from midday to 3:00pm (lunch) and 5:00pm to 9:00pm (dinner).",
     address: "383 Bourke Street, Darlinghurst, NSW 2010",
@@ -371,7 +371,7 @@ export const raceDayData = [
       longitude: 151.21649587606277,
     },
     image:
-      "https://firebasestorage.googleapis.com/v0/b/sydney-marathon-2025.firebasestorage.app/o/TREASURE%20HUNT%20IMAGES%2FKinselas-min.png?alt=media&token=f03f6014-d15f-425a-ac25-d5b8a190ed94",
+      "https://firebasestorage.googleapis.com/v0/b/sydney-marathon-2025.firebasestorage.app/o/TREASURE%20HUNT%20IMAGES%2FKinselas-min.png?alt=media&token=732b957e-3b48-42d5-8ad4-2bccae386e13",
   },
   {
     id: "treasure_22",
@@ -486,7 +486,7 @@ export const raceDayData = [
   {
     id: "treasure_28",
     name: "Hendry\u2019s Coffee",
-    hint: "Start your day on Liverpool Street, Darlinghurst, with a fresh brew and enjoy 10% off your coffee fix.\n",
+    hint: "Start your day on Liverpool Street, Darlinghurst, with a fresh brew and enjoy 10% off your coffee fix at Hendry's.",
     offer: "Value Bundle : $15\nAny regular coffee + any toastie.",
     address: "Shop 1, 144\u2013150 Liverpool Street, Darlinghurst 2010",
     hours: "6:30am \u2013 3:00pm (every day)",
@@ -515,7 +515,7 @@ export const raceDayData = [
       longitude: 151.23269209269466,
     },
     image:
-      "https://firebasestorage.googleapis.com/v0/b/sydney-marathon-2025.firebasestorage.app/o/TREASURE%20HUNT%20IMAGES%2FOld%20Mates%20Deli-min.png?alt=media&token=b1196b6e-ab36-4b63-9717-430f0a697851",
+      "https://firebasestorage.googleapis.com/v0/b/sydney-marathon-2025.firebasestorage.app/o/TREASURE%20HUNT%20IMAGES%2FOld%20Mates%20Deli-min.png?alt=media&token=cef1b64b-8b53-4ec6-9355-df9de08f686f",
   },
   {
     id: "treasure_30",
@@ -525,7 +525,8 @@ export const raceDayData = [
       "20% off on shirts, trousers, and jackets for the TCS Sydney Marathon community.",
     address: "103 George Street, The Rocks",
     hours: "11:00am \u2013 5:00pm",
-    redeem: "Must show code to staff/server to redeem",
+    redeem:
+      "Must show code to staff/server to redeem or enter the code when shopping online",
     terms: "Code valid only for this specific offer",
     code: "TCSSYDMARA25",
     coordinates: {
@@ -556,7 +557,7 @@ export const raceDayData = [
   {
     id: "treasure_32",
     name: "The Glenmore",
-    hint: "Climb up Cumberland Street in The Rocks and look out for the rooftop with harbour views serving marathon-day drink and schnitzel specials!",
+    hint: "Climb up Cumberland Street in The Rocks and look out for the rooftop with harbour views serving marathon-day drink and schnitzel specials! You'll leave wanting more.",
     offer: "$20 schnitzels + $12 pints of 4 Pines Japanese Lager.",
     address: "96 Cumberland Street, The Rocks, NSW 2000",
     hours: "11:00am \u2013 12:00am",
@@ -569,5 +570,25 @@ export const raceDayData = [
     },
     image:
       "https://firebasestorage.googleapis.com/v0/b/sydney-marathon-2025.firebasestorage.app/o/TREASURE%20HUNT%20IMAGES%2FThe%20Glenmore.png?alt=media&token=6123426a-4ac2-48f1-b2cd-b127a2698b44",
+  },
+  {
+    id: "treasure_65",
+    name: "The Rocks Walking Tour",
+    hint: "Explore historic Harrington Street and unlock stories of The Rocks Walking Tour, grab $10 off your tour.",
+    offer: "Spectator’s Special Discount: $10.00 off per person.",
+    address: "28 Harrington Street, The Rocks, Sydney 2000",
+    hours:
+      "Daily shared public tours are at 10.30am and 1.30pm every day. Available for the whole duration of Event Week, including Event Day",
+    redeem:
+      "Must show code to staff/server to redeem, or enter the code when booking through the official website: https://www.rockswalkingtours.com.au/",
+    terms:
+      "Offer is only applicable when purchasing an adult ticket. Offer not available on any other third-party booking platforms.",
+    code: "CHEER10",
+    coordinates: {
+      latitude: -33.859119658821044,
+      longitude: 151.20811549611122,
+    },
+    image:
+      "https://firebasestorage.googleapis.com/v0/b/sydney-marathon-2025.firebasestorage.app/o/TREASURE%20HUNT%20IMAGES%2FThe%20Rocks%20%20Walking%20Tours%20(1).jpg?alt=media&token=7d56c165-ca4a-4445-bd9e-55adb8a4c52e",
   },
 ];

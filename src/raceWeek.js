@@ -5,10 +5,11 @@ export const raceWeekData = [
     hint: "Find the bustling harbor spot where ships sail and stories unfold \u2014 seek the T5 building at Circular Quay West, and your prize awaits.\n",
     offer: "10% off food and beverage",
     address: "T5 Circular Quay West, The Rocks, Sydney 2000",
-    hours: "2:00pm - Late everyday",
+    hours: "12:00pm - Late everyday",
     redeem:
       "Input the unique redemption code when ordering online via 'The Pass' app.",
-    terms: NaN,
+    terms:
+      "Offer valid only at The Squire's Landing during race week. Not valid in conjunction with any other offer. One redemption per customer. Subject to availability.",
     code: "TCSSYDMARA25",
     coordinates: {
       latitude: -33.8574223615663,
@@ -58,7 +59,7 @@ export const raceWeekData = [
   {
     id: "treasure_36",
     name: "Chateau Tanunda Sydney Cellar Door",
-    hint: "Find your way to Nurses Walk in The Rocks for 2-for-1 tastings of Barossa\u2019s finest wines.\n",
+    hint: "Find your way to Nurses Walk in The Rocks for 2-for-1 tastings of Barossa’s finest wines at Sydneys Cellar Door",
     offer:
       "2-for-1 pricing on all tasting offerings at the Sydney Cellar Door.",
     address: "2 Nurses Walk, The Rocks",
@@ -78,7 +79,7 @@ export const raceWeekData = [
   {
     id: "treasure_37",
     name: "Arthouse Kitchen",
-    hint: "Stop by Greens Road, Paddington, and enjoy 20% off your meal at this cozy spot.\n",
+    hint: "Stop by Greens Road, Paddington, and enjoy 20% off your meal at this cozy, Arthouse spot.",
     offer: "20% off",
     address: "1 Greens Road, Paddington, NSW 2021",
     hours:
@@ -134,7 +135,7 @@ export const raceWeekData = [
   {
     id: "treasure_40",
     name: "XOPP by Golden Century",
-    hint: "Step into Haymarket\u2019s Little Pier Street for seafood delights\u2014mention the Sydney Marathon for 10% off.\n",
+    hint: "Step into Haymarket’s Little Pier Street for seafood delights—mention the Sydney Marathon for 10% off at XOPP.",
     offer: "10% off",
     address: "Level M, 1 Little Pier Street, Haymarket, NSW 2000",
     hours:
@@ -169,7 +170,7 @@ export const raceWeekData = [
   {
     id: "treasure_42",
     name: "Mecca Coffee",
-    hint: "Fuel your Paddington morning at Glenmore Road with a buy-two-get-one-free coffee deal\u2014or grab beans and get a free brew.",
+    hint: "Fuel your Paddington morning at Glenmore Road with a buy-two-get-one-free coffee deal—or grab beans and get a free brew at Mecca.",
     offer:
       "Buy two coffees, get one free.\nBuy a bag of beans, receive a free coffee.",
     address: "Shop 4, 2\u201316 Glenmore Road, Paddington",
@@ -187,7 +188,7 @@ export const raceWeekData = [
   {
     id: "treasure_43",
     name: "Simon Says Juice",
-    hint: "Drop by 263 Oxford Street, Darlinghurst, for your post-run fuel\u2014think fresh juices, nourishing bowls, and laid-back community vibes.\n",
+    hint: "Did someone say Simon? Drop by 263 Oxford Street, Darlinghurst, for your post-run fuel—think fresh juices, nourishing bowls, and laid-back community vibes. ",
     offer:
       "Runners get 30% off all meals for the week leading up to the event. Medal Monday: Complimentary coffee when you show your finisher medal.",
     address: "263 Oxford Street, Darlinghurst, Sydney, 2010",
@@ -211,7 +212,8 @@ export const raceWeekData = [
       "20% off on shirts, trousers, and jackets for the TCS Sydney Marathon community.",
     address: "103 George Street, The Rocks",
     hours: "Tuesday \u2013 Saturday: 10:00am \u2013 6:00pm",
-    redeem: "Must show code to staff/server to redeem",
+    redeem:
+      "Must show code to staff/server to redeem or enter the code when shopping online",
     terms: "Code valid only for this specific offer",
     code: "TCSSYDMARA25",
     coordinates: {
@@ -223,8 +225,8 @@ export const raceWeekData = [
   },
   {
     id: "treasure_45",
-    name: "Payfair Restaurant, Sydney Harbour Hotel",
-    hint: "Fuel up for race day on George Street, The Rocks, with carb-loading pasta and pizza specials, plus a fresh juice station breakfast.\n",
+    name: "Playfair Restaurant, Sydney Harbour Hotel",
+    hint: "Fuel up for race day on George Street, The Rocks, with carb-loading pasta and pizza specials, plus a fresh juice station breakfast. You'll find it inside Sydney Harbour Hotel.",
     offer:
       "- Pre-Race Carb-Loading Dinner : Pasta & pizza specials available on\u00a0Saturday, 30th August from 5:00pm \u2013 9:00pm\n\n- Recovery Juice Station : A selection of juices designed for post-race recovery, immunity, and hydration. Available on\u00a0Monday, 1st September from 7:00am \u2013 10:00am.",
     address: "55 George Street, The Rocks",
@@ -255,7 +257,7 @@ export const raceWeekData = [
       longitude: 151.23269209269466,
     },
     image:
-      "https://firebasestorage.googleapis.com/v0/b/sydney-marathon-2025.firebasestorage.app/o/Treasure%20Hunt%20Images%20EVENT%20WEEK%2026TH%20AUGUST%2FOld%20Mates%20Deli.jpg?alt=media&token=00fb6512-1dbd-4a9b-aa4a-84028e20a2ce",
+      "https://firebasestorage.googleapis.com/v0/b/sydney-marathon-2025.firebasestorage.app/o/Treasure%20Hunt%20Images%20EVENT%20WEEK%2026TH%20AUGUST%2FOld%20Mates%20Deli.jpg?alt=media&token=d772b1d2-0f98-43c9-9939-7b039f9f09b4",
   },
   {
     id: "treasure_47",
@@ -279,7 +281,7 @@ export const raceWeekData = [
   {
     id: "treasure_48",
     name: "Endeavour Tap Rooms",
-    hint: "Head to 39-43 Argyle Street, The Rocks, and step into a heritage-style venue pouring small-batch brews in a laid-back setting.\n",
+    hint: "Head to 39-43 Argyle Street, The Rocks, and step into a heritage-style venue pouring small-batch brews in a laid-back setting. Look out for 'tap'",
     offer:
       "Daily $29 meal specials, Happy Hour 4 - 6 pm. Buy a tasting paddle, get another free!",
     address: "39\u201343 Argyle Street, The Rocks, NSW 2000",
@@ -298,7 +300,7 @@ export const raceWeekData = [
   {
     id: "treasure_49",
     name: "The Australian Heritage Hotel",
-    hint: "Head to Cumberland Street, The Rocks, for a $25 pizza and beer deal\u2014perfect post-run fuel.\n",
+    hint: "Head to Cumberland Street, The Rocks, for a $25 pizza and beer deal—perfect post-run fuel in an old aussie hotel.",
     offer:
       "Tuesday 26th \u2013 Friday 29th & Monday 1st Sept\n$7 Happy Hour, 4:00pm \u2013 6:00pm\n\nSaturday 30th\n$15 House Cocktails between 9:00pm \u2013 11:00pm\n\nTuesday 26th \u2013 Monday 1st Sep\n$25 Pizza & Beer Deal\n\nMonday 1st Sept \n$15 Pizza & $12 Cocktails \n(T&Cs: Cocktails limited to Margaritas)\n\nTuesday 26th \n$1 Wings \n(T&Cs: Minimum order of 5)",
     address: "100 Cumberland Street, The Rocks, NSW 2000",
@@ -316,7 +318,7 @@ export const raceWeekData = [
   {
     id: "treasure_50",
     name: "Barrelhouse Cellars",
-    hint: "Discover George Street, The Rocks, and enjoy free wine and spirit tastings for the marathon community.\n",
+    hint: "Discover George Street, The Rocks, and enjoy free wine and spirit tastings for the marathon community. Look out for the Cellars",
     offer: "Free wine and spirit tasting for the Marathon community.",
     address: "73 George Street, The Rocks, Sydney",
     hours:
@@ -352,7 +354,7 @@ export const raceWeekData = [
   {
     id: "treasure_52",
     name: "Black&White Espresso The Strand",
-    hint: "Grab your marathon fuel at George Street\u2019s The Strand \u2014 coffee\u2019s 10% off and the signature Sydney Marathon Cookie just $12.\n",
+    hint: "Grab your marathon fuel at George Street’s The Strand — coffee’s 10% off and the signature Sydney Marathon Cookie just $12 from Black & White.",
     offer:
       "10% off coffee for marathon runners.\nCoffee & signature Sydney Marathon cookie for only $12.",
     address: "G18/412\u2013414 George Street, Sydney, NSW 2000",
@@ -370,7 +372,7 @@ export const raceWeekData = [
   {
     id: "treasure_53",
     name: "The Sauna Project Sydney",
-    hint: "After the race, unwind near Vaucluse Beach with 25% off\u2014perfect for runners, supporters, and spectators.\n",
+    hint: "After the race, unwind with a sauna near Vaucluse Beach with 25% off, perfect for runners, supporters, and spectators.",
     offer: "25% off for all runners, spectators, and support crew.",
     address: "Vaucluse Beach Paddock, Wentworth Road, Vaucluse",
     hours: "Thursday \u2013 Saturday: All day\nMonday, 1st September: All day",
@@ -389,7 +391,7 @@ export const raceWeekData = [
   {
     id: "treasure_54",
     name: "The Freedom Hub",
-    hint: "Start your morning on Young Street, Waterloo, with a delicious breakfast \u2014 now 10% off to fuel your day.\n",
+    hint: "Start your morning on Young Street, Waterloo, with a delicious breakfast at the Hub, now 10% off to fuel your day.",
     offer: "10% off Breakfast Menu",
     address: "283 Young Street, Waterloo 2017",
     hours: "Monday \u2013 Friday: 7:00am \u2013 2:00pm",
@@ -424,7 +426,7 @@ export const raceWeekData = [
   {
     id: "treasure_56",
     name: "La Riviera",
-    hint: "Find your way to 170 Phillip Street, Sydney, for a chic European-style dining experience tucked between the city\u2019s legal and business hubs.\n",
+    hint: "Find your way to 170 Phillip Street, Sydney, for a chic European-style dining experience tucked between the city’s legal and business hubs. La Riviera is one not to be missed.",
     offer:
       "Enjoy a complimentary glass of La Riviera wine or a draft beer with the purchase of a meal (one free drink per meal).",
     address: "170 Phillip Street, Sydney",
@@ -462,7 +464,7 @@ export const raceWeekData = [
   {
     id: "treasure_58",
     name: "Hendry\u2019s Coffee",
-    hint: "Start your day on Liverpool Street, Darlinghurst, with a fresh brew and enjoy 10% off your coffee fix.\n",
+    hint: "Start your day on Liverpool Street, Darlinghurst, with a fresh brew and enjoy 10% off your coffee fix at Hendry's.",
     offer: "Value Bundle : $15\nAny regular coffee + any toastie.",
     address: "Shop 1, 144\u2013150 Liverpool Street, Darlinghurst 2010",
     hours: "6:30am \u2013 3:00pm (every day)",
@@ -479,7 +481,7 @@ export const raceWeekData = [
   {
     id: "treasure_59",
     name: "NOMAD",
-    hint: "Wander over to Foster Street in Surry Hills for mezze-style lunches and an express menu\u2014plus a dessert on the house!\n",
+    hint: "Wander over to 16 Foster Street in Surry Hills for mezze-style lunches and an express menu, plus a dessert on the house!",
     offer:
       "Mezze-style lunches at $60pp and $90pp express menu available for lunch and dinner \u2013 dessert on us!",
     address: "16 Foster Street, Surry Hills, NSW 2010",
@@ -554,7 +556,7 @@ export const raceWeekData = [
   {
     id: "treasure_63",
     name: "The Glenmore",
-    hint: "Climb up Cumberland Street in The Rocks and look out for the rooftop with harbour views serving marathon-day drink and schnitzel specials!",
+    hint: "Climb up Cumberland Street in The Rocks and look out for the rooftop with harbour views serving marathon-day drink and schnitzel specials! You'll leave wanting more",
     offer: "$20 schnitzels + $12 pints of 4 Pines Japanese Lager.",
     address: "96 Cumberland Street, The Rocks, NSW 2000",
     hours: "Sunday- Thursday: 11am-12am \nFriday-Saturday: 11am-1am",
@@ -571,7 +573,7 @@ export const raceWeekData = [
   {
     id: "treasure_64",
     name: "Kent St Hotel",
-    hint: "CBD classic where beers run cold and banter runs deep.",
+    hint: "Kent St on Kent St; CBD classic where beers run cold and banter runs deep.",
     offer:
       "$15 \nCarb-up meal special available exclusively to the Sydney Marathon community!",
     address: "347 Kent Street, Sydney, NSW 2000",
@@ -585,5 +587,25 @@ export const raceWeekData = [
     },
     image:
       "https://firebasestorage.googleapis.com/v0/b/sydney-marathon-2025.firebasestorage.app/o/Treasure%20Hunt%20Images%20EVENT%20WEEK%2026TH%20AUGUST%2FKent%20St%20Hotel.png?alt=media&token=ca8c845c-ddd2-42fb-96e9-b822a62af3b9",
+  },
+  {
+    id: "treasure_65",
+    name: "The Rocks Walking Tour",
+    hint: "Explore historic Harrington Street and unlock stories of The Rocks Walking Tour, grab $10 off your tour.",
+    offer: " Spectator’s Special Discount: $10.00 off per person.",
+    address: "28 Harrington Street, The Rocks, Sydney 2000",
+    hours:
+      "Daily shared public tours are at 10.30am and 1.30pm every day. Available for the whole duration of Event Week, including Event Day",
+    redeem:
+      "Must show code to staff/server to redeem, or enter the code when booking through the official website: https://www.rockswalkingtours.com.au/",
+    terms:
+      "Offer is only applicable when purchasing an adult ticket. Offer not available on any other third-party booking platforms.",
+    code: "CHEER10",
+    coordinates: {
+      latitude: -33.859119658821044,
+      longitude: 151.20811549611122,
+    },
+    image:
+      "https://firebasestorage.googleapis.com/v0/b/sydney-marathon-2025.firebasestorage.app/o/Treasure%20Hunt%20Images%20EVENT%20WEEK%2026TH%20AUGUST%2FThe%20Rocks%20%20Walking%20Tours%20(1).png?alt=media&token=f275ac75-dcfa-46df-beeb-cec76c060670",
   },
 ];
