@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Starting deployment of both entry points from deploy-version branch..."
+echo "🚀 Starting deployment of both entry points from codebase-improvements branch..."
 
 # Clean up any existing build directories
 echo "🧹 Cleaning up build directories..."

@@ -330,6 +330,87 @@ export const fetchCachedRoute = async (start, end, accessToken) => {
   }
 };
 
+// Simple cache for multi-waypoint routes (separate from start/end cache)
+const multiRouteCache = new Map();
+const MULTI_CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
+
+const getMultiKey = (coordinates) => {
+  // Round to 5 decimals to normalize nearby points
+  const rounded = coordinates.map(([lng, lat]) => [
+    Math.round(lng * 100000) / 100000,
+    Math.round(lat * 100000) / 100000,
+  ]);
+  return rounded.map(([lng, lat]) => `${lng},${lat}`).join(";");
+};
+
+const getCachedMulti = (coordinates) => {
+  const key = getMultiKey(coordinates);
+  const cached = multiRouteCache.get(key);
+  if (cached && Date.now() - cached.timestamp < MULTI_CACHE_EXPIRY) {
+    console.log("Multi-route cache hit:", key);
+    return cached.data;
+  }
+  if (cached) multiRouteCache.delete(key);
+  return null;
+};
+
+const setCachedMulti = (coordinates, data) => {
+  const key = getMultiKey(coordinates);
+  if (multiRouteCache.size >= 100) {
+    const oldestKey = multiRouteCache.keys().next().value;
+    multiRouteCache.delete(oldestKey);
+  }
+  multiRouteCache.set(key, { data, timestamp: Date.now() });
+  console.log("Multi-route cached:", key);
+};
+
+// Fetch route snapped to roads for an ordered list of coordinates (>=2)
+export const fetchCachedRouteWithWaypoints = async (
+  coordinates,
+  accessToken
+) => {
+  if (!Array.isArray(coordinates) || coordinates.length < 2) {
+    throw new Error("At least two coordinates are required");
+  }
+
+  const cached = getCachedMulti(coordinates);
+  if (cached) return cached;
+
+  try {
+    const coordsParam = coordinates.map((c) => `${c[0]},${c[1]}`).join(";");
+    const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${coordsParam}?geometries=geojson&access_token=${accessToken}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.routes && data.routes.length > 0) {
+      const route = data.routes[0];
+      const routeData = {
+        geometry: route.geometry,
+        distance: route.distance / 1000,
+        duration: route.duration / 60,
+      };
+      setCachedMulti(coordinates, routeData);
+      return routeData;
+    }
+
+    throw new Error("No routes found for multi-waypoint request");
+  } catch (error) {
+    console.error("Error fetching multi-waypoint route:", error);
+    // Fallback to straight segments between points
+    const geometry = {
+      type: "LineString",
+      coordinates,
+    };
+    let total = 0;
+    for (let i = 1; i < coordinates.length; i++) {
+      total += calculateDirectDistance(coordinates[i - 1], coordinates[i]);
+    }
+    const fallback = { geometry, distance: total, duration: null };
+    setCachedMulti(coordinates, fallback);
+    return fallback;
+  }
+};
+
 // Calculate direct distance between two points (Haversine formula)
 export const calculateDirectDistance = (start, end) => {
   const R = 6371; // Radius of the Earth in kilometers

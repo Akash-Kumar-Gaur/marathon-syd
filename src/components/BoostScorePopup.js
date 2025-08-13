@@ -1,6 +1,6 @@
 import React from "react";
 import "./BoostScorePopup.css";
-import boostBg from "../assets/images/boost.png";
+import boostBg from "../assets/images/optimized/boost.png";
 
 const BoostScorePopup = ({ isOpen, onPlay, onSkip }) => {
   if (!isOpen) return null;

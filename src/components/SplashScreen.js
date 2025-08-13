@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./SplashScreen.css";
-import sydTcsLogo from "../assets/images/syd-tcs-logo.png";
+import sydTcsLogo from "../assets/images/optimized/syd-tcs-logo.png";
 import { getAfterSplashRoute } from "../config/flowConfig";
 
 const SplashScreen = () => {
