@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Map, Marker, Popup } from "react-map-gl/mapbox";
+import { Map, Marker } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "./Wayfinder.css";
 import Header from "../components/Header";
@@ -159,46 +159,6 @@ const createComprehensiveDetour = (start, end, blockedPoints = []) => {
   };
 
   // Enhanced strategy: try multiple parallel routes with different offsets
-  const buildMultiRouteCandidate = (offset, sign) => {
-    const routes = [];
-
-    // Primary route: start -> offset -> parallel -> end
-    routes.push(buildCandidate(offset, sign));
-
-    // Alternative route: start -> offset -> offset2 -> parallel -> end (creates a wider arc)
-    const offset2 = offset * 0.7; // Secondary offset
-    if (isNorthSouth) {
-      const detourLng1 = startLng + sign * offset;
-      const detourLat1 = startLat;
-      const detourLng2 = detourLng1 + sign * offset2;
-      const detourLat2 = startLat + (endLat - startLat) * 0.3; // 30% along route
-      const parallelLng = detourLng2;
-      const parallelLat = endLat;
-      routes.push([
-        start,
-        [detourLng1, detourLat1],
-        [detourLng2, detourLat2],
-        [parallelLng, parallelLat],
-        end,
-      ]);
-    } else {
-      const detourLat1 = startLat + sign * offset;
-      const detourLng1 = startLng;
-      const detourLat2 = detourLat1 + sign * offset2;
-      const detourLng2 = startLng + (endLng - startLng) * 0.3; // 30% along route
-      const parallelLat = detourLat2;
-      const parallelLng = endLng;
-      routes.push([
-        start,
-        [detourLng1, detourLat1],
-        [detourLng2, detourLat2],
-        [parallelLng, parallelLat],
-        end,
-      ]);
-    }
-
-    return routes;
-  };
 
   const computeMinClearanceKm = (poly, pts) => {
     if (!pts || pts.length === 0) return Infinity;
@@ -436,8 +396,6 @@ const createSimpleRightTurnDetour = (
   // Determine which side to turn based on user's position relative to the crossing
   // We want to turn AWAY from the crossing, not toward it
 
-  // Calculate user's position relative to the crossing
-  const userToCrossingAngle = Math.atan2(pcLat - startLat, pcLng - startLng);
   const routeToCrossingAngle = Math.atan2(
     pcLat - turnPointLat,
     pcLng - turnPointLng
@@ -626,13 +584,7 @@ const createSimpleRightTurnDetour = (
   return result;
 };
 
-// Create detour around specific Ped Crossing that completely avoids the area
-const createSpecificPedCrossingDetour = (
-  start,
-  end,
-  pedCrossing,
-  blockedPoints = []
-) => {
+
   console.log("🔄 [DETOUR DEBUG] Creating specific Ped Crossing detour");
   console.log("📍 [DETOUR DEBUG] Start:", start);
   console.log("🎯 [DETOUR DEBUG] End:", end);
@@ -1172,22 +1124,14 @@ const Wayfinder = () => {
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [locationConfirmed, setLocationConfirmed] = useState(false);
   const [hasArrived, setHasArrived] = useState(false);
-  const [isTrackingLocation, setIsTrackingLocation] = useState(false);
   const [showDirections, setShowDirections] = useState(false);
 
   const [routeDistance, setRouteDistance] = useState(null);
-  const [lastRouteUpdate, setLastRouteUpdate] = useState(0);
   const [routeStartLocation, setRouteStartLocation] = useState(null);
   const [routeEndLocation, setRouteEndLocation] = useState(null);
-  const [currentRouteLeg, setCurrentRouteLeg] = useState(null); // 'to-route-start' or 'to-assembly'
-  const [showRouteSwitchNotification, setShowRouteSwitchNotification] =
-    useState(false);
-  const [showDebugRoute, setShowDebugRoute] = useState(false); // Debug: show original route from start to assembly
+  const [currentRouteLeg, setCurrentRouteLeg] = useState(null);
 
-  // Collapsible sections state
   const [isRouteStatusCollapsed, setIsRouteStatusCollapsed] = useState(true);
-  const [isStartingPointCollapsed, setIsStartingPointCollapsed] =
-    useState(true);
 
   useEffect(() => {
     if (bibNumber) {
