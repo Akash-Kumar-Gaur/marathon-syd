@@ -1173,6 +1173,8 @@ const Wayfinder = () => {
   const [locationConfirmed, setLocationConfirmed] = useState(false);
   const [hasArrived, setHasArrived] = useState(false);
   const [isTrackingLocation, setIsTrackingLocation] = useState(false);
+  const [isLocationTrackingActive, setIsLocationTrackingActive] =
+    useState(false);
   const [showDirections, setShowDirections] = useState(false);
 
   const [routeDistance, setRouteDistance] = useState(null);
@@ -1235,46 +1237,263 @@ const Wayfinder = () => {
     }
   }, [useCurrentLocation]);
 
-  const getCurrentLocation = () => {
-    setIsLoadingLocation(true);
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          console.log(
-            "Got current location:",
-            position.coords.latitude,
-            position.coords.longitude
-          );
-          const newLocation = [
-            position.coords.longitude, // Mapbox uses [lng, lat]
-            position.coords.latitude,
-          ];
-          setUserLocation(newLocation);
-          setIsLoadingLocation(false);
-
-          // Center map on current location
-          setViewState((prev) => ({
-            ...prev,
-            longitude: newLocation[0],
-            latitude: newLocation[1],
-          }));
-          console.log("Map centered on current location");
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          console.log("Falling back to default simulated location");
-          // Reset to simulated location if geolocation fails
-          setUserLocation([151.2072222, -33.8402778]);
-          setIsLoadingLocation(false);
-        }
-      );
-    } else {
-      console.log(
-        "Geolocation not supported, using default simulated location"
-      );
-      setUserLocation([151.2072222, -33.8402778]);
-      setIsLoadingLocation(false);
+  // Auto-hide route switch notification after 5 seconds
+  useEffect(() => {
+    if (showRouteSwitchNotification) {
+      const timer = setTimeout(() => {
+        setShowRouteSwitchNotification(false);
+      }, 5000);
+      return () => clearTimeout(timer);
     }
+  }, [showRouteSwitchNotification]);
+
+  // Track route changes to show notification when switching from start point to assembly
+  useEffect(() => {
+    if (currentRouteLeg === "to-assembly" && showDirections) {
+      // Check if this is a route switch (user was previously heading to start point)
+      const wasHeadingToStart =
+        sessionStorage.getItem("wasHeadingToStart") === "true";
+
+      if (wasHeadingToStart) {
+        console.log(
+          "🔄 [ROUTE SWITCH] User reached start point, now heading to assembly"
+        );
+        setShowRouteSwitchNotification(true);
+
+        // Hide notification after 5 seconds
+        setTimeout(() => {
+          setShowRouteSwitchNotification(false);
+        }, 5000);
+
+        // Clear the flag
+        sessionStorage.removeItem("wasHeadingToStart");
+      }
+    } else if (currentRouteLeg === "to-route-start") {
+      // User is heading to start point, set flag
+      sessionStorage.setItem("wasHeadingToStart", "true");
+    }
+  }, [currentRouteLeg, showDirections]);
+
+  // Cleanup location tracking on component unmount
+  useEffect(() => {
+    return () => {
+      if (window.locationWatchId) {
+        navigator.geolocation.clearWatch(window.locationWatchId);
+        window.locationWatchId = null;
+        setIsLocationTrackingActive(false);
+        console.log("🛑 [TRACKING] Location tracking cleaned up");
+      }
+    };
+  }, []);
+
+  const handleArrivalDone = () => {
+    setHasArrived(false);
+  };
+
+  const handleStartLocationTracking = () => {
+    // If already tracking, stop tracking
+    if (isLocationTrackingActive) {
+      console.log("🛑 [TRACKING] Stopping location tracking...");
+
+      if (window.locationWatchId) {
+        navigator.geolocation.clearWatch(window.locationWatchId);
+        window.locationWatchId = null;
+      }
+
+      setIsLocationTrackingActive(false);
+      console.log("✅ [TRACKING] Location tracking stopped");
+      return;
+    }
+
+    console.log("🚀 [TRACKING] Starting location tracking...");
+
+    // Check if geolocation is supported
+    if (!navigator.geolocation) {
+      console.log("❌ [TRACKING] Geolocation not supported by browser");
+      alert(
+        "Your browser doesn't support location services. Please use a modern browser."
+      );
+      return;
+    }
+
+    // Force the browser to show location permission popup by calling getCurrentPosition first
+    console.log("🔐 [TRACKING] Requesting location permission...");
+
+    // Log additional debugging info
+    console.log("🌐 [TRACKING] User agent:", navigator.userAgent);
+    console.log("🔒 [TRACKING] Protocol:", window.location.protocol);
+    console.log("📱 [TRACKING] Platform:", navigator.platform);
+
+    // Enable current location tracking
+    setUseCurrentLocation(true);
+    setIsLocationTrackingActive(true);
+
+    // First, try to get current position to trigger permission popup
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        console.log("✅ [TRACKING] Initial location permission granted!");
+        const initialLocation = [
+          position.coords.longitude,
+          position.coords.latitude,
+        ];
+        setUserLocation(initialLocation);
+
+        // Now start continuous tracking
+        startContinuousTracking();
+      },
+      (error) => {
+        console.error("❌ [TRACKING] Initial location request failed:", error);
+
+        // Handle specific error codes for initial request
+        switch (error.code) {
+          case 1: // PERMISSION_DENIED
+            console.log("🚫 [TRACKING] Initial location permission denied");
+            if (
+              window.confirm(
+                "Location access denied. Would you like to try again? Click 'OK' to request location permission again."
+              )
+            ) {
+              console.log(
+                "🔄 [TRACKING] User wants to retry initial location permission"
+              );
+              // Try again after a short delay
+              setTimeout(() => {
+                handleStartLocationTracking();
+              }, 1000);
+            } else {
+              console.log(
+                "❌ [TRACKING] User declined retry for initial location"
+              );
+              // Stop tracking and fall back to simulated location
+              setIsLocationTrackingActive(false);
+              setUseCurrentLocation(false);
+              setUserLocation([151.2072222, -33.8402778]);
+            }
+            return;
+          case 2: // POSITION_UNAVAILABLE
+            console.log("📍 [TRACKING] Initial location unavailable");
+            alert(
+              "Unable to determine your location. Please try moving outdoors or to a different area."
+            );
+            break;
+          case 3: // TIMEOUT
+            console.log("⏰ [TRACKING] Initial request timed out");
+            alert("Location request timed out. Please try again.");
+            break;
+          default:
+            console.log(
+              "❓ [TRACKING] Unknown initial location error:",
+              error.message
+            );
+            alert("Location error occurred. Please try again.");
+        }
+
+        // If we get here, try to start continuous tracking anyway
+        startContinuousTracking();
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+
+    // Function to start continuous tracking
+    const startContinuousTracking = () => {
+      if (navigator.geolocation) {
+        // Clear any existing watch
+        if (window.locationWatchId) {
+          navigator.geolocation.clearWatch(window.locationWatchId);
+        }
+
+        // Start watching position with high accuracy
+        window.locationWatchId = navigator.geolocation.watchPosition(
+          (position) => {
+            const newLocation = [
+              position.coords.longitude, // Mapbox uses [lng, lat]
+              position.coords.latitude,
+            ];
+
+            console.log("📍 [TRACKING] New location:", newLocation);
+            setUserLocation(newLocation);
+
+            // Update map view to follow user
+            setViewState((prev) => ({
+              ...prev,
+              longitude: newLocation[0],
+              latitude: newLocation[1],
+            }));
+
+            // Update route if directions are shown
+            if (showDirections) {
+              handleSmartRouting();
+            }
+          },
+          (error) => {
+            console.error("❌ [TRACKING] Location tracking error:", error);
+
+            // Handle specific error codes
+            switch (error.code) {
+              case 1: // PERMISSION_DENIED
+                console.log("🚫 [TRACKING] Location permission denied by user");
+                if (
+                  window.confirm(
+                    "Location access denied. Would you like to try again? Click 'OK' to request location permission again."
+                  )
+                ) {
+                  console.log(
+                    "🔄 [TRACKING] User wants to retry location permission"
+                  );
+                  // Stop current tracking
+                  setIsLocationTrackingActive(false);
+                  setUseCurrentLocation(false);
+                  // Try to get location permission again
+                  setTimeout(() => {
+                    handleStartLocationTracking();
+                  }, 1000);
+                } else {
+                  console.log("❌ [TRACKING] User declined retry");
+                  // Stop tracking and fall back to simulated location
+                  setIsLocationTrackingActive(false);
+                  setUseCurrentLocation(false);
+                  setUserLocation([151.2072222, -33.8402778]); // Default simulated location
+                }
+                return; // Exit early to prevent fallback
+              case 2: // POSITION_UNAVAILABLE
+                console.log(
+                  "📍 [TRACKING] Location unavailable - device cannot determine position"
+                );
+                alert(
+                  "Unable to determine your location. Please try moving outdoors or to a different area."
+                );
+                break;
+              case 3: // TIMEOUT
+                console.log("⏰ [TRACKING] Location request timed out");
+                alert("Location request timed out. Please try again.");
+                break;
+              default:
+                console.log(
+                  "❓ [TRACKING] Unknown location error:",
+                  error.message
+                );
+                alert("Location error occurred. Please try again.");
+            }
+
+            // Stop tracking and fall back to simulated location
+            setIsLocationTrackingActive(false);
+            setUseCurrentLocation(false);
+            setUserLocation([151.2072222, -33.8402778]); // Default simulated location
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0,
+          }
+        );
+
+        console.log("✅ [TRACKING] Location tracking started successfully");
+      } else {
+        console.log("❌ [TRACKING] Geolocation not supported");
+        // Fall back to one-time location fetch
+        getCurrentLocation();
+      }
+    };
   };
 
   // Calculate distance between two coordinates (using cached version)
@@ -1349,40 +1568,17 @@ const Wayfinder = () => {
       if (distanceToAssembly <= 0.1) {
         console.log("🎯 [ARRIVAL] User has arrived at assembly point!");
         setHasArrived(true);
+
+        // Stop location tracking when arrived
+        if (window.locationWatchId) {
+          navigator.geolocation.clearWatch(window.locationWatchId);
+          window.locationWatchId = null;
+          setIsLocationTrackingActive(false);
+          console.log("🛑 [TRACKING] Location tracking stopped - user arrived");
+        }
       }
     }
   }, [userLocation, bibData, hasArrived]);
-
-  // Track route changes to show notification when switching from start point to assembly
-  useEffect(() => {
-    if (currentRouteLeg === "to-assembly" && showDirections) {
-      // Check if this is a route switch (user was previously heading to start point)
-      const wasHeadingToStart =
-        sessionStorage.getItem("wasHeadingToStart") === "true";
-
-      if (wasHeadingToStart) {
-        console.log(
-          "🔄 [ROUTE SWITCH] User reached start point, now heading to assembly"
-        );
-        setShowRouteSwitchNotification(true);
-
-        // Hide notification after 5 seconds
-        setTimeout(() => {
-          setShowRouteSwitchNotification(false);
-        }, 5000);
-
-        // Clear the flag
-        sessionStorage.removeItem("wasHeadingToStart");
-      }
-    } else if (currentRouteLeg === "to-route-start") {
-      // User is heading to start point, set flag
-      sessionStorage.setItem("wasHeadingToStart", "true");
-    }
-  }, [currentRouteLeg, showDirections]);
-
-  const handleArrivalDone = () => {
-    setHasArrived(false);
-  };
 
   // New function to handle smart routing based on user distance from assembly
   const handleSmartRouting = () => {
@@ -1527,6 +1723,9 @@ const Wayfinder = () => {
       setRouteEndLocation(routeStartCoords);
       setCurrentRouteLeg("to-route-start");
       setLastRouteUpdate(Date.now());
+      // Set flag to track that user was heading to start point
+      // This only happens when user is genuinely far from both start and assembly points
+      sessionStorage.setItem("wasHeadingToStart", "true");
     }
   };
 
@@ -1628,6 +1827,8 @@ const Wayfinder = () => {
           );
           setCurrentRouteLeg("to-route-start");
           setLastRouteUpdate(Date.now());
+          // Note: Not setting wasHeadingToStart flag here since this is in handleDirectionsClick
+          // and user is likely already positioned, so no notification needed
         }
       } else if (bibData && selectedRoute?.isClosed) {
         console.log(
@@ -1719,6 +1920,40 @@ const Wayfinder = () => {
       latitude: result.lat,
     }));
     console.log("Map centered on selected location");
+  };
+
+  const showLocationPermissionInstructions = () => {
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+
+    let instructions = "";
+
+    if (isIOS) {
+      instructions = `📱 iOS Location Setup:
+1. Go to Settings > Privacy & Security > Location Services
+2. Make sure Location Services is ON
+3. Find your browser (Safari/Chrome) and set to "While Using"
+4. Return to this app and try again`;
+    } else if (isAndroid) {
+      instructions = `📱 Android Location Setup:
+1. Go to Settings > Location
+2. Make sure Location is ON
+3. Go to Settings > Apps > [Your Browser]
+4. Set Location permission to "Allow"
+5. Return to this app and try again`;
+    } else {
+      instructions = `💻 Desktop Location Setup:
+1. Check if your browser is asking for location permission
+2. Click "Allow" when prompted
+3. If denied, click the location icon in your browser's address bar
+4. Set permission to "Allow" and refresh the page`;
+    }
+
+    alert(`Location Access Required\n\n${instructions}`);
   };
 
   if (!bibNumber || !bibData) {
@@ -2077,7 +2312,7 @@ const Wayfinder = () => {
                         <i className="fas fa-route"></i>
                         <span>Assigned Route: {selectedRoute.name}</span>
                         <div className="route-details">
-                          <span>Type: {selectedRoute.type}</span>
+                          {/* <span>Type: {selectedRoute.type}</span> */}
                           <span>Closure: {selectedRoute.closureTime}</span>
                         </div>
                       </div>
@@ -2249,11 +2484,17 @@ const Wayfinder = () => {
                 : "DIRECTION"}
             </button>
             <button
-              className="start-button"
-              onClick={() => setHasArrived(true)}
+              className={`start-button ${
+                isLocationTrackingActive ? "tracking" : ""
+              }`}
+              onClick={handleStartLocationTracking}
             >
-              <i className="fas fa-play"></i>
-              START
+              <i
+                className={`fas ${
+                  isLocationTrackingActive ? "fa-stop" : "fa-play"
+                }`}
+              ></i>
+              {isLocationTrackingActive ? "STOP" : "START"}
             </button>
           </div>
         </div>
