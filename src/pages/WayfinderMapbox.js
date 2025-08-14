@@ -1342,20 +1342,46 @@ const Wayfinder = () => {
               console.log(
                 "📍 [LOCATION] Location unavailable - device cannot determine position"
               );
-              alert(
-                "Unable to determine your location. Please try moving outdoors or to a different area."
-              );
-              break;
+              console.log("🔄 [LOCATION] Auto-retrying in 3 seconds...");
+              // Auto-retry for position unavailable
+              setTimeout(() => {
+                if (isLocationTrackingActive) {
+                  console.log(
+                    "🔄 [LOCATION] Retrying initial location request..."
+                  );
+                  handleStartLocationTracking();
+                }
+              }, 3000);
+              return; // Exit early to prevent fallback
             case 3: // TIMEOUT
               console.log("⏰ [LOCATION] Location request timed out");
-              alert("Location request timed out. Please try again.");
-              break;
+              console.log("🔄 [LOCATION] Auto-retrying in 2 seconds...");
+              // Auto-retry for timeout
+              setTimeout(() => {
+                if (isLocationTrackingActive) {
+                  console.log(
+                    "🔄 [LOCATION] Retrying initial location request..."
+                  );
+                  handleStartLocationTracking();
+                }
+              }, 2000);
+              return; // Exit early to prevent fallback
             default:
               console.log(
                 "❓ [LOCATION] Unknown location error:",
                 error.message
               );
-              alert("Location error occurred. Please try again.");
+              console.log("🔄 [LOCATION] Auto-retrying in 5 seconds...");
+              // Auto-retry for unknown errors
+              setTimeout(() => {
+                if (isLocationTrackingActive) {
+                  console.log(
+                    "🔄 [LOCATION] Retrying initial location request..."
+                  );
+                  handleStartLocationTracking();
+                }
+              }, 5000);
+              return; // Exit early to prevent fallback
           }
 
           console.log("Falling back to default simulated location");
@@ -1389,6 +1415,12 @@ const Wayfinder = () => {
     }
 
     console.log("🚀 [TRACKING] Starting location tracking...");
+
+    // Auto-show directions when starting tracking
+    if (!showDirections) {
+      console.log("🗺️ [TRACKING] Auto-showing directions...");
+      handleDirectionsClick();
+    }
 
     // Check if geolocation is supported
     if (!navigator.geolocation) {
@@ -1474,7 +1506,7 @@ const Wayfinder = () => {
         // If we get here, try to start continuous tracking anyway
         startContinuousTracking();
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: false, timeout: 30000, maximumAge: 30000 }
     );
 
     // Function to start continuous tracking
@@ -1542,31 +1574,52 @@ const Wayfinder = () => {
                 console.log(
                   "📍 [TRACKING] Location unavailable - device cannot determine position"
                 );
-                alert(
-                  "Unable to determine your location. Please try moving outdoors or to a different area."
-                );
-                break;
+                console.log("🔄 [TRACKING] Auto-retrying in 3 seconds...");
+                // Auto-retry for position unavailable (user might have moved)
+                setTimeout(() => {
+                  if (isLocationTrackingActive) {
+                    console.log(
+                      "🔄 [TRACKING] Retrying location tracking after position unavailable..."
+                    );
+                    startContinuousTracking();
+                  }
+                }, 3000);
+                return; // Exit early to prevent fallback
               case 3: // TIMEOUT
                 console.log("⏰ [TRACKING] Location request timed out");
-                alert("Location request timed out. Please try again.");
-                break;
+                console.log("🔄 [TRACKING] Auto-retrying in 2 seconds...");
+                // Auto-retry for timeout (network or GPS might be slow)
+                setTimeout(() => {
+                  if (isLocationTrackingActive) {
+                    console.log(
+                      "🔄 [TRACKING] Retrying location tracking after timeout..."
+                    );
+                    startContinuousTracking();
+                  }
+                }, 2000);
+                return; // Exit early to prevent fallback
               default:
                 console.log(
                   "❓ [TRACKING] Unknown location error:",
                   error.message
                 );
-                alert("Location error occurred. Please try again.");
+                console.log("🔄 [TRACKING] Auto-retrying in 5 seconds...");
+                // Auto-retry for unknown errors
+                setTimeout(() => {
+                  if (isLocationTrackingActive) {
+                    console.log(
+                      "🔄 [TRACKING] Retrying location tracking after unknown error..."
+                    );
+                    startContinuousTracking();
+                  }
+                }, 5000);
+                return; // Exit early to prevent fallback
             }
-
-            // Stop tracking and fall back to simulated location
-            setIsLocationTrackingActive(false);
-            setUseCurrentLocation(false);
-            setUserLocation([151.2072222, -33.8402778]); // Default simulated location
           },
           {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0,
+            enableHighAccuracy: false, // Less strict, more reliable
+            timeout: 30000, // Longer timeout (30 seconds)
+            maximumAge: 30000, // Accept locations up to 30 seconds old
           }
         );
 
