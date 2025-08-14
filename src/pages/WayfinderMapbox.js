@@ -975,9 +975,6 @@ const createSpecificPedCrossingDetour = (
     console.log("🔄 [DETOUR DEBUG] About to return safety detour result");
     return result;
   }
-  console.log(
-    "❌ [DETOUR DEBUG] Function ended without returning anything - this should not happen!"
-  );
 };
 
 // Helper function to calculate distance from a point to a line segment
@@ -1288,6 +1285,92 @@ const Wayfinder = () => {
 
   const handleArrivalDone = () => {
     setHasArrived(false);
+  };
+
+  const getCurrentLocation = () => {
+    setIsLoadingLocation(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log(
+            "Got current location:",
+            position.coords.latitude,
+            position.coords.longitude
+          );
+          const newLocation = [
+            position.coords.longitude, // Mapbox uses [lng, lat]
+            position.coords.latitude,
+          ];
+          setUserLocation(newLocation);
+          setIsLoadingLocation(false);
+
+          // Center map on current location
+          setViewState((prev) => ({
+            ...prev,
+            longitude: newLocation[0],
+            latitude: newLocation[1],
+          }));
+          console.log("Map centered on current location");
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+
+          // Handle specific error codes
+          switch (error.code) {
+            case 1: // PERMISSION_DENIED
+              console.log("🚫 [LOCATION] Location permission denied by user");
+              if (
+                window.confirm(
+                  "Location access denied. Would you like to try again? Click 'OK' to request location permission again."
+                )
+              ) {
+                console.log(
+                  "🔄 [LOCATION] User wants to retry location permission"
+                );
+                // Try again after a short delay
+                setTimeout(() => {
+                  getCurrentLocation();
+                }, 1000);
+              } else {
+                console.log("❌ [LOCATION] User declined retry");
+                // Fall back to simulated location
+                setUserLocation([151.2072222, -33.8402778]);
+                setIsLoadingLocation(false);
+              }
+              return; // Exit early to prevent fallback
+            case 2: // POSITION_UNAVAILABLE
+              console.log(
+                "📍 [LOCATION] Location unavailable - device cannot determine position"
+              );
+              alert(
+                "Unable to determine your location. Please try moving outdoors or to a different area."
+              );
+              break;
+            case 3: // TIMEOUT
+              console.log("⏰ [LOCATION] Location request timed out");
+              alert("Location request timed out. Please try again.");
+              break;
+            default:
+              console.log(
+                "❓ [LOCATION] Unknown location error:",
+                error.message
+              );
+              alert("Location error occurred. Please try again.");
+          }
+
+          console.log("Falling back to default simulated location");
+          // Reset to simulated location if geolocation fails
+          setUserLocation([151.2072222, -33.8402778]);
+          setIsLoadingLocation(false);
+        }
+      );
+    } else {
+      console.log(
+        "Geolocation not supported, using default simulated location"
+      );
+      setUserLocation([151.2072222, -33.8402778]);
+      setIsLoadingLocation(false);
+    }
   };
 
   const handleStartLocationTracking = () => {
