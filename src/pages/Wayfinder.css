@@ -620,6 +620,19 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.start-button.tracking {
+  background: #e74c3c;
+  color: white;
+  border-color: #c0392b;
+}
+
+.start-button.tracking:hover {
+  background: #c0392b;
+  border-color: #a93226;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
 .direction-button i,
 .start-button i {
   font-size: 1rem;
