@@ -1335,11 +1335,6 @@ const Wayfinder = () => {
     setLocationConfirmed(true);
   };
 
-  // Continuous location tracking - disabled for simulation
-  // useEffect(() => {
-  //   // Location tracking code removed for simulation
-  // }, [useCurrentLocation, locationConfirmed, showDirections, bibData, currentRouteLeg]);
-
   // Track user location to detect arrival at assembly point
   useEffect(() => {
     if (bibData && userLocation && !hasArrived) {
@@ -1358,10 +1353,35 @@ const Wayfinder = () => {
     }
   }, [userLocation, bibData, hasArrived]);
 
+  // Track route changes to show notification when switching from start point to assembly
+  useEffect(() => {
+    if (currentRouteLeg === "to-assembly" && showDirections) {
+      // Check if this is a route switch (user was previously heading to start point)
+      const wasHeadingToStart =
+        sessionStorage.getItem("wasHeadingToStart") === "true";
+
+      if (wasHeadingToStart) {
+        console.log(
+          "🔄 [ROUTE SWITCH] User reached start point, now heading to assembly"
+        );
+        setShowRouteSwitchNotification(true);
+
+        // Hide notification after 5 seconds
+        setTimeout(() => {
+          setShowRouteSwitchNotification(false);
+        }, 5000);
+
+        // Clear the flag
+        sessionStorage.removeItem("wasHeadingToStart");
+      }
+    } else if (currentRouteLeg === "to-route-start") {
+      // User is heading to start point, set flag
+      sessionStorage.setItem("wasHeadingToStart", "true");
+    }
+  }, [currentRouteLeg, showDirections]);
+
   const handleArrivalDone = () => {
     setHasArrived(false);
-    // Could navigate to next screen or back to home
-    // navigate("/");
   };
 
   // New function to handle smart routing based on user distance from assembly
@@ -1835,23 +1855,6 @@ const Wayfinder = () => {
                   if (routeData && routeData.distance) {
                     setRouteDistance(routeData.distance);
                   }
-                }}
-              />
-            )}
-
-          {/* Debug Route - show original route from start to assembly (only when no detour active) */}
-          {bibData &&
-            locationConfirmed &&
-            showDirections &&
-            showDebugRoute &&
-            !selectedRoute?.isClosed && (
-              <RouteSource
-                sourceId="debug-route"
-                start={bibData.routeStartCoordinates}
-                end={bibData.assemblyCoordinates}
-                isDebug={true}
-                onRouteFound={(routeData) => {
-                  console.log("Debug route found:", routeData);
                 }}
               />
             )}
