@@ -1237,6 +1237,31 @@ const Wayfinder = () => {
     }
   }, [useCurrentLocation]);
 
+  // Auto-hide route switch notification after 5 seconds
+  useEffect(() => {
+    if (showRouteSwitchNotification) {
+      const timer = setTimeout(() => {
+        setShowRouteSwitchNotification(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showRouteSwitchNotification]);
+
+  // Route switch notification logic - triggers when user transitions from start point to assembly
+  useEffect(() => {
+    if (currentRouteLeg === "to-assembly" && showDirections) {
+      const wasHeadingToStart =
+        sessionStorage.getItem("wasHeadingToStart") === "true";
+
+      if (wasHeadingToStart) {
+        // 🎯 NOTIFICATION TRIGGERS AUTOMATICALLY HERE
+        setShowRouteSwitchNotification(true);
+        // Clear the flag since we've shown the notification
+        sessionStorage.removeItem("wasHeadingToStart");
+      }
+    }
+  }, [currentRouteLeg, showDirections]);
+
   const getCurrentLocation = () => {
     setIsLoadingLocation(true);
     if (navigator.geolocation) {
@@ -1777,6 +1802,9 @@ const Wayfinder = () => {
       setRouteEndLocation(routeStartCoords);
       setCurrentRouteLeg("to-route-start");
       setLastRouteUpdate(Date.now());
+      // Set flag to track that user was heading to start point
+      // This only happens when user is genuinely far from both start and assembly points
+      sessionStorage.setItem("wasHeadingToStart", "true");
     }
   };
 
@@ -1878,6 +1906,8 @@ const Wayfinder = () => {
           );
           setCurrentRouteLeg("to-route-start");
           setLastRouteUpdate(Date.now());
+          // Note: Not setting wasHeadingToStart flag here since this is in handleDirectionsClick
+          // and user is likely already positioned, so no notification needed
         }
       } else if (bibData && selectedRoute?.isClosed) {
         console.log(
@@ -2378,7 +2408,7 @@ const Wayfinder = () => {
                         <i className="fas fa-route"></i>
                         <span>Assigned Route: {selectedRoute.name}</span>
                         <div className="route-details">
-                          <span>Type: {selectedRoute.type}</span>
+                          {/* <span>Type: {selectedRoute.type}</span> */}
                           <span>Closure: {selectedRoute.closureTime}</span>
                         </div>
                       </div>
